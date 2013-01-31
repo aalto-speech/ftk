@@ -94,6 +94,6 @@ int main(int argc, char* argv[]) {
         best_path.clear();
     }
 
-    exit(0);
+    exit(1);
 }
 
