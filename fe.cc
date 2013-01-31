@@ -68,7 +68,8 @@ int main(int argc, char* argv[]) {
                 if (vocab.find(line.substr(j+1, i-j)) != vocab.end()) {
                     Token tok;
                     tok.source  = j;
-                    tok.cost = vocab[line.substr(j+1, i-j)];
+                    Token source_top = search[j].top();
+                    tok.cost = vocab[line.substr(j+1, i-j)] + source_top.cost;
                     search[i].push(tok);
                 }
             }
