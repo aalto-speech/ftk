@@ -1,4 +1,5 @@
 #ifndef FACTOR_ENCODER
+#define FACTOR_ENCODER
 
 #include <queue>
 #include <map>
