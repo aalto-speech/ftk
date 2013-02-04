@@ -1,9 +1,7 @@
 #include <algorithm>
-#include <limits>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <sstream>
 #include <vector>
 
@@ -30,7 +28,6 @@ int read_vocab(const char* fname,
 
     return vocab.size();
 }
-
 
 
 int viterbi(const std::map<std::string, double> &vocab,

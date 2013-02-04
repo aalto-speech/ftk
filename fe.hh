@@ -1,8 +1,10 @@
 #ifndef FACTOR_ENCODER
 #define FACTOR_ENCODER
 
-#include <queue>
+#include <limits>
 #include <map>
+#include <queue>
+#include <string>
 
 
 class Token {
