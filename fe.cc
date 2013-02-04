@@ -19,12 +19,8 @@ class Token {
         Token(const Token& orig) { this->source=orig.source; this->cost=orig.cost; };
 };
 
+// Note just changed > to < ..
 bool operator< (const Token& token1, const Token &token2)
-{
-    return token1.cost > token2.cost;
-}
-
-bool operator> (const Token& token1, const Token &token2)
 {
     return token1.cost < token2.cost;
 }
@@ -61,7 +57,6 @@ int main(int argc, char* argv[]) {
     std::cerr << "Segmenting corpus" << std::endl;
     std::vector<std::string> best_path;
     while (getline(std::cin, line)) {
-        std::cerr << "Segmenting sentence: " << line << std::endl;
 
         std::vector<Node> search(line.length());
         int start_pos = 0;
@@ -70,51 +65,41 @@ int main(int argc, char* argv[]) {
 
         for (int i=0; i<line.length(); i++) {
 
-//            std::cerr << "end index: " << i << std::endl;
-
-            // Iterate all factor ending in this position
+            // Iterate all factors ending in this position
             for (int j=std::max(0, i-maxlen); j<=i; j++) {
                 start_pos = j;
                 end_pos = i+1;
                 len = end_pos-start_pos;
 
-//                std::cerr << "trying indices: " << start_pos << " " << end_pos << std::endl;
-//                std::cerr << "trying factor: " << line.substr(start_pos, len) << std::endl;
-
                 if (vocab.find(line.substr(start_pos, len)) != vocab.end()) {
-                    std::cerr << "factor: " << line.substr(start_pos, len) << " cost: " << vocab[line.substr(start_pos, len)] << std::endl;
-                    Token tok(j, vocab[line.substr(start_pos, len)]);
-                    if (i > 0) {
-                        if (search[j].size() > 0) {
-                            Token source_top = search[j].top();
-                            tok.cost += source_top.cost;
-                        }
-                    }
-                    else {
-                        tok.source = -1;
+                    Token tok(j-1, vocab[line.substr(start_pos, len)]);
+                    if (i > 0 && search[j].size() > 0) {
+                        Token source_top = search[j].top();
+                        tok.cost += source_top.cost;
                     }
                     search[i].push(tok);
                 }
             }
-            std::cerr << std::endl;
         }
 
         // Look up the best path
         int target = search.size()-1;
         Token top = search[target].top();
         int source = top.source;
+
         while (true) {
             best_path.push_back(line.substr(source+1, target-source));
-            if (source == -1) break;
+            if (source < 0) break; 
             target = source;
             Token top = search[target].top();
             source = top.source;
         }
 
         // Print out the best path
-        for (int i=best_path.size()-1; i<0; i--)
+        for (int i=best_path.size()-1; i>0; i--)
             std::cout << best_path[i] << " ";
         std::cout << best_path[0] << std::endl;
+
 
         best_path.clear();
     }
