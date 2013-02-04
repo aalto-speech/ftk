@@ -24,3 +24,9 @@ int read_vocab(const char* fname,
                std::map<std::string, double> &vocab,
                int &maxlen);
 
+
+int viterbi(const std::map<std::string, double> &vocab,
+            int maxlen,
+            const std::string &sentence,
+            std::vector<std::string> &best_path);
+
