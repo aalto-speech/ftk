@@ -3,14 +3,14 @@ cxxflags = -O2 -march=native -g
 
 ##################################################
 
-progs = fe
-progs_srcs = $(progs:=.cc)
-all_srcs = $(progs_srcs)
+prog = fe
+prog_srcs = $(prog:=.cc)
+srcs = factorencoder.cc
 objs = $(srcs:.cc=.o)
 
-test_progs = test_fe
-test_progs_srcs = $(test_progs:=.cc) $(progs_srcs)
-test_srcs = $(test_progs_srcs) fetest.cc
+test_prog = test_fe
+test_prog_srcs = $(test_prog:=.cc)
+test_srcs = fetest.cc
 test_objs = $(test_srcs:.cc=.o)
 
 
@@ -18,7 +18,7 @@ test_objs = $(test_srcs:.cc=.o)
 
 .SUFFIXES:
 
-default: $(progs)
+default: $(prog)
 
 %.o: %.cc
 	$(CXX) -c $(cxxflags) $< -o $@
@@ -26,18 +26,18 @@ default: $(progs)
 %: %.o $(objs)
 	$(CXX) $(cxxflags) $< -o $@ $(objs)
 
-test_fe: test_fe.o $(objs)
-	$(CXX) $(cxxflags) $< -o $@ $(objs) -lcppunit
-
-progs: $(progs_srcs)
+test_prog: $(test_prog_srcs) $(test_objs) $(prog_objs)
+	$(CXX) $(cxxflags) $< -o $@ $(test_objs) -lcppunit
 
 test_objs: $(test_srcs)
-test_progs: $(test_progs_src) $(objs)
-test: $(test_progs)
+
+test_progs: $(objs) $(test_objs)
+
+test: $(test_prog)
 
 .PHONY: clean
 clean:
-	rm -f $(objs) $(progs) $(test_progs) $(test_objs) .depend *~
+	rm -f $(objs) $(prog) $(test_prog) $(prog_objs) $(test_objs) .depend *~
 
 dep:
 	$(CXX) -MM $(cxxflags) $(DEPFLAGS) $(all_srcs) > dep

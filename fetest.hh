@@ -1,3 +1,6 @@
+#ifndef FACTOR_ENCODER_CPPUNIT
+#define FACTOR_ENCODER_CPPUNIT
+
 #include "fe.hh"
 
 #include <cppunit/TestFixture.h>
@@ -17,5 +20,8 @@ class fetest : public CPPUNIT_NS :: TestFixture
         void addTest (void);
 
     private:
-        std::string private_string;
+        std::string *blaa;
 };
+
+#endif
+

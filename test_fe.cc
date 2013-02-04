@@ -1,13 +1,11 @@
-#include "fe.hh"
-#include "fetest.hh"
-
-// http://www.evocomp.de/tutorials/tutorium_cppunit/howto_tutorial_cppunit_en.html
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/TestResult.h>
 #include <cppunit/TestResultCollector.h>
 #include <cppunit/TestRunner.h>
 #include <cppunit/BriefTestProgressListener.h>
+
+// http://www.evocomp.de/tutorials/tutorium_cppunit/howto_tutorial_cppunit_en.html
 
 int main (int argc, char* argv[])
 {
