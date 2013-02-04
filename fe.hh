@@ -1,3 +1,5 @@
+#ifndef FACTOR_ENCODER
+
 #include <queue>
 #include <map>
 
@@ -30,3 +32,4 @@ int viterbi(const std::map<std::string, double> &vocab,
             const std::string &sentence,
             std::vector<std::string> &best_path);
 
+#endif
