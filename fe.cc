@@ -5,27 +5,32 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <map>
 #include <vector>
-#include <queue>
+
+#include "fe.hh"
 
 
-class Token {
-    public:
-        int source;
-        double cost;
-        Token(): source(-1), cost(std::numeric_limits<double>::max()) {};
-        Token(int src, double cst): source(src), cost(cst) {};
-        Token(const Token& orig) { this->source=orig.source; this->cost=orig.cost; };
-};
-
-// Note just changed > to < ..
-bool operator< (const Token& token1, const Token &token2)
+int read_vocab(const char* fname,
+               std::map<std::string, double> &vocab,
+               int &maxlen)
 {
-    return token1.cost < token2.cost;
+    std::ifstream vocabfile(fname);
+    if (!vocabfile) return -1;
+
+    std::string line, word;
+    double count;
+    while (getline(vocabfile, line)) {
+        std::stringstream ss(line);
+        ss >> count;
+        ss >> word;
+        vocab[word] = count;
+        maxlen = std::max(maxlen, int(word.length()));
+    }
+    vocabfile.close();
+
+    return vocab.size();
 }
 
-typedef std::priority_queue<Token> Node;
 
 
 int main(int argc, char* argv[]) {
@@ -35,26 +40,20 @@ int main(int argc, char* argv[]) {
         exit(0);
     }
 
-    std::ifstream vocabfile(argv[1]);
-    if (!vocabfile) exit(1);
 
-    std::cerr << "Reading vocabulary " << argv[1] << std::endl;
-    double count;
-    int maxlen = 0;
-    std::string line, word;
+    int maxlen;
     std::map<std::string, double> vocab;
-    while (getline(vocabfile, line)) {
-        std::stringstream ss(line);
-        ss >> count;
-        ss >> word;
-        vocab[word] = count;
-        maxlen = std::max(maxlen, int(word.length()));
+    std::cerr << "Reading vocabulary " << argv[1] << std::endl;
+    int retval = read_vocab(argv[1], vocab, maxlen);
+    if (retval < 0) {
+        std::cerr << "something went wrong reading vocabulary" << std::endl;
+        exit(0);
     }
-    vocabfile.close();
     std::cerr << "\t" << "size: " << vocab.size() << std::endl;
     std::cerr << "\t" << "maximum string length: " << maxlen << std::endl;
 
     std::cerr << "Segmenting corpus" << std::endl;
+    std::string line;
     std::vector<std::string> best_path;
     while (getline(std::cin, line)) {
 
