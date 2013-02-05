@@ -81,6 +81,7 @@ void viterbi(const std::map<std::string, double> &vocab,
 
     // Look up the best path
     int target = search.size()-1;
+    if (search[target].size() == 0) return;
     Token top = search[target].top();
     int source = top.source;
    
