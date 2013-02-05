@@ -10,6 +10,7 @@ class fetest : public CPPUNIT_NS :: TestFixture
 {
     CPPUNIT_TEST_SUITE (fetest);
     CPPUNIT_TEST (viterbiTest1);
+    CPPUNIT_TEST (viterbiTest2);
     CPPUNIT_TEST_SUITE_END ();
 
     public:
@@ -18,9 +19,9 @@ class fetest : public CPPUNIT_NS :: TestFixture
 
     protected:
         void viterbiTest1(void);
+        void viterbiTest2(void);
 
     private:
-        
 };
 
 #endif
