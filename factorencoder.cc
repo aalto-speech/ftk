@@ -49,10 +49,10 @@ int read_vocab(const char* fname,
 }
 
 
-int viterbi(const std::map<std::string, double> &vocab,
-            int maxlen,
-            const std::string &sentence,
-            std::vector<std::string> &best_path)
+void viterbi(const std::map<std::string, double> &vocab,
+             int maxlen,
+             const std::string &sentence,
+             std::vector<std::string> &best_path)
 {
     std::vector<Node> search(sentence.length());
     int start_pos = 0;
@@ -63,14 +63,15 @@ int viterbi(const std::map<std::string, double> &vocab,
 
         // Iterate all factors ending in this position
         for (int j=std::max(0, i-maxlen); j<=i; j++) {
+            
             start_pos = j;
             end_pos = i+1;
             len = end_pos-start_pos;
 
             if (vocab.find(sentence.substr(start_pos, len)) != vocab.end()) {
                 Token tok(j-1, vocab.at(sentence.substr(start_pos, len)));
-                if (i > 0 && search[j].size() > 0) {
-                    Token source_top = search[j].top();
+                if (j-1 >= 0 && search[j-1].size() > 0) {
+                    Token source_top = search[j-1].top();
                     tok.cost += source_top.cost;
                 }
                 search[i].push(tok);
@@ -82,14 +83,14 @@ int viterbi(const std::map<std::string, double> &vocab,
     int target = search.size()-1;
     Token top = search[target].top();
     int source = top.source;
-
+   
     while (true) {
         best_path.push_back(sentence.substr(source+1, target-source));
-        if (source < 0) break; 
+        if (source == -1) break;
         target = source;
         Token top = search[target].top();
         source = top.source;
     }
 
+    std::reverse(best_path.begin(), best_path.end());    
 }
-
