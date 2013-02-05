@@ -55,6 +55,7 @@ void viterbi(const std::map<std::string, double> &vocab,
              const std::string &sentence,
              std::vector<std::string> &best_path)
 {
+    if (sentence.length() == 0) return;
     std::vector<Node> search(sentence.length());
     int start_pos = 0;
     int end_pos = 0;
