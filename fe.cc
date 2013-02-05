@@ -34,9 +34,9 @@ int main(int argc, char* argv[]) {
         viterbi(vocab, maxlen, line, best_path);
 
         // Print out the best path
-        for (int i=best_path.size()-1; i>0; i--)
+        for (int i=0; i<best_path.size()-1; i++)
             std::cout << best_path[i] << " ";
-        std::cout << best_path[0] << std::endl;
+        std::cout << best_path[best_path.size()-1] << std::endl;
     }
 
     exit(1);
