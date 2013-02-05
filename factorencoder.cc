@@ -36,6 +36,7 @@ int read_vocab(const char* fname,
 
     std::string line, word;
     double count;
+    maxlen = -1;
     while (getline(vocabfile, line)) {
         std::stringstream ss(line);
         ss >> count;
