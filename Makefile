@@ -19,7 +19,7 @@ test_objs = $(test_srcs:.cc=.o)
 
 .SUFFIXES:
 
-default: $(progs)
+default: $(progs) $(test_progs)
 
 %.o: %.cc
 	$(CXX) -c $(cxxflags) $< -o $@
