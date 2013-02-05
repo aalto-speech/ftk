@@ -1,7 +1,7 @@
 #ifndef FACTOR_ENCODER_CPPUNIT
 #define FACTOR_ENCODER_CPPUNIT
 
-#include "fe.hh"
+#include "factorencoder.hh"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
