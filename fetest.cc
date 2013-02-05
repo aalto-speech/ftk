@@ -58,3 +58,16 @@ void fetest :: viterbiTest3 (void)
     viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
+
+// Empty string
+void fetest :: viterbiTest4 (void)
+{
+    std::map<std::string, double> vocab;
+    std::string str1("a");
+    vocab[str1] = -1.0;
+    std::string sentence("");
+    std::vector<std::string> best_path;
+    int maxlen = 1;
+    viterbi(vocab, maxlen, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+}
