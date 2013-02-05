@@ -9,19 +9,18 @@
 class fetest : public CPPUNIT_NS :: TestFixture
 {
     CPPUNIT_TEST_SUITE (fetest);
-    CPPUNIT_TEST (addTest);
+    CPPUNIT_TEST (viterbiTest1);
     CPPUNIT_TEST_SUITE_END ();
 
     public:
-        void setUp (void);
-        void tearDown (void);
+        void setUp(void);
+        void tearDown(void);
 
     protected:
-        void addTest (void);
+        void viterbiTest1(void);
 
     private:
-        std::string *blaa;
+        
 };
 
 #endif
-
