@@ -71,3 +71,17 @@ void fetest :: viterbiTest4 (void)
     viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
+
+// One character sentence
+void fetest :: viterbiTest5 (void)
+{
+    std::map<std::string, double> vocab;
+    std::string str1("a");
+    vocab[str1] = -1.0;
+    std::string sentence("a");
+    std::vector<std::string> best_path;
+    int maxlen = 1;
+    viterbi(vocab, maxlen, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
+}
