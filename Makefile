@@ -1,9 +1,9 @@
 
-cxxflags = -O2 -march=native -g
+cxxflags = -O3 -g
 
 ##################################################
 
-progs = fe
+progs = fe filefe
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
 srcs = factorencoder.cc
