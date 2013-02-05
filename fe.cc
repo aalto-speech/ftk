@@ -33,6 +33,11 @@ int main(int argc, char* argv[]) {
         std::vector<std::string> best_path;
         viterbi(vocab, maxlen, line, best_path);
 
+        if (best_path.size() == 0) {
+            std::cerr << "warning, no segmentation for line: " << line << std::endl;
+            continue;
+        }
+
         // Print out the best path
         for (int i=0; i<best_path.size()-1; i++)
             std::cout << best_path[i] << " ";
