@@ -1,11 +1,12 @@
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
-#include <fstream>
+#include <cstring>
 #include <iostream>
-#include <sstream>
 #include <vector>
 
 #include "factorencoder.hh"
+#include "io.hh"
 
 
 int main(int argc, char* argv[]) {
@@ -28,12 +29,21 @@ int main(int argc, char* argv[]) {
 
     std::cerr << "Segmenting corpus" << std::endl;
     std::string line;
-    std::ifstream infile(argv[2]);
-    if (!infile) exit(0);
-    std::ofstream outfile(argv[3]);
-    if (!outfile) exit(0);
-    while (getline(infile, line)) {
+    io::Stream infile, outfile;
+    try {
+        infile.open(argv[2], "r");   
+        outfile.open(argv[3], "w");
+    }
+    catch (io::Stream::OpenError oe) {
+        std::cerr << "Something went wrong opening the files." << std::endl;
+        exit(0);
+    }
 
+    char linebuffer[1024];    
+    while (fgets(linebuffer, 1024 , infile.file) != NULL) {
+
+        linebuffer[strlen(linebuffer)-1] = '\0';
+        std::string line(linebuffer);
         std::vector<std::string> best_path;
         viterbi(vocab, maxlen, line, best_path);
 
@@ -43,9 +53,12 @@ int main(int argc, char* argv[]) {
         }
 
         // Print out the best path
-        for (int i=0; i<best_path.size()-1; i++)
-            outfile << best_path[i] << " ";
-        outfile << best_path[best_path.size()-1] << std::endl;
+        for (int i=0; i<best_path.size()-1; i++) {
+            fwrite(best_path[i].c_str(), 1, best_path[i].length(), outfile.file);
+            fwrite(" ", 1, 1, outfile.file);
+        }
+        fwrite(best_path[best_path.size()-1].c_str(), 1, best_path[best_path.size()-1].length(), outfile.file);
+        fwrite("\n", 1, 1, outfile.file);
     }
 
     exit(1);
