@@ -6,7 +6,7 @@ cxxflags = -O3 -g
 progs = fe filefe
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
-srcs = factorencoder.cc
+srcs = factorencoder.cc io.cc
 objs = $(srcs:.cc=.o)
 
 test_progs = test_fe
