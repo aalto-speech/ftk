@@ -61,8 +61,8 @@ int main(int argc, char* argv[]) {
         fwrite("\n", 1, 1, outfile.file);
     }
 
-    infile.close()
-    outfile.close()
+    infile.close();
+    outfile.close();
     
     exit(1);
 }
