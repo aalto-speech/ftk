@@ -39,8 +39,8 @@ int main(int argc, char* argv[]) {
         exit(0);
     }
 
-    char linebuffer[1024];    
-    while (fgets(linebuffer, 1024 , infile.file) != NULL) {
+    char linebuffer[8192];    
+    while (fgets(linebuffer, 8192 , infile.file) != NULL) {
 
         linebuffer[strlen(linebuffer)-1] = '\0';
         std::string line(linebuffer);
@@ -61,6 +61,9 @@ int main(int argc, char* argv[]) {
         fwrite("\n", 1, 1, outfile.file);
     }
 
+    infile.close()
+    outfile.close()
+    
     exit(1);
 }
 
