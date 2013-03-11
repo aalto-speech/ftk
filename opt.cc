@@ -17,30 +17,30 @@ int read_words(const char* fname,
 
     std::string line, word;
     long count;
-    maxlen = -1;
     while (getline(vocabfile, line)) {
         std::stringstream ss(line);
         ss >> count;
         ss >> word;
-        vocab[word] = count;
+        words[word] = count;
     }
     vocabfile.close();
 
-    return vocab.size();
+    return words.size();
 }
 
 
 void resegment_words(const std::map<std::string, long> &words,
-                       const std::map<std::string, long> &vocab,
-                       std::map<std::string, long> &new_freqs)
+                       const std::map<std::string, double> &vocab,
+                       std::map<std::string, double> &new_freqs)
 {
-    for(std::map<std::string, long>::iterator iter = words.begin(); iter != words.end(); ++iter) {
+    int maxlen;
+    for(std::map<std::string, long>::const_iterator iter = words.begin(); iter != words.end(); ++iter) {
 
         std::vector<std::string> best_path;
         viterbi(vocab, maxlen, iter->first, best_path);
 
         if (best_path.size() == 0) {
-            std::cerr << "warning, no segmentation for word: " << line << std::endl;
+            std::cerr << "warning, no segmentation for word: " << iter->first << std::endl;
             exit(0);
         }
 
@@ -52,7 +52,7 @@ void resegment_words(const std::map<std::string, long> &words,
 }
 
 
-void
+
 
 
 
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 
     while (true) {
 
-        std::map<std::string, long> new_morph_freqs;
+        std::map<std::string, double> new_morph_freqs;
         resegment_words(words, vocab, new_morph_freqs);
 
 
