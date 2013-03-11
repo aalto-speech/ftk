@@ -28,8 +28,8 @@ typedef std::priority_queue<Token> Node;
 
 
 int read_vocab(const char* fname,
-               std::map<std::string, double> &vocab,
-               int &maxlen)
+                 std::map<std::string, double> &vocab,
+                 int &maxlen)
 {
     std::ifstream vocabfile(fname);
     if (!vocabfile) return -1;
@@ -51,9 +51,9 @@ int read_vocab(const char* fname,
 
 
 void viterbi(const std::map<std::string, double> &vocab,
-             int maxlen,
-             const std::string &sentence,
-             std::vector<std::string> &best_path)
+               int maxlen,
+               const std::string &sentence,
+               std::vector<std::string> &best_path)
 {
     if (sentence.length() == 0) return;
     std::vector<Node> search(sentence.length());
@@ -86,7 +86,7 @@ void viterbi(const std::map<std::string, double> &vocab,
     if (search[target].size() == 0) return;
     Token top = search[target].top();
     int source = top.source;
-   
+
     while (true) {
         best_path.push_back(sentence.substr(source+1, target-source));
         if (source == -1) break;
@@ -95,5 +95,5 @@ void viterbi(const std::map<std::string, double> &vocab,
         source = top.source;
     }
 
-    std::reverse(best_path.begin(), best_path.end());    
+    std::reverse(best_path.begin(), best_path.end());
 }
