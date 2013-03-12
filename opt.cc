@@ -82,8 +82,8 @@ void freqs_to_logprobs(std::map<std::string, double> &vocab,
 }
 
 
-void drop(std::map<std::string, double> &vocab,
-           double limit)
+void cutoff(std::map<std::string, double> &vocab,
+             double limit)
 {
     for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter)
         if (vocab[iter->first] <= limit) vocab.erase(iter->first);
@@ -112,22 +112,26 @@ int main(int argc, char* argv[]) {
     std::map<std::string, long> words;
     read_words(argv[2], words);
 
-    std::cerr << "Segmenting words" << std::endl;
+    std::cerr << "Iterating" << std::endl;
     int idx = 0;
-    int dropvalues [10] = { 0, 25, 50, 75, 100, 100, 125, 125, 150, 150 };
+    const int niters = 4;
+//    int cutoffs[niters] = { 0, 20, 40, 60, 80, 90, 100, 110, 120, 130, 140, 150 };
+    int cutoffs[niters] = { 0, 100, 200, 0 };
+    std::cerr << "\t\t\t" << "vocabulary size: " << vocab.size() << std::endl;
     while (true) {
         std::map<std::string, double> new_morph_freqs;
         resegment_words(words, vocab, new_morph_freqs, maxlen);
         double densum = get_sum(new_morph_freqs);
         double cost = get_cost(new_morph_freqs, densum);
-        std::cout << "cost: " << cost << "\t" << "vocabulary size: " << vocab.size() << std::endl;
+        std::cerr << "cost: " << cost << std::endl;
         vocab.swap(new_morph_freqs);
         new_morph_freqs.clear();
 
-        drop(vocab, dropvalues[idx]);
+        cutoff(vocab, cutoffs[idx]);
+        std::cerr << "\tcutoff: " << cutoffs[idx] << "\t" << "vocabulary size: " << vocab.size() << std::endl;
         densum = get_sum(vocab);
         freqs_to_logprobs(vocab, densum);
-        idx++; if (idx == 10) break;
+        idx++; if (idx == niters) break;
     }
 
     exit(1);
