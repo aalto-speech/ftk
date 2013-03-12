@@ -90,6 +90,20 @@ void cutoff(std::map<std::string, double> &vocab,
 }
 
 
+bool ascending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second < j.second); }
+
+void sort_map(std::map<std::string, double> &vocab,
+               std::vector<std::pair<std::string, double> > &sorted_vocab)
+{
+    sorted_vocab.clear();
+    for (std::map<std::string,double>::const_iterator it = vocab.begin(); it != vocab.end(); it++) {
+        std::pair<std::string, double> curr_pair(it->first, it->second);
+        sorted_vocab.push_back(curr_pair);
+    }
+    std::sort(sorted_vocab.begin(), sorted_vocab.end(), ascending_sort);
+}
+
+
 int main(int argc, char* argv[]) {
 
     if (argc != 3) {
@@ -112,13 +126,13 @@ int main(int argc, char* argv[]) {
     std::map<std::string, long> words;
     read_words(argv[2], words);
 
-    std::cerr << "Iterating" << std::endl;
-    int idx = 0;
-    const int niters = 4;
-//    int cutoffs[niters] = { 0, 20, 40, 60, 80, 90, 100, 110, 120, 130, 140, 150 };
-    int cutoffs[niters] = { 0, 100, 200, 0 };
+
     std::cerr << "\t\t\t" << "vocabulary size: " << vocab.size() << std::endl;
-    while (true) {
+
+    std::cerr << "Iterating" << std::endl;
+    const int n_cutoff_iters = 3;
+    int cutoffs[n_cutoff_iters] = { 0, 25, 50 };
+    for (int i=0; i<n_cutoff_iters; i++) {
         std::map<std::string, double> new_morph_freqs;
         resegment_words(words, vocab, new_morph_freqs, maxlen);
         double densum = get_sum(new_morph_freqs);
@@ -127,11 +141,10 @@ int main(int argc, char* argv[]) {
         vocab.swap(new_morph_freqs);
         new_morph_freqs.clear();
 
-        cutoff(vocab, cutoffs[idx]);
-        std::cerr << "\tcutoff: " << cutoffs[idx] << "\t" << "vocabulary size: " << vocab.size() << std::endl;
+        cutoff(vocab, cutoffs[i]);
+        std::cerr << "\tcutoff: " << cutoffs[i] << "\t" << "vocabulary size: " << vocab.size() << std::endl;
         densum = get_sum(vocab);
         freqs_to_logprobs(vocab, densum);
-        idx++; if (idx == niters) break;
     }
 
     exit(1);
