@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <cmath>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -29,11 +30,11 @@ int read_words(const char* fname,
 }
 
 
-void resegment_words(const std::map<std::string, long> &words,
-                       const std::map<std::string, double> &vocab,
-                       std::map<std::string, double> &new_freqs)
+double resegment_words(const std::map<std::string, long> &words,
+                          const std::map<std::string, double> &vocab,
+                          std::map<std::string, double> &new_freqs,
+                          const int maxlen)
 {
-    int maxlen;
     for(std::map<std::string, long>::const_iterator iter = words.begin(); iter != words.end(); ++iter) {
 
         std::vector<std::string> best_path;
@@ -46,19 +47,33 @@ void resegment_words(const std::map<std::string, long> &words,
 
         // Update statistics
         for (int i=0; i<best_path.size(); i++)
-            new_freqs[best_path[i]] += iter->second;
-
+            new_freqs[best_path[i]] += double(iter->second);
     }
+
+    double total = 0.0;
+    for(std::map<std::string, double>::const_iterator iter = new_freqs.begin(); iter != new_freqs.end(); ++iter) {
+        total += iter->second;
+    }
+
+    return total;
 }
 
 
-
-
+double get_cost(const std::map<std::string, double> &vocab,
+                  double densum)
+{
+    double total = 0.0;
+    densum = log2(densum);
+    for(std::map<std::string, double>::const_iterator iter = vocab.begin(); iter != vocab.end(); ++iter) {
+        total += iter->second * (log2(iter->second)-densum);
+    }
+    return total;
+}
 
 
 int main(int argc, char* argv[]) {
 
-    if (argc != 2) {
+    if (argc != 3) {
         std::cerr << "usage: " << argv[0] << " <vocabulary> <words>" << std::endl;
         exit(0);
     }
@@ -78,17 +93,13 @@ int main(int argc, char* argv[]) {
     std::map<std::string, long> words;
     read_words(argv[2], words);
 
-
-
+    std::cerr << "Segmenting words" << std::endl;
     while (true) {
-
         std::map<std::string, double> new_morph_freqs;
-        resegment_words(words, vocab, new_morph_freqs);
-
-
-
-
-
+        double densum = resegment_words(words, vocab, new_morph_freqs, maxlen);
+        double cost = get_cost(new_morph_freqs, densum);
+        std::cout << "initial cost: " << cost << std::endl;
+        break;
     }
 
     exit(1);

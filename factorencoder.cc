@@ -65,7 +65,7 @@ void viterbi(const std::map<std::string, double> &vocab,
 
         // Iterate all factors ending in this position
         for (int j=std::max(0, i-maxlen); j<=i; j++) {
-            
+
             start_pos = j;
             end_pos = i+1;
             len = end_pos-start_pos;
