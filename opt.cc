@@ -70,25 +70,24 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
         }
 
         // Update statistics
+        std::map<std::string, double> best_path_types;
         for (int i=0; i<best_path.size(); i++) {
             new_freqs[best_path[i]] += double(iter->second);
+            best_path_types[best_path[i]] = 0.0;
         }
 
         // Hypothesize what the segmentation would be if some subword didn't exist
-        for (std::map<std::string, std::map<std::string, double> >::iterator iter = diffs.begin(); iter != diffs.end(); ++iter) {
-            for (int i=0; i<best_path.size(); i++) {
-                if (best_path[i] == iter->first) {
-                    double stored_value = hypo_vocab.at(best_path[i]);
-                    hypo_vocab.erase(best_path[i]);
-                    std::vector<std::string> hypo_path;
-                    viterbi(hypo_vocab, maxlen, iter->first, hypo_path);
-                    for (int ib=0; ib<best_path.size(); ib++)
-                        diffs[iter->first][best_path[ib]] -= 1;
-                    for (int ih=0; ih<hypo_path.size(); ih++)
-                        diffs[iter->first][hypo_path[ih]] += 1;
-                    hypo_vocab[best_path[i]] = stored_value;
-                    break;
-                }
+        for (std::map<std::string, double>::iterator iter = best_path_types.begin(); iter != best_path_types.end(); ++iter) {
+            if (diffs.find(iter->first) != diffs.end()) {
+                double stored_value = hypo_vocab.at(iter->first);
+                hypo_vocab.erase(iter->first);
+                std::vector<std::string> hypo_path;
+                viterbi(hypo_vocab, maxlen, iter->first, hypo_path);
+                for (int ib=0; ib<best_path.size(); ib++)
+                    diffs[iter->first][best_path[ib]] -= 1.0;
+                for (int ih=0; ih<hypo_path.size(); ih++)
+                    diffs[iter->first][hypo_path[ih]] += 1.0;
+                hypo_vocab[iter->first] = stored_value;
             }
         }
     }
@@ -197,13 +196,15 @@ int main(int argc, char* argv[]) {
     resegment_words(words, vocab, new_morph_freqs, maxlen);
     sort_vocab(new_morph_freqs, sorted_vocab);
     std::map<std::string, std::map<std::string, double> > diffs;
-    for (int i=0; i<100; i++) {
-        std::pair<std::string, double> &subword = sorted_vocab[i];
+    for (int i=0; i<sorted_vocab.size(); i++) {
+//    for (int i=0; i<1000; i++) {
+    std::pair<std::string, double> &subword = sorted_vocab[i];
 //        std::cout << subword.first << "\t" << subword.second << std::endl;
         std::map<std::string, double> emptymap;
         diffs[subword.first] = emptymap;
     }
 
+    new_morph_freqs.clear();
     resegment_words_w_diff(words, vocab, new_morph_freqs, diffs, maxlen);
     double densum = get_sum(new_morph_freqs);
     double cost = get_cost(new_morph_freqs, densum);
@@ -214,13 +215,11 @@ int main(int argc, char* argv[]) {
 
         double hypo_densum = get_sum(new_morph_freqs);
         double hypo_cost = get_cost(new_morph_freqs, hypo_densum);
-        std::cerr << "word: " << iter->first << "\t" << "change in cost after removal: " << hypo_cost-cost << std::endl;
+        std::cout << "word: " << iter->first << "\t" << "change in cost after removal: " << hypo_cost-cost << std::endl;
 
         for (std::map<std::string, double>::iterator iter2 = iter->second.begin(); iter2 != iter->second.end(); ++iter2)
             new_morph_freqs[iter2->first] -= iter2->second;
     }
-
-
 
     exit(1);
 }
