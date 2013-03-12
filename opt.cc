@@ -30,10 +30,10 @@ int read_words(const char* fname,
 }
 
 
-double resegment_words(const std::map<std::string, long> &words,
-                          const std::map<std::string, double> &vocab,
-                          std::map<std::string, double> &new_freqs,
-                          const int maxlen)
+void resegment_words(const std::map<std::string, long> &words,
+                        const std::map<std::string, double> &vocab,
+                        std::map<std::string, double> &new_freqs,
+                        const int maxlen)
 {
     for(std::map<std::string, long>::const_iterator iter = words.begin(); iter != words.end(); ++iter) {
 
@@ -49,12 +49,15 @@ double resegment_words(const std::map<std::string, long> &words,
         for (int i=0; i<best_path.size(); i++)
             new_freqs[best_path[i]] += double(iter->second);
     }
+}
 
+
+double get_sum(const std::map<std::string, double> &vocab)
+{
     double total = 0.0;
-    for(std::map<std::string, double>::const_iterator iter = new_freqs.begin(); iter != new_freqs.end(); ++iter) {
+    for(std::map<std::string, double>::const_iterator iter = vocab.begin(); iter != vocab.end(); ++iter) {
         total += iter->second;
     }
-
     return total;
 }
 
@@ -68,6 +71,22 @@ double get_cost(const std::map<std::string, double> &vocab,
         total += iter->second * (log2(iter->second)-densum);
     }
     return total;
+}
+
+
+void freqs_to_logprobs(std::map<std::string, double> &vocab,
+                          double densum)
+{
+    for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter)
+        vocab[iter->first] = (log2(iter->second)-densum);
+}
+
+
+void drop(std::map<std::string, double> &vocab,
+           double limit)
+{
+    for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter)
+        if (vocab[iter->first] <= limit) vocab.erase(iter->first);
 }
 
 
@@ -94,12 +113,21 @@ int main(int argc, char* argv[]) {
     read_words(argv[2], words);
 
     std::cerr << "Segmenting words" << std::endl;
+    int idx = 0;
+    int dropvalues [10] = { 0, 25, 50, 75, 100, 100, 125, 125, 150, 150 };
     while (true) {
         std::map<std::string, double> new_morph_freqs;
-        double densum = resegment_words(words, vocab, new_morph_freqs, maxlen);
+        resegment_words(words, vocab, new_morph_freqs, maxlen);
+        double densum = get_sum(new_morph_freqs);
         double cost = get_cost(new_morph_freqs, densum);
-        std::cout << "initial cost: " << cost << std::endl;
-        break;
+        std::cout << "cost: " << cost << "\t" << "vocabulary size: " << vocab.size() << std::endl;
+        vocab.swap(new_morph_freqs);
+        new_morph_freqs.clear();
+
+        drop(vocab, dropvalues[idx]);
+        densum = get_sum(vocab);
+        freqs_to_logprobs(vocab, densum);
+        idx++; if (idx == 10) break;
     }
 
     exit(1);
