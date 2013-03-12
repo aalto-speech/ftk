@@ -77,7 +77,7 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
         // Hypothesize what the segmentation would be if some subword didn't exist
         for (std::map<std::string, std::map<std::string, double> >::iterator iter = diffs.begin(); iter != diffs.end(); ++iter) {
             for (int i=0; i<best_path.size(); i++) {
-                if (diffs.find(iter->first) != diffs.end()) {
+                if (best_path[i] == iter->first) {
                     double stored_value = hypo_vocab.at(best_path[i]);
                     hypo_vocab.erase(best_path[i]);
                     std::vector<std::string> hypo_path;
@@ -176,8 +176,8 @@ int main(int argc, char* argv[]) {
     std::cerr << "\t\t\t" << "vocabulary size: " << vocab.size() << std::endl;
 
     std::cerr << "Iterating" << std::endl;
-    const int n_cutoff_iters = 4;
-    int cutoffs[n_cutoff_iters] = { 0, 25, 50, 50 };
+    const int n_cutoff_iters = 2;
+    int cutoffs[n_cutoff_iters] = { 0, 50 };
     for (int i=0; i<n_cutoff_iters; i++) {
         resegment_words(words, vocab, new_morph_freqs, maxlen);
         double densum = get_sum(new_morph_freqs);
@@ -196,11 +196,31 @@ int main(int argc, char* argv[]) {
     std::vector<std::pair<std::string, double> > sorted_vocab;
     resegment_words(words, vocab, new_morph_freqs, maxlen);
     sort_vocab(new_morph_freqs, sorted_vocab);
+    std::map<std::string, std::map<std::string, double> > diffs;
     for (int i=0; i<100; i++) {
         std::pair<std::string, double> &subword = sorted_vocab[i];
-        std::cout << subword.first << "\t" << subword.second << std::endl;
-
+//        std::cout << subword.first << "\t" << subword.second << std::endl;
+        std::map<std::string, double> emptymap;
+        diffs[subword.first] = emptymap;
     }
+
+    resegment_words_w_diff(words, vocab, new_morph_freqs, diffs, maxlen);
+    double densum = get_sum(new_morph_freqs);
+    double cost = get_cost(new_morph_freqs, densum);
+    std::cerr << "cost: " << cost << std::endl;
+    for (std::map<std::string, std::map<std::string, double> >::iterator iter = diffs.begin(); iter != diffs.end(); ++iter) {
+        for (std::map<std::string, double>::iterator iter2 = iter->second.begin(); iter2 != iter->second.end(); ++iter2)
+            new_morph_freqs[iter2->first] += iter2->second;
+
+        double hypo_densum = get_sum(new_morph_freqs);
+        double hypo_cost = get_cost(new_morph_freqs, hypo_densum);
+        std::cerr << "word: " << iter->first << "\t" << "change in cost after removal: " << hypo_cost-cost << std::endl;
+
+        for (std::map<std::string, double>::iterator iter2 = iter->second.begin(); iter2 != iter->second.end(); ++iter2)
+            new_morph_freqs[iter2->first] -= iter2->second;
+    }
+
+
 
     exit(1);
 }
