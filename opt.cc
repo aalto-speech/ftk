@@ -84,9 +84,9 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
                 std::vector<std::string> hypo_path;
                 viterbi(hypo_vocab, maxlen, hypoiter->first, hypo_path, false);
                 for (int ib=0; ib<best_path.size(); ib++)
-                    diffs[hypoiter->first][best_path[ib]] -= 1.0;
+                    diffs[hypoiter->first][best_path[ib]] -= double(iter->second);
                 for (int ih=0; ih<hypo_path.size(); ih++)
-                    diffs[hypoiter->first][hypo_path[ih]] += 1.0;
+                    diffs[hypoiter->first][hypo_path[ih]] += double(iter->second);
                 hypo_vocab[hypoiter->first] = stored_value;
             }
         }
@@ -281,7 +281,7 @@ int main(int argc, char* argv[]) {
 
 
     int itern = 1;
-    int n_candidates_per_iter = 1000;
+    int n_candidates_per_iter = 5000;
     double threshold = 0.0;
     int min_removals_per_iter = 50;
 
