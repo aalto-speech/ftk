@@ -80,7 +80,6 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
         // Hypothesize what the segmentation would be if some subword didn't exist
         for (std::map<std::string, double>::iterator hypoiter = best_path_types.begin(); hypoiter != best_path_types.end(); ++hypoiter) {
             if (diffs.find(hypoiter->first) != diffs.end()) {
-                std::cout << "hypo for word: " << iter->first << std::endl;
                 double stored_value = hypo_vocab.at(hypoiter->first);
                 hypo_vocab.erase(hypoiter->first);
                 std::vector<std::string> hypo_path;
@@ -130,11 +129,15 @@ void freqs_to_logprobs(std::map<std::string, double> &vocab,
 }
 
 
-void cutoff(std::map<std::string, double> &vocab,
-             double limit)
+int cutoff(std::map<std::string, double> &vocab,
+            double limit)
 {
-    for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter)
+    int nremovals = 0;
+    for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter) {
         if (vocab[iter->first] <= limit) vocab.erase(iter->first);
+        nremovals += 1;
+    }
+    return nremovals;
 }
 
 
@@ -242,10 +245,17 @@ void remove_subword(const std::map<std::string, long> &words,
 
 int main(int argc, char* argv[]) {
 
-    if (argc != 3) {
-        std::cerr << "usage: " << argv[0] << " <vocabulary> <words>" << std::endl;
+    if (argc < 9) {
+        std::cerr << "usage: " << argv[0] << " <vocabulary> <words> <cutoff> <#candidates> <threshold> <threshold_decrease> <minremovals> <minvocabsize>" << std::endl;
         exit(0);
     }
+
+    int cutoff_value = atoi(argv[3]);
+    int n_candidates_per_iter = atoi(argv[4]);
+    double threshold = atof(argv[5]);
+    double threshold_decrease = atof(argv[6]);
+    int min_removals_per_iter = atoi(argv[7]);
+    int min_vocab_size = atoi(argv[8]);
 
     int maxlen;
     std::map<std::string, double> vocab;
@@ -268,30 +278,22 @@ int main(int argc, char* argv[]) {
 
     std::cerr << "\t\t\t" << "vocabulary size: " << vocab.size() << std::endl;
 
-    std::cerr << "Initial cutoffs" << std::endl;
-    const int n_cutoff_iters = 1;
-    int cutoffs[n_cutoff_iters] = { 50 };
-    for (int i=0; i<n_cutoff_iters; i++) {
-        resegment_words(words, vocab, new_morph_freqs, maxlen);
-        double densum = get_sum(new_morph_freqs);
-        double cost = get_cost(new_morph_freqs, densum);
-        std::cerr << "cost: " << cost << std::endl;
-        vocab.swap(new_morph_freqs);
-        new_morph_freqs.clear();
+    std::cerr << "Initial cutoff" << std::endl;
+    resegment_words(words, vocab, new_morph_freqs, maxlen);
+    double densum = get_sum(new_morph_freqs);
+    double cost = get_cost(new_morph_freqs, densum);
+    std::cerr << "cost: " << cost << std::endl;
+    vocab.swap(new_morph_freqs);
+    new_morph_freqs.clear();
 
-        cutoff(vocab, cutoffs[i]);
-        std::cerr << "\tcutoff: " << cutoffs[i] << "\t" << "vocabulary size: " << vocab.size() << std::endl;
-        densum = get_sum(vocab);
-        freqs_to_logprobs(vocab, densum);
-    }
+    cutoff(vocab, cutoff_value);
+    std::cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << vocab.size() << std::endl;
+    densum = get_sum(vocab);
+    freqs_to_logprobs(vocab, densum);
 
-
-    int itern = 1;
-    int n_candidates_per_iter = 2;
-    double threshold = -100000.0;
-    int min_removals_per_iter = 50;
 
     std::cerr << "Removing subwords one by one" << std::endl;
+    int itern = 1;
     while (true) {
 
         std::cerr << "iteration " << itern << std::endl;
@@ -329,7 +331,10 @@ int main(int argc, char* argv[]) {
                 n_removals++;
             }
         }
+
+        int n_cutoff = cutoff(vocab, cutoff_value);
         std::cerr << "subwords removed in this iteration: " << n_removals << std::endl;
+        std::cerr << "subwords removed with cutoff this iteration: " << n_cutoff << std::endl;
         std::cerr << "current vocabulary size: " << vocab.size() << std::endl;
         std::cerr << "likelihood after the removals: " << curr_cost << std::endl;
 
@@ -342,12 +347,17 @@ int main(int argc, char* argv[]) {
         write_vocab(freqsfname.str().c_str(), freqs);
 
         itern++;
+        threshold -= threshold_decrease;
 
         if (n_removals < min_removals_per_iter) {
-            std::cerr << "stopping. " << std::endl;
+            std::cerr << "stopping by min_removals_per_iter." << std::endl;
             break;
         }
 
+        if (vocab.size() <= min_vocab_size) {
+            std::cerr << "stopping by min_vocab_size." << std::endl;
+            break;
+        }
     }
 
     exit(1);
