@@ -59,6 +59,7 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
                                 const int maxlen)
 {
     std::map<std::string, double> hypo_vocab = vocab;
+    new_freqs.clear();
     for (std::map<std::string, long>::const_iterator iter = words.begin(); iter != words.end(); ++iter) {
 
         std::vector<std::string> best_path;
@@ -79,14 +80,16 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
         // Hypothesize what the segmentation would be if some subword didn't exist
         for (std::map<std::string, double>::iterator hypoiter = best_path_types.begin(); hypoiter != best_path_types.end(); ++hypoiter) {
             if (diffs.find(hypoiter->first) != diffs.end()) {
+                std::cout << "hypo for word: " << iter->first << std::endl;
                 double stored_value = hypo_vocab.at(hypoiter->first);
                 hypo_vocab.erase(hypoiter->first);
                 std::vector<std::string> hypo_path;
-                viterbi(hypo_vocab, maxlen, hypoiter->first, hypo_path, false);
+                viterbi(hypo_vocab, maxlen, iter->first, hypo_path, false);
                 for (int ib=0; ib<best_path.size(); ib++)
                     diffs[hypoiter->first][best_path[ib]] -= double(iter->second);
                 for (int ih=0; ih<hypo_path.size(); ih++)
                     diffs[hypoiter->first][hypo_path[ih]] += double(iter->second);
+                diffs[hypoiter->first].erase(hypoiter->first);
                 hypo_vocab[hypoiter->first] = stored_value;
             }
         }
@@ -174,8 +177,10 @@ void rank_removal_candidates(const std::map<std::string, long> &words,
     double cost = get_cost(new_morph_freqs, densum);
 
     for (std::map<std::string, std::map<std::string, double> >::iterator iter = diffs.begin(); iter != diffs.end(); ++iter) {
+        double stored_value = new_morph_freqs.at(iter->first);
         for (std::map<std::string, double>::iterator diffiter = iter->second.begin(); diffiter != iter->second.end(); ++diffiter)
             new_morph_freqs[diffiter->first] += diffiter->second;
+        new_morph_freqs.erase(iter->first);
 
         double hypo_densum = get_sum(new_morph_freqs);
         double hypo_cost = get_cost(new_morph_freqs, hypo_densum);
@@ -184,6 +189,7 @@ void rank_removal_candidates(const std::map<std::string, long> &words,
 
         for (std::map<std::string, double>::iterator diffiter = iter->second.begin(); diffiter != iter->second.end(); ++diffiter)
             new_morph_freqs[diffiter->first] -= diffiter->second;
+        new_morph_freqs[iter->first] = stored_value;
     }
     std::sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
 }
@@ -201,7 +207,7 @@ void remove_subword(const std::map<std::string, long> &words,
 
     for(std::map<std::string, long>::const_iterator iter = words.begin(); iter != words.end(); ++iter) {
 
-        // Is this too slow?
+        // FIXME: Is this too slow?
         if (iter->first.find(subword) != std::string::npos) {
 
             std::vector<std::string> best_path;
@@ -281,8 +287,8 @@ int main(int argc, char* argv[]) {
 
 
     int itern = 1;
-    int n_candidates_per_iter = 5000;
-    double threshold = 0.0;
+    int n_candidates_per_iter = 2;
+    double threshold = -100000.0;
     int min_removals_per_iter = 50;
 
     std::cerr << "Removing subwords one by one" << std::endl;
@@ -294,6 +300,7 @@ int main(int argc, char* argv[]) {
         std::map<std::string, std::map<std::string, double> > diffs;
         init_removal_candidates(n_candidates_per_iter, maxlen, words, vocab, diffs);
 
+        std::cerr << "ranking candidate subwords" << std::endl;
         std::map<std::string, double> freqs;
         std::vector<std::pair<std::string, double> > removal_scores;
         rank_removal_candidates(words, vocab, diffs, freqs, maxlen, removal_scores);
@@ -312,7 +319,7 @@ int main(int argc, char* argv[]) {
             remove_subword(words, vocab, maxlen, removal_scores[i].first, hypo_freqs);
             double hypo_densum = get_sum(hypo_freqs);
             double hypo_cost = get_cost(hypo_freqs, hypo_densum);
-            if (hypo_cost-curr_cost > 0) {
+            if (hypo_cost-curr_cost > threshold) {
                 std::cout << "removed subword: " << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost << std::endl;
                 curr_densum = hypo_densum;
                 curr_cost = hypo_cost;
@@ -342,7 +349,6 @@ int main(int argc, char* argv[]) {
         }
 
     }
-
 
     exit(1);
 }
