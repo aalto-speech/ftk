@@ -146,7 +146,7 @@ void init_removal_candidates(int &n_candidates,
     resegment_words(words, vocab, new_morph_freqs, maxlen);
 
     std::vector<std::pair<std::string, double> > sorted_vocab;
-    sort_vocab(new_morph_freqs, sorted_vocab);
+    sort_vocab(new_morph_freqs, sorted_vocab, false);
 
     n_candidates = std::min(n_candidates, (int)vocab.size());
     for (int i=0; i<n_candidates; i++) {
@@ -157,7 +157,7 @@ void init_removal_candidates(int &n_candidates,
 }
 
 
-bool descending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second > j.second); }
+bool rank_desc_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second > j.second); }
 
 // Perform each of the removals (independent of others in the list) to get
 // initial order for the removals
@@ -184,7 +184,7 @@ void rank_removal_candidates(const std::map<std::string, long> &words,
         for (std::map<std::string, double>::iterator diffiter = iter->second.begin(); diffiter != iter->second.end(); ++diffiter)
             new_morph_freqs[diffiter->first] -= diffiter->second;
     }
-    std::sort(removal_scores.begin(), removal_scores.end(), descending_sort);
+    std::sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
 }
 
 
@@ -226,6 +226,10 @@ void remove_subword(const std::map<std::string, long> &words,
 
         }
     }
+
+    new_freqs.erase(subword);
+    for(std::map<std::string, double>::iterator iter = new_freqs.begin(); iter != new_freqs.end(); ++iter)
+        if (iter->second == 0.0) new_freqs.erase(iter->first);
 }
 
 
@@ -276,7 +280,7 @@ int main(int argc, char* argv[]) {
 
 
     int itern = 1;
-    int n_candidates_per_iter = 10000;
+    int n_candidates_per_iter = 1000;
     double threshold = 0.0;
     int min_removals_per_iter = 50;
 
@@ -323,6 +327,11 @@ int main(int argc, char* argv[]) {
         std::ostringstream vocabfname;
         vocabfname << "vocab.iter" << itern;
         write_vocab(vocabfname.str().c_str(), vocab);
+
+        std::ostringstream freqsfname;
+        freqsfname << "freqs.iter" << itern;
+        write_vocab(freqsfname.str().c_str(), freqs);
+
         itern++;
 
         if (n_removals < min_removals_per_iter) {

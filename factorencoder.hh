@@ -14,7 +14,8 @@ int write_vocab(const char* fname,
                   const std::map<std::string, double> &vocab);
 
 void sort_vocab(const std::map<std::string, double> &vocab,
-                  std::vector<std::pair<std::string, double> > &sorted_vocab);
+                  std::vector<std::pair<std::string, double> > &sorted_vocab,
+                  bool descending=true);
 
 void viterbi(const std::map<std::string, double> &vocab,
              int maxlen,

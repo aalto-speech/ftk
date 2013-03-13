@@ -66,17 +66,22 @@ int write_vocab(const char* fname,
 }
 
 
+bool descending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second > j.second); }
 bool ascending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second < j.second); }
 
 void sort_vocab(const std::map<std::string, double> &vocab,
-                  std::vector<std::pair<std::string, double> > &sorted_vocab)
+                  std::vector<std::pair<std::string, double> > &sorted_vocab,
+                  bool descending)
 {
     sorted_vocab.clear();
     for (std::map<std::string,double>::const_iterator it = vocab.begin(); it != vocab.end(); it++) {
         std::pair<std::string, double> curr_pair(it->first, it->second);
         sorted_vocab.push_back(curr_pair);
     }
-    std::sort(sorted_vocab.begin(), sorted_vocab.end(), ascending_sort);
+    if (descending)
+        std::sort(sorted_vocab.begin(), sorted_vocab.end(), descending_sort);
+    else
+        std::sort(sorted_vocab.begin(), sorted_vocab.end(), ascending_sort);
 }
 
 
