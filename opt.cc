@@ -121,6 +121,7 @@ double get_cost(const std::map<std::string, double> &vocab,
 void freqs_to_logprobs(std::map<std::string, double> &vocab,
                           double densum)
 {
+    densum = log2(densum);
     for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter)
         vocab[iter->first] = (log2(iter->second)-densum);
 }
@@ -304,6 +305,7 @@ int main(int argc, char* argv[]) {
 
         int n_removals = 0;
         for (int i=0; i<removal_scores.size(); i++) {
+            std::cout << "try removing subword: " << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << std::endl;
             if (removal_scores[i].second < threshold) break;
 
             std::map<std::string, double> hypo_freqs = freqs;
