@@ -38,7 +38,7 @@ void resegment_words(const std::map<std::string, long> &words,
     for(std::map<std::string, long>::const_iterator iter = words.begin(); iter != words.end(); ++iter) {
 
         std::vector<std::string> best_path;
-        viterbi(vocab, maxlen, iter->first, best_path);
+        viterbi(vocab, maxlen, iter->first, best_path, false);
 
         if (best_path.size() == 0) {
             std::cerr << "warning, no segmentation for word: " << iter->first << std::endl;
@@ -62,7 +62,7 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
     for (std::map<std::string, long>::const_iterator iter = words.begin(); iter != words.end(); ++iter) {
 
         std::vector<std::string> best_path;
-        viterbi(vocab, maxlen, iter->first, best_path);
+        viterbi(vocab, maxlen, iter->first, best_path, false);
 
         if (best_path.size() == 0) {
             std::cerr << "warning, no segmentation for word: " << iter->first << std::endl;
@@ -82,7 +82,7 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
                 double stored_value = hypo_vocab.at(hypoiter->first);
                 hypo_vocab.erase(hypoiter->first);
                 std::vector<std::string> hypo_path;
-                viterbi(hypo_vocab, maxlen, hypoiter->first, hypo_path);
+                viterbi(hypo_vocab, maxlen, hypoiter->first, hypo_path, false);
                 for (int ib=0; ib<best_path.size(); ib++)
                     diffs[hypoiter->first][best_path[ib]] -= 1.0;
                 for (int ih=0; ih<hypo_path.size(); ih++)
@@ -134,21 +134,6 @@ void cutoff(std::map<std::string, double> &vocab,
 }
 
 
-bool ascending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second < j.second); }
-bool descending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second > j.second); }
-
-void sort_vocab(std::map<std::string, double> &vocab,
-                  std::vector<std::pair<std::string, double> > &sorted_vocab)
-{
-    sorted_vocab.clear();
-    for (std::map<std::string,double>::const_iterator it = vocab.begin(); it != vocab.end(); it++) {
-        std::pair<std::string, double> curr_pair(it->first, it->second);
-        sorted_vocab.push_back(curr_pair);
-    }
-    std::sort(sorted_vocab.begin(), sorted_vocab.end(), ascending_sort);
-}
-
-
 // Select n_candidates number of subwords in the vocabulary as removal candidates
 // running from the least common subword
 void init_removal_candidates(int &n_candidates,
@@ -172,15 +157,17 @@ void init_removal_candidates(int &n_candidates,
 }
 
 
+bool descending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second > j.second); }
+
 // Perform each of the removals (independent of others in the list) to get
 // initial order for the removals
 void rank_removal_candidates(const std::map<std::string, long> &words,
                                  const std::map<std::string, double> &vocab,
                                  std::map<std::string, std::map<std::string, double> > &diffs,
+                                 std::map<std::string, double> &new_morph_freqs,
                                  const int maxlen,
                                  std::vector<std::pair<std::string, double> > &removal_scores)
 {
-    std::map<std::string, double> new_morph_freqs;
     resegment_words_w_diff(words, vocab, new_morph_freqs, diffs, maxlen);
     double densum = get_sum(new_morph_freqs);
     double cost = get_cost(new_morph_freqs, densum);
@@ -198,6 +185,47 @@ void rank_removal_candidates(const std::map<std::string, long> &words,
             new_morph_freqs[diffiter->first] -= diffiter->second;
     }
     std::sort(removal_scores.begin(), removal_scores.end(), descending_sort);
+}
+
+
+// Really performs the removal and gives out updated freqs
+void remove_subword(const std::map<std::string, long> &words,
+                       const std::map<std::string, double> &vocab,
+                       const int maxlen,
+                       const std::string &subword,
+                       std::map<std::string, double> &new_freqs)
+{
+    std::map<std::string, double> hypo_vocab = vocab;
+    hypo_vocab.erase(subword);
+
+    for(std::map<std::string, long>::const_iterator iter = words.begin(); iter != words.end(); ++iter) {
+
+        // Is this too slow?
+        if (iter->first.find(subword) != std::string::npos) {
+
+            std::vector<std::string> best_path;
+            viterbi(vocab, maxlen, iter->first, best_path, false);
+            std::vector<std::string> hypo_path;
+            viterbi(hypo_vocab, maxlen, iter->first, hypo_path, false);
+
+            if (best_path.size() == 0) {
+                std::cerr << "warning, no segmentation for word: " << iter->first << std::endl;
+                exit(0);
+            }
+
+            if (hypo_path.size() == 0) {
+                std::cerr << "warning, no hypo segmentation for word: " << iter->first << std::endl;
+                exit(0);
+            }
+
+            // Update statistics
+            for (int i=0; i<best_path.size(); i++)
+                new_freqs[best_path[i]] -= double(iter->second);
+            for (int i=0; i<hypo_path.size(); i++)
+                new_freqs[hypo_path[i]] += double(iter->second);
+
+        }
+    }
 }
 
 
@@ -229,7 +257,7 @@ int main(int argc, char* argv[]) {
 
     std::cerr << "\t\t\t" << "vocabulary size: " << vocab.size() << std::endl;
 
-    std::cerr << "Iterating" << std::endl;
+    std::cerr << "Initial cutoffs" << std::endl;
     const int n_cutoff_iters = 1;
     int cutoffs[n_cutoff_iters] = { 50 };
     for (int i=0; i<n_cutoff_iters; i++) {
@@ -247,17 +275,62 @@ int main(int argc, char* argv[]) {
     }
 
 
-    int n_candidates = 100;
-    std::map<std::string, std::map<std::string, double> > diffs;
-    init_removal_candidates(n_candidates, maxlen, words, vocab, diffs);
+    int itern = 1;
+    int n_candidates_per_iter = 10000;
+    double threshold = 0.0;
+    int min_removals_per_iter = 50;
 
-    std::vector<std::pair<std::string, double> > removal_scores;
-    rank_removal_candidates(words, vocab, diffs, maxlen, removal_scores);
+    std::cerr << "Removing subwords one by one" << std::endl;
+    while (true) {
 
-    for (int i=0; i<removal_scores.size(); i++)
-        std::cout << "word: " << removal_scores[i].first << "\t" << "change in cost after removal: " << removal_scores[i].second << std::endl;
+        std::cerr << "iteration " << itern << std::endl;
 
-    // Really perform removals one by one
+        std::cerr << "collecting candidate subwords for removal" << std::endl;
+        std::map<std::string, std::map<std::string, double> > diffs;
+        init_removal_candidates(n_candidates_per_iter, maxlen, words, vocab, diffs);
+
+        std::map<std::string, double> freqs;
+        std::vector<std::pair<std::string, double> > removal_scores;
+        rank_removal_candidates(words, vocab, diffs, freqs, maxlen, removal_scores);
+
+        // Perform removals one by one if likelihood change below threshold
+        double curr_densum = get_sum(freqs);
+        double curr_cost = get_cost(freqs, curr_densum);
+        std::cerr << "starting cost before removing subwords one by one: " << curr_cost << std::endl;
+
+        int n_removals = 0;
+        for (int i=0; i<removal_scores.size(); i++) {
+            if (removal_scores[i].second < threshold) break;
+
+            std::map<std::string, double> hypo_freqs = freqs;
+            remove_subword(words, vocab, maxlen, removal_scores[i].first, hypo_freqs);
+            double hypo_densum = get_sum(hypo_freqs);
+            double hypo_cost = get_cost(hypo_freqs, hypo_densum);
+            if (hypo_cost-curr_cost > 0) {
+                std::cout << "removed subword: " << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost << std::endl;
+                curr_densum = hypo_densum;
+                curr_cost = hypo_cost;
+                freqs = hypo_freqs;
+                vocab = freqs;
+                freqs_to_logprobs(vocab, hypo_densum);
+                n_removals++;
+            }
+        }
+        std::cerr << "subwords removed in this iteration: " << n_removals << std::endl;
+        std::cerr << "current vocabulary size: " << vocab.size() << std::endl;
+        std::cerr << "likelihood after the removals: " << curr_cost << std::endl;
+
+        std::ostringstream vocabfname;
+        vocabfname << "vocab.iter" << itern;
+        write_vocab(vocabfname.str().c_str(), vocab);
+        itern++;
+
+        if (n_removals < min_removals_per_iter) {
+            std::cerr << "stopping. " << std::endl;
+            break;
+        }
+
+    }
 
 
     exit(1);

@@ -50,10 +50,41 @@ int read_vocab(const char* fname,
 }
 
 
+int write_vocab(const char* fname,
+                  const std::map<std::string, double> &vocab)
+{
+    std::ofstream vocabfile(fname);
+    if (!vocabfile) return -1;
+
+    std::vector<std::pair<std::string, double> > sorted_vocab;
+    sort_vocab(vocab, sorted_vocab);
+    for (int i=0; i<sorted_vocab.size(); i++)
+        vocabfile << sorted_vocab[i].second << " " << sorted_vocab[i].first << std::endl;
+    vocabfile.close();
+
+    return vocab.size();
+}
+
+
+bool ascending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second < j.second); }
+
+void sort_vocab(const std::map<std::string, double> &vocab,
+                  std::vector<std::pair<std::string, double> > &sorted_vocab)
+{
+    sorted_vocab.clear();
+    for (std::map<std::string,double>::const_iterator it = vocab.begin(); it != vocab.end(); it++) {
+        std::pair<std::string, double> curr_pair(it->first, it->second);
+        sorted_vocab.push_back(curr_pair);
+    }
+    std::sort(sorted_vocab.begin(), sorted_vocab.end(), ascending_sort);
+}
+
+
 void viterbi(const std::map<std::string, double> &vocab,
                int maxlen,
                const std::string &sentence,
-               std::vector<std::string> &best_path)
+               std::vector<std::string> &best_path,
+               bool reverse)
 {
     if (sentence.length() == 0) return;
     std::vector<Node> search(sentence.length());
@@ -95,5 +126,5 @@ void viterbi(const std::map<std::string, double> &vocab,
         source = top.source;
     }
 
-    std::reverse(best_path.begin(), best_path.end());
+    if (reverse) std::reverse(best_path.begin(), best_path.end());
 }
