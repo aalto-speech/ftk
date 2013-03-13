@@ -134,8 +134,10 @@ int cutoff(std::map<std::string, double> &vocab,
 {
     int nremovals = 0;
     for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter) {
-        if (vocab[iter->first] <= limit) vocab.erase(iter->first);
-        nremovals += 1;
+        if (vocab[iter->first] <= limit) {
+            vocab.erase(iter->first);
+            nremovals += 1;
+        }
     }
     return nremovals;
 }
@@ -332,7 +334,12 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        int n_cutoff = cutoff(vocab, cutoff_value);
+        int n_cutoff = cutoff(freqs, cutoff_value);
+        curr_densum = get_sum(freqs);
+        curr_cost = get_cost(freqs, curr_densum);
+        vocab = freqs;
+        freqs_to_logprobs(vocab, curr_densum);
+        
         std::cerr << "subwords removed in this iteration: " << n_removals << std::endl;
         std::cerr << "subwords removed with cutoff this iteration: " << n_cutoff << std::endl;
         std::cerr << "current vocabulary size: " << vocab.size() << std::endl;
