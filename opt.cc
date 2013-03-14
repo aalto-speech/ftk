@@ -42,7 +42,7 @@ void resegment_words(const std::map<std::string, long> &words,
 
         if (best_path.size() == 0) {
             std::cerr << "warning, no segmentation for word: " << iter->first << std::endl;
-            exit(0);
+            std::exit(0);
         }
 
         // Update statistics
@@ -67,7 +67,7 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
 
         if (best_path.size() == 0) {
             std::cerr << "warning, no segmentation for word: " << iter->first << std::endl;
-            exit(0);
+            std::exit(0);
         }
 
         // Update statistics
@@ -222,12 +222,12 @@ void remove_subword(const std::map<std::string, long> &words,
 
             if (best_path.size() == 0) {
                 std::cerr << "warning, no segmentation for word: " << iter->first << std::endl;
-                exit(0);
+                std::exit(0);
             }
 
             if (hypo_path.size() == 0) {
                 std::cerr << "warning, no hypo segmentation for word: " << iter->first << std::endl;
-                exit(0);
+                std::exit(0);
             }
 
             // Update statistics
@@ -249,15 +249,22 @@ int main(int argc, char* argv[]) {
 
     if (argc < 9) {
         std::cerr << "usage: " << argv[0] << " <vocabulary> <words> <cutoff> <#candidates> <threshold> <threshold_decrease> <minremovals> <minvocabsize>" << std::endl;
-        exit(0);
+        std::exit(0);
     }
 
-    int cutoff_value = atoi(argv[3]);
-    int n_candidates_per_iter = atoi(argv[4]);
-    double threshold = atof(argv[5]);
-    double threshold_decrease = atof(argv[6]);
-    int min_removals_per_iter = atoi(argv[7]);
-    int min_vocab_size = atoi(argv[8]);
+    int cutoff_value = std::atoi(argv[3]);
+    int n_candidates_per_iter = std::atoi(argv[4]);
+    double threshold = std::atof(argv[5]);
+    double threshold_decrease = std::atof(argv[6]);
+    int min_removals_per_iter = std::atoi(argv[7]);
+    int min_vocab_size = std::atoi(argv[8]);
+
+    std::cerr << "parameters, cutoff: " << cutoff_value << std::endl;
+    std::cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << std::endl;
+    std::cerr << "parameters, threshold: " << threshold << std::endl;
+    std::cerr << "parameters, threshold decrease per iteration: " << threshold_decrease << std::endl;
+    std::cerr << "parameters, min removals per iteration: " << min_removals_per_iter << std::endl;
+    std::cerr << "parameters, target vocab size: " << min_vocab_size << std::endl;
 
     int maxlen;
     std::map<std::string, double> vocab;
@@ -268,7 +275,7 @@ int main(int argc, char* argv[]) {
     int retval = read_vocab(argv[1], vocab, maxlen);
     if (retval < 0) {
         std::cerr << "something went wrong reading vocabulary" << std::endl;
-        exit(0);
+        std::exit(0);
     }
     std::cerr << "\t" << "size: " << vocab.size() << std::endl;
     std::cerr << "\t" << "maximum string length: " << maxlen << std::endl;
@@ -317,7 +324,7 @@ int main(int argc, char* argv[]) {
         int n_removals = 0;
         for (int i=0; i<removal_scores.size(); i++) {
             std::cout << "try removing subword: " << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << std::endl;
-            if (removal_scores[i].second < threshold) break;
+//            if (removal_scores[i].second < threshold) break;
 
             std::map<std::string, double> hypo_freqs = freqs;
             remove_subword(words, vocab, maxlen, removal_scores[i].first, hypo_freqs);
@@ -367,6 +374,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    exit(1);
+    std::exit(1);
 }
 
