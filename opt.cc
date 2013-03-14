@@ -256,47 +256,6 @@ void rank_removal_candidates(const std::map<std::string, long> &words,
 }
 
 
-// Really performs the removal and gives out updated freqs
-void remove_subword(const std::map<std::string, long> &words,
-                       const std::map<std::string, double> &vocab,
-                       const int maxlen,
-                       const std::string &subword,
-                       std::map<std::string, double> &freq_diffs)
-{
-    std::map<std::string, double> hypo_vocab = vocab;
-    hypo_vocab.erase(subword);
-
-    for(std::map<std::string, long>::const_iterator worditer = words.begin(); worditer != words.end(); ++worditer) {
-
-        // FIXME: Is this too slow?
-        if (worditer->first.find(subword) != std::string::npos) {
-
-            std::vector<std::string> best_path;
-            viterbi(vocab, maxlen, worditer->first, best_path, false);
-            std::vector<std::string> hypo_path;
-            viterbi(hypo_vocab, maxlen, worditer->first, hypo_path, false);
-
-            if (best_path.size() == 0) {
-                std::cerr << "warning, no segmentation for word: " << worditer->first << std::endl;
-                std::exit(0);
-            }
-
-            if (hypo_path.size() == 0) {
-                std::cerr << "warning, no hypo segmentation for word: " << worditer->first << std::endl;
-                std::exit(0);
-            }
-
-            // Update statistics
-            for (int i=0; i<best_path.size(); i++)
-                freq_diffs[best_path[i]] -= double(worditer->second);
-            for (int i=0; i<hypo_path.size(); i++)
-                freq_diffs[hypo_path[i]] += double(worditer->second);
-
-        }
-    }
-}
-
-
 void get_backpointers(const std::map<std::string, long> &words,
                          const std::map<std::string, double> &vocab,
                          std::map<std::string, std::map<std::string, bool> > &backpointers,
@@ -355,18 +314,16 @@ void remove_subword_update_backpointers(const std::map<std::string, double> &voc
         }
 
         // Collect frequency differences
-        for (int i=0; i<best_path.size(); i++)
-            freq_diffs[best_path[i]] -= double(worditer->second);
-        for (int i=0; i<hypo_path.size(); i++)
-            freq_diffs[hypo_path[i]] += double(worditer->second);
-
         // Collect backpointer changes
-        for (int i=0; i<best_path.size(); i++)
+        for (int i=0; i<best_path.size(); i++) {
+            freq_diffs[best_path[i]] -= double(worditer->second);
             backpointers_to_remove[best_path[i]][worditer->first] = true;
-        for (int i=0; i<hypo_path.size(); i++)
+        }
+        for (int i=0; i<hypo_path.size(); i++) {
+            freq_diffs[hypo_path[i]] += double(worditer->second);
             backpointers_to_add[hypo_path[i]][worditer->first] = true;
+        }
     }
-
 }
 
 
@@ -462,10 +419,13 @@ int main(int argc, char* argv[]) {
                                                backpointers_to_remove, backpointers_to_add, freq_diffs);
             double hypo_densum = get_sum(freqs, freq_diffs);
             double hypo_cost = get_cost(freqs, freq_diffs, hypo_densum);
+
+            /*
             std::cout << std::fixed;
             std::cout << "hypo_densum: " << hypo_densum << std::endl;
             std::cout << "hypo_cost: " << hypo_cost << std::endl;
             std::cout << "change in cost: " << hypo_cost-curr_cost << std::endl;
+            */
 
             if (hypo_cost-curr_cost > threshold) {
                 std::cout << "removed subword: " << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost << std::endl;
@@ -473,6 +433,7 @@ int main(int argc, char* argv[]) {
                 curr_cost = hypo_cost;
                 apply_freq_diffs(freqs, freq_diffs);
                 apply_backpointer_changes(backpointers, backpointers_to_remove, backpointers_to_add);
+                backpointers.erase(removal_scores[i].first);
                 freqs.erase(removal_scores[i].first);
                 vocab = freqs;
                 freqs_to_logprobs(vocab, hypo_densum);
