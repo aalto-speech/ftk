@@ -112,10 +112,10 @@ double get_sum(const std::map<std::string, double> &freqs,
                  const std::map<std::string, double> &freq_diffs)
 {
     double total = 0.0;
-    for(std::map<std::string, double>::const_iterator iter = freqs.begin(); iter != freqs.end(); ++iter) {
+    for(std::map<std::string, double>::const_iterator iter = freqs.begin(); iter != freqs.end(); ++iter)
         total += iter->second;
-        total += freq_diffs.at(iter->first);
-    }
+    for(std::map<std::string, double>::const_iterator iter = freq_diffs.begin(); iter != freq_diffs.end(); ++iter)
+        total += iter->second;
     return total;
 }
 
@@ -135,15 +135,16 @@ double get_cost(const std::map<std::string, double> &freqs,
 
 
 double get_cost(const std::map<std::string, double> &freqs,
-                 const std::map<std::string, double> &freq_diffs,
-                 double densum)
+                  const std::map<std::string, double> &freq_diffs,
+                  double densum)
 {
     double total = 0.0;
     double tmp = 0.0;
     densum = log2(densum);
     for(std::map<std::string, double>::const_iterator iter = freqs.begin(); iter != freqs.end(); ++iter) {
         tmp = iter->second;
-        tmp += freq_diffs.at(iter->first);
+        if (freq_diffs.find(iter->first) != freq_diffs.end())
+            tmp += freq_diffs.at(iter->first);
         tmp = tmp * (log2(tmp)-densum);
         if (!isnan(tmp)) total += tmp;
     }
@@ -151,13 +152,26 @@ double get_cost(const std::map<std::string, double> &freqs,
 }
 
 
-double apply_freq_diffs(std::map<std::string, double> &freqs,
-                           const std::map<std::string, double> &freq_diffs)
+void apply_freq_diffs(std::map<std::string, double> &freqs,
+                         const std::map<std::string, double> &freq_diffs)
 {
-    for(std::map<std::string, double>::const_iterator iter = freqs.begin(); iter != freqs.end(); ++iter)
+    for(std::map<std::string, double>::const_iterator iter = freq_diffs.begin(); iter != freq_diffs.end(); ++iter)
         freqs[iter->first] += freq_diffs.at(iter->first);
-    for(std::map<std::string, double>::const_iterator iter = freqs.begin(); iter != freqs.end(); ++iter)
+    for(std::map<std::string, double>::iterator iter = freqs.begin(); iter != freqs.end(); ++iter)
         if (freqs[iter->first] <= 0.0) freqs.erase(iter->first);
+}
+
+
+void apply_backpointer_changes(std::map<std::string, std::map<std::string, bool> > &backpointers,
+                                   const std::map<std::string, std::map<std::string, bool> > &bps_to_remove,
+                                   const std::map<std::string, std::map<std::string, bool> > &bps_to_add)
+{
+    for (std::map<std::string, std::map<std::string, bool> >::const_iterator switer = bps_to_remove.begin(); switer != bps_to_remove.end(); ++switer)
+        for (std::map<std::string, bool>::const_iterator worditer = switer->second.begin(); worditer != switer->second.end(); ++worditer)
+            backpointers[switer->first].erase(worditer->first);
+    for (std::map<std::string, std::map<std::string, bool> >::const_iterator switer = bps_to_add.begin(); switer != bps_to_add.end(); ++switer)
+        for (std::map<std::string, bool>::const_iterator worditer = switer->second.begin(); worditer != switer->second.end(); ++worditer)
+            backpointers[switer->first][worditer->first] = true;
 }
 
 
@@ -308,50 +322,52 @@ void get_backpointers(const std::map<std::string, long> &words,
 
 
 // Really performs the removal and gives out updated freqs
-void remove_subword_update_backpointers(const std::map<std::string, long> &words,
-                                             const std::map<std::string, double> &vocab,
+void remove_subword_update_backpointers(const std::map<std::string, double> &vocab,
                                              const int maxlen,
                                              const std::string &subword,
-                                             std::map<std::string, std::map<std::string, bool> > &backpointers,
-                                             std::map<std::string, double> &new_freqs)
+                                             const std::map<std::string, std::map<std::string, bool> > &backpointers,
+                                             std::map<std::string, std::map<std::string, bool> > &backpointers_to_remove,
+                                             std::map<std::string, std::map<std::string, bool> > &backpointers_to_add,
+                                             std::map<std::string, double> &freq_diffs)
 {
     std::map<std::string, double> hypo_vocab = vocab;
     hypo_vocab.erase(subword);
 
-    for(std::map<std::string, long>::const_iterator worditer = words.begin(); worditer != words.end(); ++worditer) {
+    backpointers_to_remove.clear();
+    backpointers_to_add.clear();
+    freq_diffs.clear();
 
-        // FIXME: Is this too slow?
-        if (worditer->first.find(subword) != std::string::npos) {
+    for (std::map<std::string, bool>::const_iterator worditer = backpointers.at(subword).begin(); worditer != backpointers.at(subword).end(); ++worditer) {
 
-            std::vector<std::string> best_path;
-            viterbi(vocab, maxlen, worditer->first, best_path, false);
-            std::vector<std::string> hypo_path;
-            viterbi(hypo_vocab, maxlen, worditer->first, hypo_path, false);
+        std::vector<std::string> best_path;
+        viterbi(vocab, maxlen, worditer->first, best_path, false);
+        std::vector<std::string> hypo_path;
+        viterbi(hypo_vocab, maxlen, worditer->first, hypo_path, false);
 
-            if (best_path.size() == 0) {
-                std::cerr << "warning, no segmentation for word: " << worditer->first << std::endl;
-                std::exit(0);
-            }
-
-            if (hypo_path.size() == 0) {
-                std::cerr << "warning, no hypo segmentation for word: " << worditer->first << std::endl;
-                std::exit(0);
-            }
-
-            // Update statistics
-            for (int i=0; i<best_path.size(); i++)
-                new_freqs[best_path[i]] -= double(worditer->second);
-            for (int i=0; i<hypo_path.size(); i++)
-                new_freqs[hypo_path[i]] += double(worditer->second);
-
+        if (best_path.size() == 0) {
+            std::cerr << "warning, no segmentation for word: " << worditer->first << std::endl;
+            std::exit(0);
         }
+
+        if (hypo_path.size() == 0) {
+            std::cerr << "warning, no hypo segmentation for word: " << worditer->first << std::endl;
+            std::exit(0);
+        }
+
+        // Collect frequency differences
+        for (int i=0; i<best_path.size(); i++)
+            freq_diffs[best_path[i]] -= double(worditer->second);
+        for (int i=0; i<hypo_path.size(); i++)
+            freq_diffs[hypo_path[i]] += double(worditer->second);
+
+        // Collect backpointer changes
+        for (int i=0; i<best_path.size(); i++)
+            backpointers_to_remove[best_path[i]][worditer->first] = true;
+        for (int i=0; i<hypo_path.size(); i++)
+            backpointers_to_add[hypo_path[i]][worditer->first] = true;
     }
 
-    new_freqs.erase(subword);
-    for(std::map<std::string, double>::iterator iter = new_freqs.begin(); iter != new_freqs.end(); ++iter)
-        if (iter->second <= 0.0) new_freqs.erase(iter->first);
 }
-
 
 
 int main(int argc, char* argv[]) {
@@ -430,22 +446,33 @@ int main(int argc, char* argv[]) {
         // Perform removals one by one if likelihood change below threshold
         double curr_densum = get_sum(freqs);
         double curr_cost = get_cost(freqs, curr_densum);
+        std::map<std::string, std::map<std::string, bool> > backpointers;
+        get_backpointers(words, vocab, backpointers, maxlen);
+
         std::cerr << "starting cost before removing subwords one by one: " << curr_cost << std::endl;
 
         int n_removals = 0;
         for (int i=0; i<removal_scores.size(); i++) {
             std::cout << "try removing subword: " << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << std::endl;
-//            if (removal_scores[i].second < threshold) break;
 
             std::map<std::string, double> freq_diffs;
-            remove_subword(words, vocab, maxlen, removal_scores[i].first, freq_diffs);
+            std::map<std::string, std::map<std::string, bool> > backpointers_to_remove;
+            std::map<std::string, std::map<std::string, bool> > backpointers_to_add;
+            remove_subword_update_backpointers(vocab, maxlen, removal_scores[i].first, backpointers,
+                                               backpointers_to_remove, backpointers_to_add, freq_diffs);
             double hypo_densum = get_sum(freqs, freq_diffs);
             double hypo_cost = get_cost(freqs, freq_diffs, hypo_densum);
+            std::cout << std::fixed;
+            std::cout << "hypo_densum: " << hypo_densum << std::endl;
+            std::cout << "hypo_cost: " << hypo_cost << std::endl;
+            std::cout << "change in cost: " << hypo_cost-curr_cost << std::endl;
+
             if (hypo_cost-curr_cost > threshold) {
                 std::cout << "removed subword: " << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost << std::endl;
                 curr_densum = hypo_densum;
                 curr_cost = hypo_cost;
                 apply_freq_diffs(freqs, freq_diffs);
+                apply_backpointer_changes(backpointers, backpointers_to_remove, backpointers_to_add);
                 freqs.erase(removal_scores[i].first);
                 vocab = freqs;
                 freqs_to_logprobs(vocab, hypo_densum);
