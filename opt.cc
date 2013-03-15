@@ -189,7 +189,7 @@ int cutoff(std::map<std::string, double> &vocab,
 {
     int nremovals = 0;
     for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter) {
-        if (vocab[iter->first] <= limit) {
+        if (vocab[iter->first] <= limit && iter->first.length() > 1) {
             vocab.erase(iter->first);
             nremovals += 1;
         }
@@ -412,6 +412,8 @@ int main(int argc, char* argv[]) {
 
         int n_removals = 0;
         for (int i=0; i<removal_scores.size(); i++) {
+            if (removal_scores[i].first.length() == 1) continue;
+
             std::cout << "try removing subword: " << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << std::endl;
 
             std::map<std::string, double> freq_diffs;
@@ -422,18 +424,18 @@ int main(int argc, char* argv[]) {
             double hypo_densum = get_sum(freqs, freq_diffs);
             double hypo_cost = get_cost(freqs, freq_diffs, hypo_densum);
 
-            if (hypo_cost-curr_cost > threshold) {
-                std::cout << "removed subword: " << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost << std::endl;
-                curr_densum = hypo_densum;
-                curr_cost = hypo_cost;
-                apply_freq_diffs(freqs, freq_diffs);
-                apply_backpointer_changes(backpointers, backpointers_to_remove, backpointers_to_add);
-                backpointers.erase(removal_scores[i].first);
-                freqs.erase(removal_scores[i].first);
-                vocab = freqs;
-                freqs_to_logprobs(vocab, hypo_densum);
-                n_removals++;
-            }
+            std::cout << "removed subword: " << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost << std::endl;
+            curr_densum = hypo_densum;
+            curr_cost = hypo_cost;
+            apply_freq_diffs(freqs, freq_diffs);
+            apply_backpointer_changes(backpointers, backpointers_to_remove, backpointers_to_add);
+            backpointers.erase(removal_scores[i].first);
+            freqs.erase(removal_scores[i].first);
+            vocab = freqs;
+            freqs_to_logprobs(vocab, hypo_densum);
+
+            n_removals++;
+            if (n_removals >= n_removals_per_iter) break;
         }
 
         int n_cutoff = cutoff(freqs, cutoff_value);
@@ -456,7 +458,6 @@ int main(int argc, char* argv[]) {
         write_vocab(freqsfname.str().c_str(), freqs);
 
         itern++;
-        threshold -= threshold_decrease;
 
         if (n_removals < min_removals_per_iter) {
             std::cerr << "stopping by min_removals_per_iter." << std::endl;
