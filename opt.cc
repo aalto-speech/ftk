@@ -329,22 +329,24 @@ void remove_subword_update_backpointers(const std::map<std::string, double> &voc
 
 int main(int argc, char* argv[]) {
 
-    if (argc < 9) {
-        std::cerr << "usage: " << argv[0] << " <vocabulary> <words> <cutoff> <#candidates> <threshold> <threshold_decrease> <minremovals> <minvocabsize>" << std::endl;
+    if (argc < 10) {
+        std::cerr << "usage: " << argv[0] << " <vocabulary> <words> <cutoff> <#candidates> <#removals> <threshold> <threshold_decrease> <minremovals> <minvocabsize>" << std::endl;
         std::exit(0);
     }
 
     int cutoff_value = std::atoi(argv[3]);
     int n_candidates_per_iter = std::atoi(argv[4]);
-    double threshold = std::atof(argv[5]);
-    double threshold_decrease = std::atof(argv[6]);
-    int min_removals_per_iter = std::atoi(argv[7]);
-    int min_vocab_size = std::atoi(argv[8]);
+    int n_removals_per_iter = std::atoi(argv[5]);
+    double threshold = std::atof(argv[6]);
+    double threshold_decrease = std::atof(argv[7]);
+    int min_removals_per_iter = std::atoi(argv[8]);
+    int min_vocab_size = std::atoi(argv[9]);
 
     std::cerr << "parameters, initial vocabulary: " << argv[1] << std::endl;
     std::cerr << "parameters, wordlist: " << argv[2] << std::endl;
     std::cerr << "parameters, cutoff: " << cutoff_value << std::endl;
     std::cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << std::endl;
+    std::cerr << "parameters, removals per iteration: " << n_removals_per_iter << std::endl;
     std::cerr << "parameters, threshold: " << threshold << std::endl;
     std::cerr << "parameters, threshold decrease per iteration: " << threshold_decrease << std::endl;
     std::cerr << "parameters, min removals per iteration: " << min_removals_per_iter << std::endl;
@@ -419,13 +421,6 @@ int main(int argc, char* argv[]) {
                                                backpointers_to_remove, backpointers_to_add, freq_diffs);
             double hypo_densum = get_sum(freqs, freq_diffs);
             double hypo_cost = get_cost(freqs, freq_diffs, hypo_densum);
-
-            /*
-            std::cout << std::fixed;
-            std::cout << "hypo_densum: " << hypo_densum << std::endl;
-            std::cout << "hypo_cost: " << hypo_cost << std::endl;
-            std::cout << "change in cost: " << hypo_cost-curr_cost << std::endl;
-            */
 
             if (hypo_cost-curr_cost > threshold) {
                 std::cout << "removed subword: " << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost << std::endl;
