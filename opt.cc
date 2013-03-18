@@ -157,8 +157,13 @@ void apply_freq_diffs(std::map<std::string, double> &freqs,
 {
     for(std::map<std::string, double>::const_iterator iter = freq_diffs.begin(); iter != freq_diffs.end(); ++iter)
         freqs[iter->first] += freq_diffs.at(iter->first);
-    for(std::map<std::string, double>::iterator iter = freqs.begin(); iter != freqs.end(); ++iter)
-        if (freqs[iter->first] <= 0.0) freqs.erase(iter->first);
+
+    // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
+    std::map<std::string, double>::iterator iter = freqs.begin();
+    while (iter != freqs.end()) {
+        if (iter->second <= 0.0) freqs.erase(iter++);
+        else ++iter;
+    }
 }
 
 
@@ -187,12 +192,15 @@ void freqs_to_logprobs(std::map<std::string, double> &vocab,
 int cutoff(std::map<std::string, double> &vocab,
             double limit)
 {
+    // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
     int nremovals = 0;
-    for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter) {
-        if (vocab[iter->first] <= limit && iter->first.length() > 1) {
-            vocab.erase(iter->first);
+    std::map<std::string, double>::iterator iter = vocab.begin();
+    while (iter != vocab.end()) {
+        if (iter->second <= limit && iter->first.length() > 1) {
+            vocab.erase(iter++);
             nremovals += 1;
         }
+        else ++iter;
     }
     return nremovals;
 }
