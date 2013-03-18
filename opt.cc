@@ -208,7 +208,7 @@ int cutoff(std::map<std::string, double> &vocab,
 
 // Select n_candidates number of subwords in the vocabulary as removal candidates
 // running from the least common subword
-void init_removal_candidates(int &n_candidates,
+void init_removal_candidates(int n_candidates,
                                  const int maxlen,
                                  const std::map<std::string, long> &words,
                                  const std::map<std::string, double> &vocab,
@@ -220,7 +220,6 @@ void init_removal_candidates(int &n_candidates,
     std::vector<std::pair<std::string, double> > sorted_vocab;
     sort_vocab(new_morph_freqs, sorted_vocab, false);
 
-    n_candidates = std::min(n_candidates, (int)vocab.size());
     for (int i=0; i<n_candidates; i++) {
         std::pair<std::string, double> &subword = sorted_vocab[i];
         std::map<std::string, double> emptymap;
@@ -403,6 +402,7 @@ int main(int argc, char* argv[]) {
 
         std::cerr << "collecting candidate subwords for removal" << std::endl;
         std::map<std::string, std::map<std::string, double> > diffs;
+        n_candidates_per_iter = std::min(n_candidates_per_iter, (int)vocab.size());
         init_removal_candidates(n_candidates_per_iter, maxlen, words, vocab, diffs);
 
         std::cerr << "ranking candidate subwords" << std::endl;
@@ -444,6 +444,7 @@ int main(int argc, char* argv[]) {
 
             n_removals++;
             if (n_removals >= n_removals_per_iter) break;
+            if (vocab.size() <= min_vocab_size) break;
         }
 
         int n_cutoff = cutoff(freqs, cutoff_value);
