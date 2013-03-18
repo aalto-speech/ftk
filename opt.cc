@@ -459,7 +459,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "likelihood after the removals: " << curr_cost << std::endl;
 
         std::ostringstream vocabfname;
-        vocabfname << "iter" << itern << ".vocab"
+        vocabfname << "iter" << itern << ".vocab";
         write_vocab(vocabfname.str().c_str(), vocab);
 
         std::ostringstream freqsfname;
