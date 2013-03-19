@@ -35,6 +35,7 @@ void resegment_words(const std::map<std::string, long> &words,
                         std::map<std::string, double> &new_freqs,
                         const int maxlen)
 {
+    new_freqs.clear();
     for(std::map<std::string, long>::const_iterator worditer = words.begin(); worditer != words.end(); ++worditer) {
 
         std::vector<std::string> best_path;
@@ -156,7 +157,7 @@ void apply_freq_diffs(std::map<std::string, double> &freqs,
                          const std::map<std::string, double> &freq_diffs)
 {
     for(std::map<std::string, double>::const_iterator iter = freq_diffs.begin(); iter != freq_diffs.end(); ++iter)
-        freqs[iter->first] += freq_diffs.at(iter->first);
+        freqs[iter->first] += iter->second;
 
     // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
     std::map<std::string, double>::iterator iter = freqs.begin();
@@ -185,7 +186,7 @@ void freqs_to_logprobs(std::map<std::string, double> &vocab,
 {
     densum = log2(densum);
     for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter)
-        vocab[iter->first] = (log2(iter->second)-densum);
+        iter->second = (log2(iter->second)-densum);
 }
 
 
@@ -429,16 +430,18 @@ int main(int argc, char* argv[]) {
             std::map<std::string, std::map<std::string, bool> > backpointers_to_add;
             remove_subword_update_backpointers(vocab, maxlen, removal_scores[i].first, backpointers,
                                                backpointers_to_remove, backpointers_to_add, freq_diffs);
-            double hypo_densum = get_sum(freqs, freq_diffs);
-            double hypo_cost = get_cost(freqs, freq_diffs, hypo_densum);
+
+            apply_freq_diffs(freqs, freq_diffs);
+            freqs.erase(removal_scores[i].first);
+            apply_backpointer_changes(backpointers, backpointers_to_remove, backpointers_to_add);
+            backpointers.erase(removal_scores[i].first);
+
+            double hypo_densum = get_sum(freqs);
+            double hypo_cost = get_cost(freqs, hypo_densum);
 
             std::cout << "removed subword: " << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost << std::endl;
             curr_densum = hypo_densum;
             curr_cost = hypo_cost;
-            apply_freq_diffs(freqs, freq_diffs);
-            apply_backpointer_changes(backpointers, backpointers_to_remove, backpointers_to_add);
-            backpointers.erase(removal_scores[i].first);
-            freqs.erase(removal_scores[i].first);
             vocab = freqs;
             freqs_to_logprobs(vocab, hypo_densum);
 
