@@ -11,7 +11,7 @@
 
 
 int read_words(const char* fname,
-                 std::map<std::string, long> &words)
+               std::map<std::string, long> &words)
 {
     std::ifstream vocabfile(fname);
     if (!vocabfile) return -1;
@@ -31,9 +31,9 @@ int read_words(const char* fname,
 
 
 void resegment_words(const std::map<std::string, long> &words,
-                        const std::map<std::string, double> &vocab,
-                        std::map<std::string, double> &new_freqs,
-                        const int maxlen)
+                     const std::map<std::string, double> &vocab,
+                     std::map<std::string, double> &new_freqs,
+                     const int maxlen)
 {
     new_freqs.clear();
     for(std::map<std::string, long>::const_iterator worditer = words.begin(); worditer != words.end(); ++worditer) {
@@ -54,10 +54,10 @@ void resegment_words(const std::map<std::string, long> &words,
 
 
 void resegment_words_w_diff(const std::map<std::string, long> &words,
-                                const std::map<std::string, double> &vocab,
-                                std::map<std::string, double> &new_freqs,
-                                std::map<std::string, std::map<std::string, double> > &diffs,
-                                const int maxlen)
+                            const std::map<std::string, double> &vocab,
+                            std::map<std::string, double> &new_freqs,
+                            std::map<std::string, std::map<std::string, double> > &diffs,
+                            const int maxlen)
 {
     std::map<std::string, double> hypo_vocab = vocab;
     new_freqs.clear();
@@ -91,7 +91,7 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
                 for (int ih=0; ih<hypo_path.size(); ih++)
                     diffs[hypoiter->first][hypo_path[ih]] += double(worditer->second);
 
-                diffs[hypoiter->first].erase(hypoiter->first);
+//                diffs[hypoiter->first].erase(hypoiter->first);
                 hypo_vocab[hypoiter->first] = stored_value;
             }
         }
@@ -110,7 +110,7 @@ double get_sum(const std::map<std::string, double> &freqs)
 
 
 double get_sum(const std::map<std::string, double> &freqs,
-                 const std::map<std::string, double> &freq_diffs)
+               const std::map<std::string, double> &freq_diffs)
 {
     double total = 0.0;
     for(std::map<std::string, double>::const_iterator iter = freqs.begin(); iter != freqs.end(); ++iter)
@@ -122,7 +122,7 @@ double get_sum(const std::map<std::string, double> &freqs,
 
 
 double get_cost(const std::map<std::string, double> &freqs,
-                  double densum)
+                double densum)
 {
     double total = 0.0;
     double tmp = 0.0;
@@ -136,8 +136,8 @@ double get_cost(const std::map<std::string, double> &freqs,
 
 
 double get_cost(const std::map<std::string, double> &freqs,
-                  const std::map<std::string, double> &freq_diffs,
-                  double densum)
+                const std::map<std::string, double> &freq_diffs,
+                double densum)
 {
     double total = 0.0;
     double tmp = 0.0;
@@ -154,7 +154,7 @@ double get_cost(const std::map<std::string, double> &freqs,
 
 
 void apply_freq_diffs(std::map<std::string, double> &freqs,
-                         const std::map<std::string, double> &freq_diffs)
+                      const std::map<std::string, double> &freq_diffs)
 {
     for(std::map<std::string, double>::const_iterator iter = freq_diffs.begin(); iter != freq_diffs.end(); ++iter)
         freqs[iter->first] += iter->second;
@@ -169,8 +169,8 @@ void apply_freq_diffs(std::map<std::string, double> &freqs,
 
 
 void apply_backpointer_changes(std::map<std::string, std::map<std::string, bool> > &backpointers,
-                                   const std::map<std::string, std::map<std::string, bool> > &bps_to_remove,
-                                   const std::map<std::string, std::map<std::string, bool> > &bps_to_add)
+                               const std::map<std::string, std::map<std::string, bool> > &bps_to_remove,
+                               const std::map<std::string, std::map<std::string, bool> > &bps_to_add)
 {
     for (std::map<std::string, std::map<std::string, bool> >::const_iterator switer = bps_to_remove.begin(); switer != bps_to_remove.end(); ++switer)
         for (std::map<std::string, bool>::const_iterator worditer = switer->second.begin(); worditer != switer->second.end(); ++worditer)
@@ -182,7 +182,7 @@ void apply_backpointer_changes(std::map<std::string, std::map<std::string, bool>
 
 
 void freqs_to_logprobs(std::map<std::string, double> &vocab,
-                          double densum)
+                       double densum)
 {
     densum = log2(densum);
     for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter)
@@ -191,7 +191,7 @@ void freqs_to_logprobs(std::map<std::string, double> &vocab,
 
 
 int cutoff(std::map<std::string, double> &vocab,
-            double limit)
+           double limit)
 {
     // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
     int nremovals = 0;
@@ -210,10 +210,10 @@ int cutoff(std::map<std::string, double> &vocab,
 // Select n_candidates number of subwords in the vocabulary as removal candidates
 // running from the least common subword
 void init_removal_candidates(int n_candidates,
-                                 const int maxlen,
-                                 const std::map<std::string, long> &words,
-                                 const std::map<std::string, double> &vocab,
-                                 std::map<std::string, std::map<std::string, double> > &diffs)
+                             const int maxlen,
+                             const std::map<std::string, long> &words,
+                             const std::map<std::string, double> &vocab,
+                             std::map<std::string, std::map<std::string, double> > &diffs)
 {
     std::map<std::string, double> new_morph_freqs;
     resegment_words(words, vocab, new_morph_freqs, maxlen);
@@ -234,30 +234,24 @@ bool rank_desc_sort(std::pair<std::string, double> i,std::pair<std::string, doub
 // Perform each of the removals (independent of others in the list) to get
 // initial order for the removals
 void rank_removal_candidates(const std::map<std::string, long> &words,
-                                 const std::map<std::string, double> &vocab,
-                                 std::map<std::string, std::map<std::string, double> > &diffs,
-                                 std::map<std::string, double> &new_morph_freqs,
-                                 const int maxlen,
-                                 std::vector<std::pair<std::string, double> > &removal_scores)
+                             const std::map<std::string, double> &vocab,
+                             std::map<std::string, std::map<std::string, double> > &diffs,
+                             std::map<std::string, double> &new_morph_freqs,
+                             const int maxlen,
+                             std::vector<std::pair<std::string, double> > &removal_scores)
 {
+    new_morph_freqs.clear();
+    removal_scores.clear();
+
     resegment_words_w_diff(words, vocab, new_morph_freqs, diffs, maxlen);
     double densum = get_sum(new_morph_freqs);
     double cost = get_cost(new_morph_freqs, densum);
 
     for (std::map<std::string, std::map<std::string, double> >::iterator iter = diffs.begin(); iter != diffs.end(); ++iter) {
-        double stored_value = new_morph_freqs.at(iter->first);
-        for (std::map<std::string, double>::iterator diffiter = iter->second.begin(); diffiter != iter->second.end(); ++diffiter)
-            new_morph_freqs[diffiter->first] += diffiter->second;
-        new_morph_freqs.erase(iter->first);
-
-        double hypo_densum = get_sum(new_morph_freqs);
-        double hypo_cost = get_cost(new_morph_freqs, hypo_densum);
+        double hypo_densum = get_sum(new_morph_freqs, iter->second);
+        double hypo_cost = get_cost(new_morph_freqs, iter->second, hypo_densum);
         std::pair<std::string, double> removal_score = std::make_pair(iter->first, hypo_cost-cost);
         removal_scores.push_back(removal_score);
-
-        for (std::map<std::string, double>::iterator diffiter = iter->second.begin(); diffiter != iter->second.end(); ++diffiter)
-            new_morph_freqs[diffiter->first] -= diffiter->second;
-        new_morph_freqs[iter->first] = stored_value;
     }
 
     std::sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
@@ -265,9 +259,9 @@ void rank_removal_candidates(const std::map<std::string, long> &words,
 
 
 void get_backpointers(const std::map<std::string, long> &words,
-                         const std::map<std::string, double> &vocab,
-                         std::map<std::string, std::map<std::string, bool> > &backpointers,
-                         const int maxlen)
+                      const std::map<std::string, double> &vocab,
+                      std::map<std::string, std::map<std::string, bool> > &backpointers,
+                      const int maxlen)
 {
     backpointers.clear();
 
@@ -290,12 +284,12 @@ void get_backpointers(const std::map<std::string, long> &words,
 
 // Really performs the removal and gives out updated freqs
 void remove_subword_update_backpointers(const std::map<std::string, double> &vocab,
-                                             const int maxlen,
-                                             const std::string &subword,
-                                             const std::map<std::string, std::map<std::string, bool> > &backpointers,
-                                             std::map<std::string, std::map<std::string, bool> > &backpointers_to_remove,
-                                             std::map<std::string, std::map<std::string, bool> > &backpointers_to_add,
-                                             std::map<std::string, double> &freq_diffs)
+                                        const int maxlen,
+                                        const std::string &subword,
+                                        const std::map<std::string, std::map<std::string, bool> > &backpointers,
+                                        std::map<std::string, std::map<std::string, bool> > &backpointers_to_remove,
+                                        std::map<std::string, std::map<std::string, bool> > &backpointers_to_add,
+                                        std::map<std::string, double> &freq_diffs)
 {
     std::map<std::string, double> hypo_vocab = vocab;
     hypo_vocab.erase(subword);
