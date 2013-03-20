@@ -13,23 +13,15 @@ class Token {
     public:
         int source;
         double cost;
-        Token(): source(-1), cost(std::numeric_limits<double>::max()) {};
+        Token(): source(-1), cost(-std::numeric_limits<double>::max()) {};
         Token(int src, double cst): source(src), cost(cst) {};
         Token(const Token& orig) { this->source=orig.source; this->cost=orig.cost; };
 };
 
-// Note just changed > to < ..
-bool operator< (const Token& token1, const Token &token2)
-{
-    return token1.cost < token2.cost;
-}
-
-typedef std::priority_queue<Token> Node;
-
 
 int read_vocab(const char* fname,
-                 std::map<std::string, double> &vocab,
-                 int &maxlen)
+               std::map<std::string, double> &vocab,
+               int &maxlen)
 {
     std::ifstream vocabfile(fname);
     if (!vocabfile) return -1;
@@ -51,7 +43,7 @@ int read_vocab(const char* fname,
 
 
 int write_vocab(const char* fname,
-                  const std::map<std::string, double> &vocab)
+                const std::map<std::string, double> &vocab)
 {
     std::ofstream vocabfile(fname);
     if (!vocabfile) return -1;
@@ -70,8 +62,8 @@ bool descending_sort(std::pair<std::string, double> i,std::pair<std::string, dou
 bool ascending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second < j.second); }
 
 void sort_vocab(const std::map<std::string, double> &vocab,
-                  std::vector<std::pair<std::string, double> > &sorted_vocab,
-                  bool descending)
+                std::vector<std::pair<std::string, double> > &sorted_vocab,
+                bool descending)
 {
     sorted_vocab.clear();
     for (std::map<std::string,double>::const_iterator it = vocab.begin(); it != vocab.end(); it++) {
@@ -86,13 +78,13 @@ void sort_vocab(const std::map<std::string, double> &vocab,
 
 
 void viterbi(const std::map<std::string, double> &vocab,
-               int maxlen,
-               const std::string &sentence,
-               std::vector<std::string> &best_path,
-               bool reverse)
+             int maxlen,
+             const std::string &sentence,
+             std::vector<std::string> &best_path,
+             bool reverse)
 {
     if (sentence.length() == 0) return;
-    std::vector<Node> search(sentence.length());
+    std::vector<Token> search(sentence.length());
     int start_pos = 0;
     int end_pos = 0;
     int len = 0;
@@ -107,28 +99,27 @@ void viterbi(const std::map<std::string, double> &vocab,
             len = end_pos-start_pos;
 
             if (vocab.find(sentence.substr(start_pos, len)) != vocab.end()) {
-                Token tok(j-1, vocab.at(sentence.substr(start_pos, len)));
-                if (j-1 >= 0 && search[j-1].size() > 0) {
-                    Token source_top = search[j-1].top();
-                    tok.cost += source_top.cost;
+                double cost = vocab.at(sentence.substr(start_pos, len));
+                if (j-1 >= 0 && search[j-1].cost != -std::numeric_limits<double>::max())
+                    cost += search[j-1].cost;
+                if (cost > search[i].cost) {
+                    search[i].cost = cost;
+                    search[i].source = j-1;
                 }
-                search[i].push(tok);
             }
         }
     }
 
     // Look up the best path
     int target = search.size()-1;
-    if (search[target].size() == 0) return;
-    Token top = search[target].top();
-    int source = top.source;
+    if (search[target].cost == -std::numeric_limits<double>::max()) return;
 
+    int source = search[target].source;
     while (true) {
         best_path.push_back(sentence.substr(source+1, target-source));
         if (source == -1) break;
         target = source;
-        Token top = search[target].top();
-        source = top.source;
+        source = search[target].source;
     }
 
     if (reverse) std::reverse(best_path.begin(), best_path.end());
