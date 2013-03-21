@@ -85,3 +85,21 @@ void fetest :: viterbiTest5 (void)
     CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
 }
+
+// No segmentation
+void fetest :: viterbiTest6 (void)
+{
+    std::map<std::string, double> vocab;
+    std::string str1("a"); std::string str2("b");
+    std::string str3("c"); std::string str4("d");
+    vocab[str1] = -1.0;
+    vocab[str2] = -2.0;
+    vocab[str3] = 0.0;
+    vocab[str4] = 0.0;
+    std::string sentence("a-bcd");
+    std::vector<std::string> best_path;
+    int maxlen = 1;
+    viterbi(vocab, maxlen, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+}
+

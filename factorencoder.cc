@@ -100,8 +100,10 @@ void viterbi(const std::map<std::string, double> &vocab,
 
             if (vocab.find(sentence.substr(start_pos, len)) != vocab.end()) {
                 double cost = vocab.at(sentence.substr(start_pos, len));
-                if (j-1 >= 0 && search[j-1].cost != -std::numeric_limits<double>::max())
+                if (j-1 >= 0) {
+                    if (search[j-1].cost == -std::numeric_limits<double>::max()) break;
                     cost += search[j-1].cost;
+                }
                 if (cost > search[i].cost) {
                     search[i].cost = cost;
                     search[i].source = j-1;
