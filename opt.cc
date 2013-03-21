@@ -424,7 +424,7 @@ int main(int argc, char* argv[]) {
         for (int i=0; i<removal_scores.size(); i++) {
             if (removal_scores[i].first.length() == 1) continue;
 
-            std::cout << "try removing subword: " << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << std::endl;
+            std::cout << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << std::endl;
 
             std::map<std::string, double> freq_diffs;
             std::map<std::string, std::map<std::string, bool> > backpointers_to_remove;
@@ -432,21 +432,38 @@ int main(int argc, char* argv[]) {
             remove_subword_update_backpointers(vocab, maxlen, removal_scores[i].first, backpointers,
                                                backpointers_to_remove, backpointers_to_add, freq_diffs);
 
+            double hypo_densum = get_sum(freqs, freq_diffs);
+            double hypo_cost = get_cost(freqs, freq_diffs, hypo_densum);
+
+            std::cout << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost;
+            if (hypo_cost-curr_cost < threshold) {
+                std::cout << " was below threshold " << threshold << std::endl;
+                continue;
+            }
+            std::cout << " removed, was above threshold " << threshold << std::endl;
+
             apply_freq_diffs(freqs, freq_diffs);
             freqs.erase(removal_scores[i].first);
             apply_backpointer_changes(words, backpointers, backpointers_to_remove, backpointers_to_add);
             backpointers.erase(removal_scores[i].first);
 
-            double hypo_densum = get_sum(freqs);
-            double hypo_cost = get_cost(freqs, hypo_densum);
-
-            std::cout << "removed subword: " << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost << std::endl;
             curr_densum = hypo_densum;
             curr_cost = hypo_cost;
             vocab = freqs;
             freqs_to_logprobs(vocab, hypo_densum);
 
             n_removals++;
+
+            if (vocab.size() % 5000 == 0) {
+                std::ostringstream vocabfname;
+                vocabfname << "iter" << itern << "_" << vocab.size() << ".vocab";
+                write_vocab(vocabfname.str().c_str(), vocab);
+
+                std::ostringstream freqsfname;
+                freqsfname << "iter" << itern << "_" << vocab.size() << ".freqs";
+                write_vocab(freqsfname.str().c_str(), freqs);
+            }
+
             if (n_removals >= n_removals_per_iter) break;
             if (vocab.size() <= min_vocab_size) break;
         }
@@ -471,6 +488,7 @@ int main(int argc, char* argv[]) {
         write_vocab(freqsfname.str().c_str(), freqs);
 
         itern++;
+        threshold -= threshold_decrease;
 
         if (n_removals < min_removals_per_iter) {
             std::cerr << "stopping by min_removals_per_iter." << std::endl;
