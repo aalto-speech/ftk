@@ -405,7 +405,7 @@ int main(int argc, char* argv[]) {
 
         std::cerr << "collecting candidate subwords for removal" << std::endl;
         std::map<std::string, std::map<std::string, double> > diffs;
-        n_candidates_per_iter = std::min(n_candidates_per_iter, (int)vocab.size());
+        if (vocab.size()-n_candidates_per_iter < min_vocab_size) n_candidates_per_iter = vocab.size()-min_vocab_size;
         init_removal_candidates(n_candidates_per_iter, maxlen, words, vocab, diffs);
 
         std::cerr << "ranking candidate subwords" << std::endl;
