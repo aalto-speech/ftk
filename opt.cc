@@ -469,10 +469,12 @@ int main(int argc, char* argv[]) {
         }
 
         int n_cutoff = cutoff(freqs, cutoff_value);
-        curr_densum = get_sum(freqs);
-        curr_cost = get_cost(freqs, curr_densum);
+        double co_densum = get_sum(freqs);
         vocab = freqs;
-        freqs_to_logprobs(vocab, curr_densum);
+        freqs_to_logprobs(vocab, co_densum);
+        resegment_words(words, vocab, freqs, maxlen);
+        curr_densum = get_sum(freqs);
+        curr_cost = get_cost(freqs, densum);
 
         std::cerr << "subwords removed in this iteration: " << n_removals << std::endl;
         std::cerr << "subwords removed with cutoff this iteration: " << n_cutoff << std::endl;
