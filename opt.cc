@@ -36,7 +36,7 @@ void resegment_words(const std::map<std::string, long> &words,
                      const int maxlen)
 {
     new_freqs.clear();
-    for(std::map<std::string, long>::const_iterator worditer = words.begin(); worditer != words.end(); ++worditer) {
+    for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         std::vector<std::string> best_path;
         viterbi(vocab, maxlen, worditer->first, best_path, false);
@@ -61,7 +61,7 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
 {
     std::map<std::string, double> hypo_vocab = vocab;
     new_freqs.clear();
-    for (std::map<std::string, long>::const_iterator worditer = words.begin(); worditer != words.end(); ++worditer) {
+    for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         std::vector<std::string> best_path;
         viterbi(vocab, maxlen, worditer->first, best_path, false);
@@ -79,7 +79,7 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
         }
 
         // Hypothesize what the segmentation would be if some subword didn't exist
-        for (std::map<std::string, double>::iterator hypoiter = best_path_types.begin(); hypoiter != best_path_types.end(); ++hypoiter) {
+        for (auto hypoiter = best_path_types.begin(); hypoiter != best_path_types.end(); ++hypoiter) {
             if (diffs.find(hypoiter->first) != diffs.end()) {
                 double stored_value = hypo_vocab.at(hypoiter->first);
                 hypo_vocab.erase(hypoiter->first);
@@ -108,7 +108,7 @@ void resegment_words_w_diff(const std::map<std::string, long> &words,
 double get_sum(const std::map<std::string, double> &freqs)
 {
     double total = 0.0;
-    for(std::map<std::string, double>::const_iterator iter = freqs.begin(); iter != freqs.end(); ++iter) {
+    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
         total += iter->second;
     }
     return total;
@@ -119,9 +119,9 @@ double get_sum(const std::map<std::string, double> &freqs,
                const std::map<std::string, double> &freq_diffs)
 {
     double total = 0.0;
-    for(std::map<std::string, double>::const_iterator iter = freqs.begin(); iter != freqs.end(); ++iter)
+    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter)
         total += iter->second;
-    for(std::map<std::string, double>::const_iterator iter = freq_diffs.begin(); iter != freq_diffs.end(); ++iter)
+    for (auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
         total += iter->second;
     return total;
 }
@@ -133,7 +133,7 @@ double get_cost(const std::map<std::string, double> &freqs,
     double total = 0.0;
     double tmp = 0.0;
     densum = log2(densum);
-    for(std::map<std::string, double>::const_iterator iter = freqs.begin(); iter != freqs.end(); ++iter) {
+    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
         tmp = iter->second * (log2(iter->second)-densum);
         if (!isnan(tmp)) total += tmp;
     }
@@ -148,7 +148,7 @@ double get_cost(const std::map<std::string, double> &freqs,
     double total = 0.0;
     double tmp = 0.0;
     densum = log2(densum);
-    for(std::map<std::string, double>::const_iterator iter = freqs.begin(); iter != freqs.end(); ++iter) {
+    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
         tmp = iter->second;
         if (freq_diffs.find(iter->first) != freq_diffs.end())
             tmp += freq_diffs.at(iter->first);
@@ -162,11 +162,11 @@ double get_cost(const std::map<std::string, double> &freqs,
 void apply_freq_diffs(std::map<std::string, double> &freqs,
                       const std::map<std::string, double> &freq_diffs)
 {
-    for(std::map<std::string, double>::const_iterator iter = freq_diffs.begin(); iter != freq_diffs.end(); ++iter)
+    for(auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
         freqs[iter->first] += iter->second;
 
     // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
-    std::map<std::string, double>::iterator iter = freqs.begin();
+    auto iter = freqs.begin();
     while (iter != freqs.end()) {
         if (iter->second <= 0.0) freqs.erase(iter++);
         else ++iter;
@@ -179,11 +179,11 @@ void apply_backpointer_changes(const std::map<std::string, long> &words,
                                const std::map<std::string, std::map<std::string, bool> > &bps_to_remove,
                                const std::map<std::string, std::map<std::string, bool> > &bps_to_add)
 {
-    for (std::map<std::string, std::map<std::string, bool> >::const_iterator switer = bps_to_remove.begin(); switer != bps_to_remove.end(); ++switer)
-        for (std::map<std::string, bool>::const_iterator worditer = switer->second.begin(); worditer != switer->second.end(); ++worditer)
+    for (auto switer = bps_to_remove.cbegin(); switer != bps_to_remove.cend(); ++switer)
+        for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
             backpointers[switer->first].erase(worditer->first);
-    for (std::map<std::string, std::map<std::string, bool> >::const_iterator switer = bps_to_add.begin(); switer != bps_to_add.end(); ++switer)
-        for (std::map<std::string, bool>::const_iterator worditer = switer->second.begin(); worditer != switer->second.end(); ++worditer)
+    for (auto switer = bps_to_add.cbegin(); switer != bps_to_add.cend(); ++switer)
+        for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
             backpointers[switer->first][worditer->first] = double(words.at(worditer->first));
 }
 
@@ -192,7 +192,7 @@ void freqs_to_logprobs(std::map<std::string, double> &vocab,
                        double densum)
 {
     densum = log2(densum);
-    for(std::map<std::string, double>::iterator iter = vocab.begin(); iter != vocab.end(); ++iter)
+    for (auto iter = vocab.begin(); iter != vocab.end(); ++iter)
         iter->second = (log2(iter->second)-densum);
 }
 
@@ -202,7 +202,7 @@ int cutoff(std::map<std::string, double> &vocab,
 {
     // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
     int nremovals = 0;
-    std::map<std::string, double>::iterator iter = vocab.begin();
+    auto iter = vocab.begin();
     while (iter != vocab.end()) {
         if (iter->second <= limit && iter->first.length() > 1) {
             vocab.erase(iter++);
@@ -254,7 +254,7 @@ void rank_removal_candidates(const std::map<std::string, long> &words,
     double densum = get_sum(new_morph_freqs);
     double cost = get_cost(new_morph_freqs, densum);
 
-    for (std::map<std::string, std::map<std::string, double> >::iterator iter = diffs.begin(); iter != diffs.end(); ++iter) {
+    for (auto iter = diffs.begin(); iter != diffs.end(); ++iter) {
         double hypo_densum = get_sum(new_morph_freqs, iter->second);
         double hypo_cost = get_cost(new_morph_freqs, iter->second, hypo_densum);
         std::pair<std::string, double> removal_score = std::make_pair(iter->first, hypo_cost-cost);
@@ -262,7 +262,6 @@ void rank_removal_candidates(const std::map<std::string, long> &words,
     }
 
     std::sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
-
 }
 
 
@@ -273,7 +272,7 @@ void get_backpointers(const std::map<std::string, long> &words,
 {
     backpointers.clear();
 
-    for(std::map<std::string, long>::const_iterator worditer = words.begin(); worditer != words.end(); ++worditer) {
+    for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         std::vector<std::string> best_path;
         viterbi(vocab, maxlen, worditer->first, best_path, false);
@@ -306,7 +305,7 @@ void remove_subword_update_backpointers(const std::map<std::string, double> &voc
     backpointers_to_add.clear();
     freq_diffs.clear();
 
-    for (std::map<std::string, double>::const_iterator worditer = backpointers.at(subword).begin(); worditer != backpointers.at(subword).end(); ++worditer) {
+    for (auto worditer = backpointers.at(subword).cbegin(); worditer != backpointers.at(subword).cend(); ++worditer) {
 
         std::vector<std::string> best_path;
         viterbi(vocab, maxlen, worditer->first, best_path, false);
