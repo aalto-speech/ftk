@@ -1,5 +1,5 @@
 
-cxxflags = -O3 -march=native
+cxxflags = -O3 -march=native -std=gnu++0x
 
 ##################################################
 
