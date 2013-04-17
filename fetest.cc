@@ -107,3 +107,48 @@ void fetest :: viterbiTest6 (void)
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
+// Empty string
+void fetest :: ForwardBackwardTest1 (void)
+{
+    map<string, double> vocab;
+    string str1("a");
+    vocab[str1] = -1.0;
+    string sentence("");
+    map<string, double> stats;
+    int maxlen = 1;
+    forward_backward(vocab, maxlen, sentence, stats);
+    CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
+}
+
+// No segmentation
+void fetest :: ForwardBackwardTest2 (void)
+{
+    map<string, double> vocab;
+    string str1("a"); string str2("b");
+    string str3("c"); string str4("d");
+    vocab[str1] = -1.0;
+    vocab[str2] = -2.0;
+    vocab[str3] = 0.0;
+    vocab[str4] = 0.0;
+    string sentence("a-bcd");
+    map<string, double> stats;
+    int maxlen = 1;
+    forward_backward(vocab, maxlen, sentence, stats);
+    CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
+}
+
+// One character string
+void fetest :: ForwardBackwardTest3 (void)
+{
+    map<string, double> vocab;
+    string str1("a");
+    vocab[str1] = -1.0;
+    string sentence("a");
+    map<string, double> stats;
+    int maxlen = 1;
+    forward_backward(vocab, maxlen, sentence, stats);
+    CPPUNIT_ASSERT_EQUAL(1, (int)stats.size());
+    CPPUNIT_ASSERT_EQUAL(1.0, stats["a"]);
+}
+
+

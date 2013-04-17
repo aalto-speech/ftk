@@ -15,6 +15,9 @@ class fetest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (viterbiTest4);
     CPPUNIT_TEST (viterbiTest5);
     CPPUNIT_TEST (viterbiTest6);
+    CPPUNIT_TEST (ForwardBackwardTest1);
+    CPPUNIT_TEST (ForwardBackwardTest2);
+    CPPUNIT_TEST (ForwardBackwardTest3);
     CPPUNIT_TEST_SUITE_END ();
 
     public:
@@ -28,6 +31,9 @@ class fetest : public CPPUNIT_NS :: TestFixture
         void viterbiTest4(void);
         void viterbiTest5(void);
         void viterbiTest6(void);
+        void ForwardBackwardTest1(void);
+        void ForwardBackwardTest2(void);
+        void ForwardBackwardTest3(void);
 };
 
 #endif
