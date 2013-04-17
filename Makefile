@@ -6,7 +6,7 @@ cxxflags = -O3 -march=native -std=gnu++0x
 progs = fe filefe opt
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
-srcs = factorencoder.cc io.cc
+srcs = factorencoder.cc io.cc MorphSet.cc
 objs = $(srcs:.cc=.o)
 
 test_progs = test_fe
@@ -46,4 +46,3 @@ clean:
 dep:
 	$(CXX) -MM $(cxxflags) $(DEPFLAGS) $(all_srcs) > dep
 include dep
-
