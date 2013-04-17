@@ -1,3 +1,7 @@
+#include <map>
+#include <string>
+#include <vector>
+
 #include "fetest.hh"
 
 #include <cppunit/TestFixture.h>
@@ -15,12 +19,12 @@ void fetest :: tearDown (void)
 
 void fetest :: viterbiTest1 (void)
 {
-    std::map<std::string, double> vocab;
-    std::string str1("a"); std::string str2("bc");
+    map<string, double> vocab;
+    string str1("a"); string str2("bc");
     vocab[str1] = -1.0;
     vocab[str2] = -2.0;
-    std::string sentence("abc");
-    std::vector<std::string> best_path;
+    string sentence("abc");
+    vector<string> best_path;
     int maxlen = 2;
     viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
@@ -30,15 +34,15 @@ void fetest :: viterbiTest1 (void)
 
 void fetest :: viterbiTest2 (void)
 {
-    std::map<std::string, double> vocab;
-    std::string str1("a"); std::string str2("bc");
-    std::string str3("ab"); std::string str4("c");
+    map<string, double> vocab;
+    string str1("a"); string str2("bc");
+    string str3("ab"); string str4("c");
     vocab[str1] = -1.0;
     vocab[str2] = -2.0;
     vocab[str3] = 0.0;
     vocab[str4] = 0.0;
-    std::string sentence("abc");
-    std::vector<std::string> best_path;
+    string sentence("abc");
+    vector<string> best_path;
     int maxlen = 2;
     viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
@@ -49,11 +53,11 @@ void fetest :: viterbiTest2 (void)
 // No possible segmentation
 void fetest :: viterbiTest3 (void)
 {
-    std::map<std::string, double> vocab;
-    std::string str1("a");
+    map<string, double> vocab;
+    string str1("a");
     vocab[str1] = -1.0;
-    std::string sentence("abc");
-    std::vector<std::string> best_path;
+    string sentence("abc");
+    vector<string> best_path;
     int maxlen = 1;
     viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
@@ -62,11 +66,11 @@ void fetest :: viterbiTest3 (void)
 // Empty string
 void fetest :: viterbiTest4 (void)
 {
-    std::map<std::string, double> vocab;
-    std::string str1("a");
+    map<string, double> vocab;
+    string str1("a");
     vocab[str1] = -1.0;
-    std::string sentence("");
-    std::vector<std::string> best_path;
+    string sentence("");
+    vector<string> best_path;
     int maxlen = 1;
     viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
@@ -75,11 +79,11 @@ void fetest :: viterbiTest4 (void)
 // One character sentence
 void fetest :: viterbiTest5 (void)
 {
-    std::map<std::string, double> vocab;
-    std::string str1("a");
+    map<string, double> vocab;
+    string str1("a");
     vocab[str1] = -1.0;
-    std::string sentence("a");
-    std::vector<std::string> best_path;
+    string sentence("a");
+    vector<string> best_path;
     int maxlen = 1;
     viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
@@ -89,15 +93,15 @@ void fetest :: viterbiTest5 (void)
 // No segmentation
 void fetest :: viterbiTest6 (void)
 {
-    std::map<std::string, double> vocab;
-    std::string str1("a"); std::string str2("b");
-    std::string str3("c"); std::string str4("d");
+    map<string, double> vocab;
+    string str1("a"); string str2("b");
+    string str3("c"); string str4("d");
     vocab[str1] = -1.0;
     vocab[str2] = -2.0;
     vocab[str3] = 0.0;
     vocab[str4] = 0.0;
-    std::string sentence("a-bcd");
-    std::vector<std::string> best_path;
+    string sentence("a-bcd");
+    vector<string> best_path;
     int maxlen = 1;
     viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
