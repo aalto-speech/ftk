@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "MorphSet.hh"
+
 using namespace std;
 
 int read_vocab(const char* fname,
@@ -20,6 +22,11 @@ void sort_vocab(const map<string, double> &vocab,
 
 void viterbi(const map<string, double> &vocab,
              int maxlen,
+             const string &sentence,
+             vector<string> &best_path,
+             bool reverse=true);
+
+void viterbi(MorphSet &vocab,
              const string &sentence,
              vector<string> &best_path,
              bool reverse=true);
