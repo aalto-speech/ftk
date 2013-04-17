@@ -68,7 +68,7 @@ void sort_vocab(const map<string, double> &vocab,
                 bool descending)
 {
     sorted_vocab.clear();
-    for (map<string,double>::const_iterator it = vocab.begin(); it != vocab.end(); it++) {
+    for (auto it = vocab.cbegin(); it != vocab.cend(); it++) {
         pair<string, double> curr_pair(it->first, it->second);
         sorted_vocab.push_back(curr_pair);
     }
@@ -127,4 +127,41 @@ void viterbi(const map<string, double> &vocab,
     }
 
     if (reverse) std::reverse(best_path.begin(), best_path.end());
+}
+
+
+void forward_backward(const map<string, double> &vocab,
+                         int maxlen,
+                         const string &sentence,
+                         map<string, double> &stats)
+{
+    if (sentence.length() == 0) return;
+    vector<Token> search(sentence.length());
+    int start_pos = 0;
+    int end_pos = 0;
+    int len = 0;
+
+    for (int i=0; i<sentence.length(); i++) {
+
+        // Iterate all factors ending in this position
+        for (int j=max(0, i-maxlen); j<=i; j++) {
+
+            start_pos = j;
+            end_pos = i+1;
+            len = end_pos-start_pos;
+
+            if (vocab.find(sentence.substr(start_pos, len)) != vocab.end()) {
+                double cost = vocab.at(sentence.substr(start_pos, len));
+                if (j-1 >= 0) {
+                    if (search[j-1].cost == -numeric_limits<double>::max()) break;
+                    cost += search[j-1].cost;
+                }
+                if (cost > search[i].cost) {
+                    search[i].cost = cost;
+                    search[i].source = j-1;
+                }
+            }
+        }
+    }
+
 }
