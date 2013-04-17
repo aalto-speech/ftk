@@ -6,6 +6,8 @@
 #include <sstream>
 #include <queue>
 
+using namespace std;
+
 #include "factorencoder.hh"
 
 
@@ -13,28 +15,28 @@ class Token {
     public:
         int source;
         double cost;
-        Token(): source(-1), cost(-std::numeric_limits<double>::max()) {};
+        Token(): source(-1), cost(-numeric_limits<double>::max()) {};
         Token(int src, double cst): source(src), cost(cst) {};
         Token(const Token& orig) { this->source=orig.source; this->cost=orig.cost; };
 };
 
 
 int read_vocab(const char* fname,
-               std::map<std::string, double> &vocab,
+               map<string, double> &vocab,
                int &maxlen)
 {
-    std::ifstream vocabfile(fname);
+    ifstream vocabfile(fname);
     if (!vocabfile) return -1;
 
-    std::string line, word;
+    string line, word;
     double count;
     maxlen = -1;
     while (getline(vocabfile, line)) {
-        std::stringstream ss(line);
+        stringstream ss(line);
         ss >> count;
         ss >> word;
         vocab[word] = count;
-        maxlen = std::max(maxlen, int(word.length()));
+        maxlen = max(maxlen, int(word.length()));
     }
     vocabfile.close();
 
@@ -43,48 +45,48 @@ int read_vocab(const char* fname,
 
 
 int write_vocab(const char* fname,
-                const std::map<std::string, double> &vocab)
+                const map<string, double> &vocab)
 {
-    std::ofstream vocabfile(fname);
+    ofstream vocabfile(fname);
     if (!vocabfile) return -1;
 
-    std::vector<std::pair<std::string, double> > sorted_vocab;
+    vector<pair<string, double> > sorted_vocab;
     sort_vocab(vocab, sorted_vocab);
     for (int i=0; i<sorted_vocab.size(); i++)
-        vocabfile << sorted_vocab[i].second << " " << sorted_vocab[i].first << std::endl;
+        vocabfile << sorted_vocab[i].second << " " << sorted_vocab[i].first << endl;
     vocabfile.close();
 
     return vocab.size();
 }
 
 
-bool descending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second > j.second); }
-bool ascending_sort(std::pair<std::string, double> i,std::pair<std::string, double> j) { return (i.second < j.second); }
+bool descending_sort(pair<string, double> i,pair<string, double> j) { return (i.second > j.second); }
+bool ascending_sort(pair<string, double> i,pair<string, double> j) { return (i.second < j.second); }
 
-void sort_vocab(const std::map<std::string, double> &vocab,
-                std::vector<std::pair<std::string, double> > &sorted_vocab,
+void sort_vocab(const map<string, double> &vocab,
+                vector<pair<string, double> > &sorted_vocab,
                 bool descending)
 {
     sorted_vocab.clear();
-    for (std::map<std::string,double>::const_iterator it = vocab.begin(); it != vocab.end(); it++) {
-        std::pair<std::string, double> curr_pair(it->first, it->second);
+    for (map<string,double>::const_iterator it = vocab.begin(); it != vocab.end(); it++) {
+        pair<string, double> curr_pair(it->first, it->second);
         sorted_vocab.push_back(curr_pair);
     }
     if (descending)
-        std::sort(sorted_vocab.begin(), sorted_vocab.end(), descending_sort);
+        sort(sorted_vocab.begin(), sorted_vocab.end(), descending_sort);
     else
-        std::sort(sorted_vocab.begin(), sorted_vocab.end(), ascending_sort);
+        sort(sorted_vocab.begin(), sorted_vocab.end(), ascending_sort);
 }
 
 
-void viterbi(const std::map<std::string, double> &vocab,
+void viterbi(const map<string, double> &vocab,
              int maxlen,
-             const std::string &sentence,
-             std::vector<std::string> &best_path,
+             const string &sentence,
+             vector<string> &best_path,
              bool reverse)
 {
     if (sentence.length() == 0) return;
-    std::vector<Token> search(sentence.length());
+    vector<Token> search(sentence.length());
     int start_pos = 0;
     int end_pos = 0;
     int len = 0;
@@ -92,7 +94,7 @@ void viterbi(const std::map<std::string, double> &vocab,
     for (int i=0; i<sentence.length(); i++) {
 
         // Iterate all factors ending in this position
-        for (int j=std::max(0, i-maxlen); j<=i; j++) {
+        for (int j=max(0, i-maxlen); j<=i; j++) {
 
             start_pos = j;
             end_pos = i+1;
@@ -101,7 +103,7 @@ void viterbi(const std::map<std::string, double> &vocab,
             if (vocab.find(sentence.substr(start_pos, len)) != vocab.end()) {
                 double cost = vocab.at(sentence.substr(start_pos, len));
                 if (j-1 >= 0) {
-                    if (search[j-1].cost == -std::numeric_limits<double>::max()) break;
+                    if (search[j-1].cost == -numeric_limits<double>::max()) break;
                     cost += search[j-1].cost;
                 }
                 if (cost > search[i].cost) {
@@ -114,7 +116,7 @@ void viterbi(const std::map<std::string, double> &vocab,
 
     // Look up the best path
     int target = search.size()-1;
-    if (search[target].cost == -std::numeric_limits<double>::max()) return;
+    if (search[target].cost == -numeric_limits<double>::max()) return;
 
     int source = search[target].source;
     while (true) {
