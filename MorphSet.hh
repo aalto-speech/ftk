@@ -1,6 +1,7 @@
 #ifndef MORPHSET_HH
 #define MORPHSET_HH
 
+#include <map>
 #include <string>
 
 /** A structure containing a set of morphs in a letter-tree format.
@@ -15,12 +16,13 @@ public:
   /** Arc of a morph tree. */
   class Arc {
   public:
-    Arc(char letter, std::string morph, Node *target_node, Arc *sibling_arc)
-      : letter(letter), morph(morph), target_node(target_node),
-	sibling_arc(sibling_arc) { }
+    Arc(char letter, std::string morph, Node *target_node, Arc *sibling_arc, double cost=0.0)
+      : letter(letter), morph(morph), target_node(target_node), cost(cost),
+    sibling_arc(sibling_arc) { }
 
     char letter; //!< Letter of the morph
     std::string morph; //!< Non-zero if complete morph
+    double cost;
     Node *target_node; //!< Target node
     Arc *sibling_arc; //!< Pointer to another arc from the source node.
   };
@@ -35,6 +37,7 @@ public:
 
   /** Default constructor. */
   MorphSet();
+  MorphSet(const std::map<std::string, double> &vocab);
 
   /** Insert a letter to a node (or follow an existing arc).
    * \param letter = a letter to insert to the node
@@ -42,7 +45,7 @@ public:
    * \param node = a node to which the letter is inserted
    * \return pointer to the created or existing node
    */
-  Node *insert(char letter, const std::string &morph, Node *node);
+  Node *insert(char letter, const std::string &morph, double cost, Node *node);
 
   /** Find an arc with the given letter from the given node.
    * \param letter = the letter to search
@@ -52,7 +55,7 @@ public:
   Arc *find_arc(char letter, const Node *node);
 
   /** Add a new morph to the set */
-  void add(const std::string &morph);
+  void add(const std::string &morph, double cost);
 
   Node root_node; //!< The root of the morph tree
   int max_morph_length; //!< The length of the longest morph in the set

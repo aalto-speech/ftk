@@ -1,11 +1,19 @@
-#include <stdlib.h>
+#include <iostream>
+#include <cstdlib>
 #include <vector>
 #include "MorphSet.hh"
 
+
 MorphSet::MorphSet() : max_morph_length(0) { }
 
+MorphSet::MorphSet(const std::map<std::string, double> &vocab) {
+    max_morph_length = 0;
+    for (auto it = vocab.cbegin(); it !=vocab.cend(); ++it)
+        add(it->first, it->second);
+}
+
 MorphSet::Node*
-MorphSet::insert(char letter, const std::string &morph, Node *node)
+MorphSet::insert(char letter, const std::string &morph, double cost, Node *node)
 {
   // Find a possible existing arc with the letter
   Arc *arc = node->first_arc;
@@ -17,7 +25,7 @@ MorphSet::insert(char letter, const std::string &morph, Node *node)
 
   // No existing arc: create a new arc
   if (arc == NULL) {
-    node->first_arc = new Arc(letter, morph, new Node(NULL), node->first_arc);
+    node->first_arc = new Arc(letter, morph, new Node(NULL), node->first_arc, cost);
     arc = node->first_arc;
   }
 
@@ -52,10 +60,12 @@ MorphSet::find_arc(char letter, const Node *node)
 }
 
 void
-MorphSet::add(const std::string &morph)
+MorphSet::add(const std::string &morph, double cost)
 {
     // Create arcs
     Node *node = &root_node;
-    for (int i = 0; i < (int)morph.length(); i++)
-      node = insert(morph[i], i < (int)morph.length() - 1 ? "" : morph, node);
+    int i=0;
+    for (; i < (int)morph.length()-1; i++)
+        node = insert(morph[i], "" , 0.0, node);
+    insert(morph[i], morph, cost, node);
 }
