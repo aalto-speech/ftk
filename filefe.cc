@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+using namespace std;
+
 #include "factorencoder.hh"
 #include "io.hh"
 
@@ -12,43 +14,43 @@
 int main(int argc, char* argv[]) {
 
     if (argc != 4) {
-        std::cerr << "usage: " << argv[0] << " <vocabulary> <infile> <outfile>" << std::endl;
+        cerr << "usage: " << argv[0] << " <vocabulary> <infile> <outfile>" << endl;
         exit(0);
     }
 
     int maxlen;
-    std::map<std::string, double> vocab;
-    std::cerr << "Reading vocabulary " << argv[1] << std::endl;
+    map<string, double> vocab;
+    cerr << "Reading vocabulary " << argv[1] << endl;
     int retval = read_vocab(argv[1], vocab, maxlen);
     if (retval < 0) {
-        std::cerr << "something went wrong reading vocabulary" << std::endl;
+        cerr << "something went wrong reading vocabulary" << endl;
         exit(0);
     }
-    std::cerr << "\t" << "size: " << vocab.size() << std::endl;
-    std::cerr << "\t" << "maximum string length: " << maxlen << std::endl;
+    cerr << "\t" << "size: " << vocab.size() << endl;
+    cerr << "\t" << "maximum string length: " << maxlen << endl;
 
-    std::cerr << "Segmenting corpus" << std::endl;
-    std::string line;
+    cerr << "Segmenting corpus" << endl;
+    string line;
     io::Stream infile, outfile;
     try {
-        infile.open(argv[2], "r");   
+        infile.open(argv[2], "r");
         outfile.open(argv[3], "w");
     }
     catch (io::Stream::OpenError oe) {
-        std::cerr << "Something went wrong opening the files." << std::endl;
+        cerr << "Something went wrong opening the files." << endl;
         exit(0);
     }
 
-    char linebuffer[8192];    
+    char linebuffer[8192];
     while (fgets(linebuffer, 8192 , infile.file) != NULL) {
 
         linebuffer[strlen(linebuffer)-1] = '\0';
-        std::string line(linebuffer);
-        std::vector<std::string> best_path;
+        string line(linebuffer);
+        vector<string> best_path;
         viterbi(vocab, maxlen, line, best_path);
 
         if (best_path.size() == 0) {
-            std::cerr << "warning, no segmentation for line: " << line << std::endl;
+            cerr << "warning, no segmentation for line: " << line << endl;
             continue;
         }
 
@@ -63,7 +65,6 @@ int main(int argc, char* argv[]) {
 
     infile.close();
     outfile.close();
-    
+
     exit(1);
 }
-
