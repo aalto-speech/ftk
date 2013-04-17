@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <vector>
 #include "MorphSet.hh"
-#include "str.hh"
 
 MorphSet::MorphSet() : max_morph_length(0) { }
 
@@ -53,60 +52,10 @@ MorphSet::find_arc(char letter, const Node *node)
 }
 
 void
-MorphSet::read(FILE *file)
+MorphSet::add(const std::string &morph)
 {
-  std::string line;
-  while (str::read_line(&line, file, true)) {
-
-    // Skip empty lines
-    str::clean(&line, " \t\r\n");
-    if (line.length() == 0)
-      continue;
-
     // Create arcs
     Node *node = &root_node;
-    for (int i = 0; i < (int)line.length(); i++)
-      node = insert(line[i], i < (int)line.length() - 1 ? "" : line, node);
-  }
-}
-
-void
-MorphSet::write(FILE *file)
-{
-  fprintf(file,
-	  "digraph morph {\n"
-	  "charset=Latin1;\n"
-	  "node [label=foo];\n");
-
-  // Depth-first search through the tree
-  std::vector<Node*> stack(1, &root_node);
-  std::string label;
-  std::string color;
-  while (!stack.empty()) {
-
-    // Get the node
-    Node *node = stack.back();
-    stack.pop_back();
-
-    // Iterate arcs of the node
-    Arc *arc = node->first_arc;
-    while (arc != NULL) {
-
-      // Label of the arc
-      label = arc->letter;
-      color = "black";
-      if (arc->morph.length() > 0) {
-	label.append("\\n");
-	label.append(arc->morph);
-	color = "blue";
-      }
-
-      fprintf(file, "n%p -> n%p [label=\"%s\",color=%s];\n",
-	      node, arc->target_node, label.c_str(), color.c_str());
-      stack.push_back(arc->target_node);
-      arc = arc->sibling_arc;
-    }
-  }
-
-  fprintf(file, "}\n");
+    for (int i = 0; i < (int)morph.length(); i++)
+      node = insert(morph[i], i < (int)morph.length() - 1 ? "" : morph, node);
 }
