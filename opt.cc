@@ -274,11 +274,12 @@ void get_backpointers(const map<string, long> &words,
                       const int maxlen)
 {
     backpointers.clear();
+    MorphSet morphset_vocab(vocab);
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         vector<string> best_path;
-        viterbi(vocab, maxlen, worditer->first, best_path, false);
+        viterbi(morphset_vocab, worditer->first, best_path, false);
 
         if (best_path.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
