@@ -62,9 +62,9 @@ void resegment_words_w_diff(const map<string, long> &words,
                             map<string, map<string, double> > &diffs,
                             const int maxlen)
 {
-    map<string, double> hypo_vocab = vocab;
     new_freqs.clear();
     MorphSet morphset_vocab(vocab);
+    MorphSet hypo_vocab(vocab);
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         vector<string> best_path;
@@ -85,11 +85,10 @@ void resegment_words_w_diff(const map<string, long> &words,
         // Hypothesize what the segmentation would be if some subword didn't exist
         for (auto hypoiter = best_path_types.begin(); hypoiter != best_path_types.end(); ++hypoiter) {
             if (diffs.find(hypoiter->first) != diffs.end()) {
-                double stored_value = hypo_vocab.at(hypoiter->first);
-                hypo_vocab.erase(hypoiter->first);
+                double stored_value = hypo_vocab.remove(hypoiter->first);
                 vector<string> hypo_path;
 
-                viterbi(hypo_vocab, maxlen, worditer->first, hypo_path, false);
+                viterbi(hypo_vocab, worditer->first, hypo_path, false);
 
                 if (hypo_path.size() == 0) {
                     cerr << "warning, no hypo segmentation for word: " << worditer->first << endl;
@@ -102,7 +101,7 @@ void resegment_words_w_diff(const map<string, long> &words,
                     diffs[hypoiter->first][hypo_path[ih]] += double(worditer->second);
 
 //                diffs[hypoiter->first].erase(hypoiter->first);
-                hypo_vocab[hypoiter->first] = stored_value;
+                hypo_vocab.add(hypoiter->first, stored_value);
             }
         }
     }

@@ -68,16 +68,18 @@ MorphSet::add(const std::string &morph, double cost)
     insert(morph[i], morph, cost, node);
 }
 
-void
+double
 MorphSet::remove(const std::string &morph)
 {
     MorphSet::Node *node = &root_node;
     MorphSet::Arc *arc;
     for (int i=0; i<morph.length(); i++) {
         arc = find_arc(morph[i], node);
-        if (arc == NULL) return;
+        if (arc == NULL) throw std::string("could not remove morph");
         node = arc->target_node;
     }
     arc->morph.clear();
+    double cost = arc->cost;
     arc->cost = 0.0;
+    return cost;
 }
