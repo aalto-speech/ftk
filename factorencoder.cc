@@ -131,9 +131,9 @@ void viterbi(const map<string, double> &vocab,
 
 
 void viterbi(MorphSet &vocab,
-               const string &sentence,
-               vector<string> &best_path,
-               bool reverse)
+             const string &sentence,
+             vector<string> &best_path,
+             bool reverse)
 {
     if (sentence.length() == 0) return;
     vector<Token> search(sentence.length());
@@ -179,9 +179,9 @@ void viterbi(MorphSet &vocab,
 
 
 void forward_backward(const map<string, double> &vocab,
-                         int maxlen,
-                         const string &sentence,
-                         map<string, double> &stats)
+                      int maxlen,
+                      const string &sentence,
+                      map<string, double> &stats)
 {
     if (sentence.length() == 0) return;
     vector<Token> search(sentence.length());

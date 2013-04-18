@@ -14,11 +14,11 @@ int read_vocab(const char* fname,
                int &maxlen);
 
 int write_vocab(const char* fname,
-                  const map<string, double> &vocab);
+                const map<string, double> &vocab);
 
 void sort_vocab(const map<string, double> &vocab,
-                  vector<pair<string, double> > &sorted_vocab,
-                  bool descending=true);
+                vector<pair<string, double> > &sorted_vocab,
+                bool descending=true);
 
 void viterbi(const map<string, double> &vocab,
              int maxlen,
@@ -32,8 +32,8 @@ void viterbi(MorphSet &vocab,
              bool reverse=true);
 
 void forward_backward(const map<string, double> &vocab,
-                         int maxlen,
-                         const string &sentence,
-                         map<string, double> &stats);
+                      int maxlen,
+                      const string &sentence,
+                      map<string, double> &stats);
 
 #endif
