@@ -115,8 +115,7 @@ void fetest :: ForwardBackwardTest1 (void)
     vocab[str1] = -1.0;
     string sentence("");
     map<string, double> stats;
-    int maxlen = 1;
-    forward_backward(vocab, maxlen, sentence, stats);
+    forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
 }
 
@@ -132,8 +131,7 @@ void fetest :: ForwardBackwardTest2 (void)
     vocab[str4] = 0.0;
     string sentence("a-bcd");
     map<string, double> stats;
-    int maxlen = 1;
-    forward_backward(vocab, maxlen, sentence, stats);
+    forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
 }
 
@@ -145,10 +143,8 @@ void fetest :: ForwardBackwardTest3 (void)
     vocab[str1] = -1.0;
     string sentence("a");
     map<string, double> stats;
-    int maxlen = 1;
-    forward_backward(vocab, maxlen, sentence, stats);
+    forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(1, (int)stats.size());
     CPPUNIT_ASSERT_EQUAL(1.0, stats["a"]);
 }
-
 

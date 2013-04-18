@@ -31,9 +31,13 @@ void viterbi(MorphSet &vocab,
              vector<string> &best_path,
              bool reverse=true);
 
-void forward_backward(const map<string, double> &vocab,
-                      int maxlen,
+void forward_backward(MorphSet &vocab,
                       const string &sentence,
                       map<string, double> &stats);
+
+void forward_backward(const map<string, double> &vocab,
+                      const string &sentence,
+                      map<string, double> &stats);
+
 
 #endif

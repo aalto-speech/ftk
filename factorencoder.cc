@@ -178,38 +178,49 @@ void viterbi(MorphSet &vocab,
 }
 
 
-void forward_backward(const map<string, double> &vocab,
-                      int maxlen,
+void forward_backward(MorphSet &vocab,
                       const string &sentence,
                       map<string, double> &stats)
 {
     if (sentence.length() == 0) return;
-    vector<Token> search(sentence.length());
-    int start_pos = 0;
-    int end_pos = 0;
-    int len = 0;
+    vector<vector<Token> > search(sentence.length());
+    double len = sentence.length();
 
-    for (int i=0; i<sentence.length(); i++) {
+    // Forward pass
+    for (int i=0; i<len; i++) {
 
-        // Iterate all factors ending in this position
-        for (int j=max(0, i-maxlen); j<=i; j++) {
+        // Iterate all factors starting from this position
+        MorphSet::Node *node = &vocab.root_node;
+        for (int j=i; j<sentence.length(); j++) {
 
-            start_pos = j;
-            end_pos = i+1;
-            len = end_pos-start_pos;
+            MorphSet::Arc *arc = vocab.find_arc(sentence[j], node);
 
-            if (vocab.find(sentence.substr(start_pos, len)) != vocab.end()) {
-                double cost = vocab.at(sentence.substr(start_pos, len));
-                if (j-1 >= 0) {
-                    if (search[j-1].cost == -numeric_limits<double>::max()) break;
-                    cost += search[j-1].cost;
-                }
-                if (cost > search[i].cost) {
-                    search[i].cost = cost;
-                    search[i].source = j-1;
-                }
+            if (arc == NULL) break;
+            node = arc->target_node;
+
+            // Morph associated with this node
+            if (arc->morph.length() > 0) {
+                double cost = arc->cost;
+//                if (i>0) cost += search[i-1].cost;
+
+                Token tok;
+                tok.cost = cost;
+                tok.source = i-1;
+                search[j].push_back(tok);
             }
         }
     }
 
+    // Normalizer
+    double normalizer = 0;
+    for (int i=0; i<search[len-1].size(); i++) normalizer += search[len-1][i].cost;
+}
+
+
+void forward_backward(const map<string, double> &vocab,
+                      const string &sentence,
+                      map<string, double> &stats)
+{
+    MorphSet morphset_vocab(vocab);
+    forward_backward(morphset_vocab, sentence, stats);
 }
