@@ -57,6 +57,11 @@ public:
   /** Add a new morph to the set */
   void add(const std::string &morph, double cost);
 
+  /** Remove a morph from the set
+   * leaves the arc in tree, just nulls morph and cost
+   */
+  void remove(const std::string &morph);
+
   Node root_node; //!< The root of the morph tree
   int max_morph_length; //!< The length of the longest morph in the set
 };

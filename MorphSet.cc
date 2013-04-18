@@ -15,48 +15,46 @@ MorphSet::MorphSet(const std::map<std::string, double> &vocab) {
 MorphSet::Node*
 MorphSet::insert(char letter, const std::string &morph, double cost, Node *node)
 {
-  // Find a possible existing arc with the letter
-  Arc *arc = node->first_arc;
-  while (arc != NULL) {
-    if (arc->letter == letter)
-      break;
-    arc = arc->sibling_arc;
-  }
-
-  // No existing arc: create a new arc
-  if (arc == NULL) {
-    node->first_arc = new Arc(letter, morph, new Node(NULL), node->first_arc, cost);
-    arc = node->first_arc;
-  }
-
-  // Update the existing arc if morph was set
-  else if (morph.length() > 0) {
-    if (arc->morph.length() > 0) {
-      fprintf(stderr,
-	      "ERROR: MorphSet::insert(): trying to redefine morph %s\n",
-	      morph.c_str());
-      exit(1);
+    // Find a possible existing arc with the letter
+    Arc *arc = node->first_arc;
+    while (arc != NULL) {
+      if (arc->letter == letter) break;
+      arc = arc->sibling_arc;
     }
-    arc->morph = morph;
-  }
 
-  // Maintain the length of the longest morph
-  if ((int)morph.length() > max_morph_length)
-    max_morph_length = morph.length();
+    // No existing arc: create a new arc
+    if (arc == NULL) {
+      node->first_arc = new Arc(letter, morph, new Node(NULL), node->first_arc, cost);
+      arc = node->first_arc;
+    }
 
-  return arc->target_node;
+    // Update the existing arc if morph was set
+    else if (morph.length() > 0) {
+        if (arc->morph.length() > 0) {
+            fprintf(stderr,
+                    "ERROR: MorphSet::insert(): trying to redefine morph %s\n",
+                    morph.c_str());
+            exit(1);
+        }
+        arc->morph = morph;
+    }
+
+    // Maintain the length of the longest morph
+    if ((int)morph.length() > max_morph_length)
+        max_morph_length = morph.length();
+
+    return arc->target_node;
 }
 
 MorphSet::Arc*
 MorphSet::find_arc(char letter, const Node *node)
 {
-  Arc *arc = node->first_arc;
-  while (arc != NULL) {
-    if (arc->letter == letter)
-      break;
-    arc = arc->sibling_arc;
-  }
-  return arc;
+    Arc *arc = node->first_arc;
+    while (arc != NULL) {
+        if (arc->letter == letter) break;
+        arc = arc->sibling_arc;
+    }
+    return arc;
 }
 
 void
@@ -68,4 +66,18 @@ MorphSet::add(const std::string &morph, double cost)
     for (; i < (int)morph.length()-1; i++)
         node = insert(morph[i], "" , 0.0, node);
     insert(morph[i], morph, cost, node);
+}
+
+void
+MorphSet::remove(const std::string &morph)
+{
+    MorphSet::Node *node = &root_node;
+    MorphSet::Arc *arc;
+    for (int i=0; i<morph.length(); i++) {
+        arc = find_arc(morph[i], node);
+        if (arc == NULL) return;
+        node = arc->target_node;
+    }
+    arc->morph.clear();
+    arc->cost = 0.0;
 }
