@@ -415,7 +415,7 @@ int main(int argc, char* argv[]) {
         vector<pair<string, double> > removal_scores;
         rank_removal_candidates(words, vocab, diffs, freqs, maxlen, removal_scores);
 
-        // Perform removals one by one if likelihood change below threshold
+        // Perform removals one by one if likelihood change above threshold
         double curr_densum = get_sum(freqs);
         double curr_cost = get_cost(freqs, curr_densum);
         map<string, map<string, double> > backpointers;
