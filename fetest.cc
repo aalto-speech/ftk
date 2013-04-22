@@ -180,3 +180,22 @@ void fetest :: ForwardBackwardTest5 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["a"], DBL_ACCURACY );
 }
 
+// Three character string, two segmentations
+// Dependent paths
+void fetest :: ForwardBackwardTest6 (void)
+{
+    map<string, double> vocab;
+    vocab["a"] = -1.0;
+    vocab["b"] = -1.0;
+    vocab["c"] = -1.0;
+    vocab["d"] = -1.0;
+    vocab["bc"] = -2.0;
+    string sentence("abc");
+    map<string, double> stats;
+    forward_backward(vocab, sentence, stats);
+    CPPUNIT_ASSERT_EQUAL(4, (int)stats.size());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, stats["a"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["b"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["c"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["bc"], DBL_ACCURACY );
+}
