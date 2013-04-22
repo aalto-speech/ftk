@@ -178,6 +178,18 @@ void viterbi(MorphSet &vocab,
 }
 
 
+double add_log_domain_probs(double a, double b) {
+
+    if (b>a) {
+        double tmp = b;
+        b = a;
+        a = tmp;
+    }
+
+    return a + log(1 + exp(b - a));
+}
+
+
 void forward_backward(MorphSet &vocab,
                       const string &sentence,
                       map<string, double> &stats)
@@ -211,9 +223,22 @@ void forward_backward(MorphSet &vocab,
         }
     }
 
-    // Normalizer
-    double normalizer = 0;
-    for (int i=0; i<search[len-1].size(); i++) normalizer += search[len-1][i].cost;
+    // Normalizers
+    std::vector<double> normalizers;
+    normalizers.resize(len);
+    for (int i=0; i<search[len-1].size(); i++) normalizers[len-1] += search[len-1][i].cost;
+
+    // Backward
+    for (int i=(len-1); i>=0; i--) {
+        for (int toki=0; toki<search[i].size(); toki++) {
+            Token tok = search[i][toki];
+            cout << "tok source: " << tok.source << endl;
+            double normalized = tok.cost - normalizers[i];
+            cout << "current substr: " << sentence.substr(tok.source+1, i) << endl;
+            if (tok.source == -1) break;
+            normalizers[tok.source] = add_log_domain_probs(normalizers[tok.source], normalized);
+        }
+    }
 }
 
 
