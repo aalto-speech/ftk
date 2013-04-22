@@ -203,6 +203,12 @@ void forward_backward(MorphSet &vocab,
 
         if (i>0 && search[i-1].size() == 0) continue;
 
+        // FIXME
+        double src_cost = 0;
+        if (i>0)
+            for (int t=0; t<search[i-1].size(); t++)
+                src_cost += search[i-1][t].cost;
+
         // Iterate all factors starting from this position
         MorphSet::Node *node = &vocab.root_node;
         for (int j=i; j<sentence.length(); j++) {
@@ -216,11 +222,13 @@ void forward_backward(MorphSet &vocab,
             if (arc->morph.length() > 0) {
                 double cost = arc->cost;
 //                if (i>0) cost += search[i-1].cost;
+                if (i>0) cost += src_cost;
 
                 Token tok;
                 tok.cost = cost;
                 tok.source = i-1;
                 search[j].push_back(tok);
+//                std::cout << "morph ending in index: " << j << endl;
             }
         }
     }
@@ -231,22 +239,29 @@ void forward_backward(MorphSet &vocab,
 
     vector<double> normalizers;
     normalizers.resize(len);
-    for (int i=0; i<len; i++)
-        for (int j=0; j<search[i].size(); j++)
-            normalizers[i] += search[i][j].cost;
+    for (int i=0; i<len; i++) {
+        if (search[i].size() > 0) normalizers[i] = search[i][0].cost;
+        for (int j=1; j<search[i].size(); j++) {
+            normalizers[i] = add_log_domain_probs(normalizers[i], search[i][j].cost);
+            //cout << "cost in pos " << i << ": " << search[i][j].cost << endl;
+        }
+    }
 
     // Backward
+    vector<double> bw;
+    bw.resize(len);
     for (int i=(len-1); i>=0; i--) {
         for (int toki=0; toki<search[i].size(); toki++) {
             Token tok = search[i][toki];
             //cout << "tok source: " << tok.source << endl;
-            double normalized = tok.cost - normalizers[i];
+            double normalized = tok.cost - normalizers[i] + bw[i];
             //cout << "current substr: " << sentence.substr(tok.source+1, i+1) << endl;
             //cout << "tok cost: " << tok.cost << endl;
             //cout << "normalizer: " << normalizers[i] << endl;
+            //cout << "normalized: " << normalized << endl;
             stats[sentence.substr(tok.source+1, i+1)] += exp(normalized);
-            if (tok.source == -1) break;
-            //normalizers[tok.source] = add_log_domain_probs(normalizers[tok.source], normalized);
+            if (tok.source == -1) continue;
+            bw[tok.source] += normalized;
         }
     }
 }
