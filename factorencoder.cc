@@ -201,6 +201,8 @@ void forward_backward(MorphSet &vocab,
     // Forward pass
     for (int i=0; i<len; i++) {
 
+        if (i>0 && search[i-1].size() == 0) continue;
+
         // Iterate all factors starting from this position
         MorphSet::Node *node = &vocab.root_node;
         for (int j=i; j<sentence.length(); j++) {
@@ -223,20 +225,28 @@ void forward_backward(MorphSet &vocab,
         }
     }
 
-    // Normalizers
-    std::vector<double> normalizers;
+    if (search[len-1].size() == 0) return;
+
+    //cout << endl << "starting backward pass" << endl;
+
+    vector<double> normalizers;
     normalizers.resize(len);
-    for (int i=0; i<search[len-1].size(); i++) normalizers[len-1] += search[len-1][i].cost;
+    for (int i=0; i<len; i++)
+        for (int j=0; j<search[i].size(); j++)
+            normalizers[i] += search[i][j].cost;
 
     // Backward
     for (int i=(len-1); i>=0; i--) {
         for (int toki=0; toki<search[i].size(); toki++) {
             Token tok = search[i][toki];
-            cout << "tok source: " << tok.source << endl;
+            //cout << "tok source: " << tok.source << endl;
             double normalized = tok.cost - normalizers[i];
-            cout << "current substr: " << sentence.substr(tok.source+1, i) << endl;
+            //cout << "current substr: " << sentence.substr(tok.source+1, i+1) << endl;
+            //cout << "tok cost: " << tok.cost << endl;
+            //cout << "normalizer: " << normalizers[i] << endl;
+            stats[sentence.substr(tok.source+1, i+1)] += exp(normalized);
             if (tok.source == -1) break;
-            normalizers[tok.source] = add_log_domain_probs(normalizers[tok.source], normalized);
+            //normalizers[tok.source] = add_log_domain_probs(normalizers[tok.source], normalized);
         }
     }
 }
