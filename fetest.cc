@@ -7,6 +7,8 @@
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+double DBL_ACCURACY = 0.0001;
+
 CPPUNIT_TEST_SUITE_REGISTRATION (fetest);
 
 void fetest :: setUp (void)
@@ -168,13 +170,13 @@ void fetest :: ForwardBackwardTest5 (void)
     map<string, double> vocab;
     vocab["a"] = -1.0;
     vocab["b"] = -1.0;
-    vocab["ab"] = -1.0;
+    vocab["ab"] = -2.0;
     string sentence("ab");
     map<string, double> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(3, (int)stats.size());
-    CPPUNIT_ASSERT_EQUAL(0.25, stats["b"]);
-    CPPUNIT_ASSERT_EQUAL(0.25, stats["a"]);
-    CPPUNIT_ASSERT_EQUAL(0.75, stats["ab"]);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["ab"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["b"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["a"], DBL_ACCURACY );
 }
 
