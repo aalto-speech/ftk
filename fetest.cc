@@ -139,8 +139,7 @@ void fetest :: ForwardBackwardTest2 (void)
 void fetest :: ForwardBackwardTest3 (void)
 {
     map<string, double> vocab;
-    string str1("a");
-    vocab[str1] = -1.0;
+    vocab["a"] = -1.0;
     string sentence("a");
     map<string, double> stats;
     forward_backward(vocab, sentence, stats);
@@ -148,3 +147,16 @@ void fetest :: ForwardBackwardTest3 (void)
     CPPUNIT_ASSERT_EQUAL(1.0, stats["a"]);
 }
 
+// Two character string, one segmentation
+void fetest :: ForwardBackwardTest4 (void)
+{
+    map<string, double> vocab;
+    vocab["a"] = -1.0;
+    vocab["b"] = -1.0;
+    string sentence("ab");
+    map<string, double> stats;
+    forward_backward(vocab, sentence, stats);
+    CPPUNIT_ASSERT_EQUAL(2, (int)stats.size());
+    CPPUNIT_ASSERT_EQUAL(1.0, stats["b"]);
+    CPPUNIT_ASSERT_EQUAL(1.0, stats["a"]);
+}
