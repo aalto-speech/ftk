@@ -31,6 +31,9 @@ void viterbi(MorphSet &vocab,
              vector<string> &best_path,
              bool reverse=true);
 
+double add_log_domain_probs(double a,
+                            double b);
+
 void forward_backward(MorphSet &vocab,
                       const string &sentence,
                       map<string, double> &stats);
