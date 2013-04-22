@@ -194,8 +194,8 @@ void fetest :: ForwardBackwardTest6 (void)
     map<string, double> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(4, (int)stats.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, stats["a"], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["b"], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["c"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["bc"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["c"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["b"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, stats["a"], DBL_ACCURACY );
 }
