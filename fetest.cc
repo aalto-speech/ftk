@@ -172,7 +172,7 @@ void fetest :: ForwardBackwardTest5 (void)
     string sentence("ab");
     map<string, double> stats;
     forward_backward(vocab, sentence, stats);
-    CPPUNIT_ASSERT_EQUAL(2, (int)stats.size());
+    CPPUNIT_ASSERT_EQUAL(3, (int)stats.size());
     CPPUNIT_ASSERT_EQUAL(0.25, stats["b"]);
     CPPUNIT_ASSERT_EQUAL(0.25, stats["a"]);
     CPPUNIT_ASSERT_EQUAL(0.75, stats["ab"]);
