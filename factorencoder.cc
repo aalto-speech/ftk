@@ -194,12 +194,13 @@ void forward_backward(MorphSet &vocab,
                       const string &sentence,
                       map<string, double> &stats)
 {
-    if (sentence.length() == 0) return;
-    vector<vector<Token> > search(sentence.length());
     double len = sentence.length();
+    if (len == 0) return;
 
-    // Normalizers (total forward score) for each position
-    vector<double> normalizers(len);
+    stats.clear();
+    vector<vector<Token> > search(len);
+    vector<double> normalizers(len); // Normalizers (total forward score) for each position
+    vector<double> bw(len); // Backward propagated scores
 
     // Forward pass
     for (int i=0; i<len; i++) {
@@ -241,9 +242,7 @@ void forward_backward(MorphSet &vocab,
         normalizers[len-1] = add_log_domain_probs(normalizers[len-1], search[len-1][j].cost);
 
     // Backward
-    vector<double> bw;
-    bw.resize(len);
-    for (int i=(len-1); i>=0; i--) {
+    for (int i=len-1; i>=0; i--) {
         for (int toki=0; toki<search[i].size(); toki++) {
             Token tok = search[i][toki];
             double normalized = tok.cost - normalizers[i] + bw[i];
