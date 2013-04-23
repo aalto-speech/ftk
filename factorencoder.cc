@@ -198,16 +198,18 @@ void forward_backward(MorphSet &vocab,
     vector<vector<Token> > search(sentence.length());
     double len = sentence.length();
 
+    // Normalizers (total forward score) for each position
+    vector<double> normalizers(len);
+
     // Forward pass
     for (int i=0; i<len; i++) {
 
         if (i>0 && search[i-1].size() == 0) continue;
 
-        double src_cost = 0.0;
         if (i>0) {
-            src_cost = search[i-1][0].cost;
+            normalizers[i-1] = search[i-1][0].cost;
             for (int t=1; t<search[i-1].size(); t++)
-                src_cost = add_log_domain_probs(src_cost, search[i-1][t].cost);
+                normalizers[i-1] = add_log_domain_probs(normalizers[i-1], search[i-1][t].cost);
         }
 
         // Iterate all factors starting from this position
@@ -222,7 +224,7 @@ void forward_backward(MorphSet &vocab,
             // Morph associated with this node
             if (arc->morph.length() > 0) {
                 double cost = arc->cost;
-                if (i>0) cost += src_cost;
+                if (i>0) cost += normalizers[i-1];
 
                 Token tok;
                 tok.cost = cost;
@@ -234,14 +236,9 @@ void forward_backward(MorphSet &vocab,
 
     if (search[len-1].size() == 0) return;
 
-    // Normalizers for each position
-    vector<double> normalizers;
-    normalizers.resize(len);
-    for (int i=0; i<len; i++) {
-        if (search[i].size() > 0) normalizers[i] = search[i][0].cost;
-        for (int j=1; j<search[i].size(); j++)
-            normalizers[i] = add_log_domain_probs(normalizers[i], search[i][j].cost);
-    }
+    normalizers[len-1] = search[len-1][0].cost;
+    for (int j=1; j<search[len-1].size(); j++)
+        normalizers[len-1] = add_log_domain_probs(normalizers[len-1], search[len-1][j].cost);
 
     // Backward
     vector<double> bw;
