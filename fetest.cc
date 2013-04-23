@@ -208,17 +208,17 @@ void fetest :: ForwardBackwardTest7 (void)
     vocab["a"] = log(0.25);
     vocab["sa"] = log(0.25);
     vocab["s"] = log(0.25);
-    vocab["ki"] = log(0.5);
-    vocab["kis"] = log(0.5);
+    vocab["ki"] = log(0.50);
+    vocab["kis"] = log(0.50);
     string sentence("kissa");
     map<string, double> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(5, (int)stats.size());
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.80, stats["kis"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.20, stats["ki"], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.8, stats["sa"], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.2+0.2, stats["s"], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.2, stats["a"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.80, stats["sa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.20+0.20, stats["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.20, stats["a"], DBL_ACCURACY );
 }
 
 // Multiple paths
@@ -228,8 +228,8 @@ void fetest :: ForwardBackwardTest8 (void)
     vocab["a"] = log(0.25);
     vocab["sa"] = log(0.25);
     vocab["s"] = log(0.25);
-    vocab["ki"] = log(0.5);
-    vocab["kis"] = log(0.5);
+    vocab["ki"] = log(0.50);
+    vocab["kis"] = log(0.50);
     vocab["kissa"] = log(0.1953125);
     string sentence("kissa");
     map<string, double> stats;
