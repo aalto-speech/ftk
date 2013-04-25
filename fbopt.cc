@@ -13,13 +13,13 @@ using namespace std;
 
 
 int read_words(const char* fname,
-               map<string, long> &words)
+               map<string, double> &words)
 {
     ifstream vocabfile(fname);
     if (!vocabfile) return -1;
 
     string line, word;
-    long count;
+    double count;
     while (getline(vocabfile, line)) {
         stringstream ss(line);
         ss >> count;
@@ -32,13 +32,13 @@ int read_words(const char* fname,
 }
 
 
-void resegment_words(const map<string, long> &words,
+void resegment_words(const map<string, double> &words,
                      const map<string, double> &vocab,
-                     map<string, double> &new_freqs,
-                     const int maxlen)
+                     map<string, double> &new_freqs)
 {
     new_freqs.clear();
     MorphSet morphset_vocab(vocab);
+
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, double> stats;
@@ -51,56 +51,55 @@ void resegment_words(const map<string, long> &words,
 
         // Update statistics
         for (auto it = stats.begin(); it != stats.end(); ++it)
-            new_freqs[it->first] += it->second;
+            new_freqs[it->first] += worditer->second * it->second;
     }
 }
 
 
-void resegment_words_w_diff(const map<string, long> &words,
+void resegment_words_w_diff(const map<string, double> &words,
                             const map<string, double> &vocab,
                             map<string, double> &new_freqs,
-                            map<string, map<string, double> > &diffs,
-                            const int maxlen)
+                            map<string, map<string, double> > &diffs)
 {
     new_freqs.clear();
     MorphSet morphset_vocab(vocab);
     MorphSet hypo_vocab(vocab);
+
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
-        vector<string> best_path;
-        viterbi(morphset_vocab, worditer->first, best_path, false);
+        map<string, double> stats;
+        forward_backward(morphset_vocab, worditer->first, stats);
 
-        if (best_path.size() == 0) {
+        if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
             exit(0);
         }
 
         // Update statistics
-        map<string, double> best_path_types;
-        for (int i=0; i<best_path.size(); i++) {
-            new_freqs[best_path[i]] += double(worditer->second);
-            best_path_types[best_path[i]] = 0.0;
-        }
+        for (auto it = stats.cbegin(); it != stats.cend(); ++it)
+            new_freqs[it->first] += worditer->second * it->second;
 
         // Hypothesize what the segmentation would be if some subword didn't exist
-        for (auto hypoiter = best_path_types.begin(); hypoiter != best_path_types.end(); ++hypoiter) {
+        for (auto hypoiter = stats.cbegin(); hypoiter != stats.cend(); ++hypoiter) {
+
+            // If wanting to hypothesize removal of this subword
             if (diffs.find(hypoiter->first) != diffs.end()) {
+
                 double stored_value = hypo_vocab.remove(hypoiter->first);
-                vector<string> hypo_path;
+                map<string, double> hypo_stats;
 
-                viterbi(hypo_vocab, worditer->first, hypo_path, false);
+                forward_backward(hypo_vocab, worditer->first, hypo_stats);
 
-                if (hypo_path.size() == 0) {
+                if (hypo_stats.size() == 0) {
                     cerr << "warning, no hypo segmentation for word: " << worditer->first << endl;
                     exit(0);
                 }
 
-                for (int ib=0; ib<best_path.size(); ib++)
-                    diffs[hypoiter->first][best_path[ib]] -= double(worditer->second);
-                for (int ih=0; ih<hypo_path.size(); ih++)
-                    diffs[hypoiter->first][hypo_path[ih]] += double(worditer->second);
+                for (auto it = stats.cbegin(); it != stats.cend(); ++it)
+                    diffs[hypoiter->first][it->first] -= worditer->second * it->second;
+                for (auto it = hypo_stats.cbegin(); it != hypo_stats.cend(); ++it)
+                    diffs[hypoiter->first][it->first] += worditer->second * it->second;
 
-//                diffs[hypoiter->first].erase(hypoiter->first);
                 hypo_vocab.add(hypoiter->first, stored_value);
             }
         }
@@ -177,7 +176,7 @@ void apply_freq_diffs(map<string, double> &freqs,
 }
 
 
-void apply_backpointer_changes(const map<string, long> &words,
+void apply_backpointer_changes(const map<string, double> &words,
                                map<string, map<string, double> > &backpointers,
                                const map<string, map<string, bool> > &bps_to_remove,
                                const map<string, map<string, bool> > &bps_to_add)
@@ -187,7 +186,7 @@ void apply_backpointer_changes(const map<string, long> &words,
             backpointers[switer->first].erase(worditer->first);
     for (auto switer = bps_to_add.cbegin(); switer != bps_to_add.cend(); ++switer)
         for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
-            backpointers[switer->first][worditer->first] = double(words.at(worditer->first));
+            backpointers[switer->first][worditer->first] = words.at(worditer->first);
 }
 
 
@@ -220,13 +219,12 @@ int cutoff(map<string, double> &vocab,
 // Select n_candidates number of subwords in the vocabulary as removal candidates
 // running from the least common subword
 void init_removal_candidates(int n_candidates,
-                             const int maxlen,
-                             const map<string, long> &words,
+                             const map<string, double> &words,
                              const map<string, double> &vocab,
                              map<string, map<string, double> > &diffs)
 {
     map<string, double> new_morph_freqs;
-    resegment_words(words, vocab, new_morph_freqs, maxlen);
+    resegment_words(words, vocab, new_morph_freqs);
 
     vector<pair<string, double> > sorted_vocab;
     sort_vocab(new_morph_freqs, sorted_vocab, false);
@@ -243,7 +241,7 @@ bool rank_desc_sort(pair<string, double> i,pair<string, double> j) { return (i.s
 
 // Perform each of the removals (independent of others in the list) to get
 // initial order for the removals
-void rank_removal_candidates(const map<string, long> &words,
+void rank_removal_candidates(const map<string, double> &words,
                              const map<string, double> &vocab,
                              map<string, map<string, double> > &diffs,
                              map<string, double> &new_morph_freqs,
@@ -253,7 +251,7 @@ void rank_removal_candidates(const map<string, long> &words,
     new_morph_freqs.clear();
     removal_scores.clear();
 
-    resegment_words_w_diff(words, vocab, new_morph_freqs, diffs, maxlen);
+    resegment_words_w_diff(words, vocab, new_morph_freqs, diffs);
     double densum = get_sum(new_morph_freqs);
     double cost = get_cost(new_morph_freqs, densum);
 
@@ -268,7 +266,7 @@ void rank_removal_candidates(const map<string, long> &words,
 }
 
 
-void get_backpointers(const map<string, long> &words,
+void get_backpointers(const map<string, double> &words,
                       const map<string, double> &vocab,
                       map<string, map<string, double> > &backpointers,
                       const int maxlen)
@@ -286,9 +284,9 @@ void get_backpointers(const map<string, long> &words,
             exit(0);
         }
 
-        // Store backpointers
+        // Store backpointers FIXME: is this correct?
         for (int i=0; i<best_path.size(); i++)
-            backpointers[best_path[i]][worditer->first] = worditer->second;
+            backpointers[best_path[i]][worditer->first] += worditer->second;
     }
 }
 
@@ -329,11 +327,11 @@ void remove_subword_update_backpointers(const map<string, double> &vocab,
         // Collect frequency differences
         // Collect backpointer changes
         for (int i=0; i<best_path.size(); i++) {
-            freq_diffs[best_path[i]] -= double(worditer->second);
+            freq_diffs[best_path[i]] -= worditer->second;
             backpointers_to_remove[best_path[i]][worditer->first] = true;
         }
         for (int i=0; i<hypo_path.size(); i++) {
-            freq_diffs[hypo_path[i]] += double(worditer->second);
+            freq_diffs[hypo_path[i]] += worditer->second;
             backpointers_to_add[hypo_path[i]][worditer->first] = true;
         }
     }
@@ -368,7 +366,7 @@ int main(int argc, char* argv[]) {
     int maxlen;
     map<string, double> vocab;
     map<string, double> freqs;
-    map<string, long> words;
+    map<string, double> words;
 
     cerr << "Reading vocabulary " << argv[1] << endl;
     int retval = read_vocab(argv[1], vocab, maxlen);
@@ -387,7 +385,7 @@ int main(int argc, char* argv[]) {
     cerr << "\t\t\t" << "vocabulary size: " << vocab.size() << endl;
 
     cerr << "Initial cutoff" << endl;
-    resegment_words(words, vocab, freqs, maxlen);
+    resegment_words(words, vocab, freqs);
     double densum = get_sum(freqs);
     double cost = get_cost(freqs, densum);
     cerr << "cost: " << cost << endl;
@@ -409,7 +407,7 @@ int main(int argc, char* argv[]) {
         cerr << "collecting candidate subwords for removal" << endl;
         map<string, map<string, double> > diffs;
         if (vocab.size()-n_candidates_per_iter < min_vocab_size) n_candidates_per_iter = vocab.size()-min_vocab_size;
-        init_removal_candidates(n_candidates_per_iter, maxlen, words, vocab, diffs);
+        init_removal_candidates(n_candidates_per_iter, words, vocab, diffs);
 
         cerr << "ranking candidate subwords" << endl;
         vector<pair<string, double> > removal_scores;
@@ -475,7 +473,7 @@ int main(int argc, char* argv[]) {
         double co_densum = get_sum(freqs);
         vocab = freqs;
         freqs_to_logprobs(vocab, co_densum);
-        resegment_words(words, vocab, freqs, maxlen);
+        resegment_words(words, vocab, freqs);
         curr_densum = get_sum(freqs);
         curr_cost = get_cost(freqs, densum);
 
