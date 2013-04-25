@@ -110,9 +110,8 @@ void resegment_words_w_diff(const map<string, double> &words,
 double get_sum(const map<string, double> &freqs)
 {
     double total = 0.0;
-    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
+    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter)
         total += iter->second;
-    }
     return total;
 }
 
@@ -164,7 +163,7 @@ double get_cost(const map<string, double> &freqs,
 void apply_freq_diffs(map<string, double> &freqs,
                       const map<string, double> &freq_diffs)
 {
-    for(auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
+    for (auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
         freqs[iter->first] += iter->second;
 
     // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
@@ -175,7 +174,7 @@ void apply_freq_diffs(map<string, double> &freqs,
     }
 }
 
-
+// FIXME: is this correct?
 void apply_backpointer_changes(const map<string, double> &words,
                                map<string, map<string, double> > &backpointers,
                                const map<string, map<string, bool> > &bps_to_remove,
@@ -208,7 +207,7 @@ int cutoff(map<string, double> &vocab,
     while (iter != vocab.end()) {
         if (iter->second <= limit && iter->first.length() > 1) {
             vocab.erase(iter++);
-            nremovals += 1;
+            nremovals++;
         }
         else ++iter;
     }
@@ -245,7 +244,6 @@ void rank_removal_candidates(const map<string, double> &words,
                              const map<string, double> &vocab,
                              map<string, map<string, double> > &diffs,
                              map<string, double> &new_morph_freqs,
-                             const int maxlen,
                              vector<pair<string, double> > &removal_scores)
 {
     new_morph_freqs.clear();
@@ -276,24 +274,23 @@ void get_backpointers(const map<string, double> &words,
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
-        vector<string> best_path;
-        viterbi(morphset_vocab, worditer->first, best_path, false);
+        map<string, double> stats;
+        forward_backward(morphset_vocab, worditer->first, stats);
 
-        if (best_path.size() == 0) {
+        if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
             exit(0);
         }
 
-        // Store backpointers FIXME: is this correct?
-        for (int i=0; i<best_path.size(); i++)
-            backpointers[best_path[i]][worditer->first] += worditer->second;
+        // Store backpointers
+        for (auto it = stats.cbegin(); it != stats.cend(); ++it)
+            backpointers[it->first][worditer->first] += worditer->second * it->second;
     }
 }
 
 
 // Really performs the removal and gives out updated freqs
 void remove_subword_update_backpointers(const map<string, double> &vocab,
-                                        const int maxlen,
                                         const string &subword,
                                         const map<string, map<string, double> > &backpointers,
                                         map<string, map<string, bool> > &backpointers_to_remove,
@@ -309,30 +306,30 @@ void remove_subword_update_backpointers(const map<string, double> &vocab,
 
     for (auto worditer = backpointers.at(subword).cbegin(); worditer != backpointers.at(subword).cend(); ++worditer) {
 
-        vector<string> best_path;
-        viterbi(vocab, maxlen, worditer->first, best_path, false);
-        vector<string> hypo_path;
-        viterbi(hypo_vocab, maxlen, worditer->first, hypo_path, false);
+        map<string, double> stats;
+        forward_backward(vocab, worditer->first, stats);
+        map<string, double> hypo_stats;
+        forward_backward(hypo_vocab, worditer->first, hypo_stats);
 
-        if (best_path.size() == 0) {
+        if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
             exit(0);
         }
 
-        if (hypo_path.size() == 0) {
+        if (hypo_stats.size() == 0) {
             cerr << "warning, no hypo segmentation for word: " << worditer->first << endl;
             exit(0);
         }
 
         // Collect frequency differences
         // Collect backpointer changes
-        for (int i=0; i<best_path.size(); i++) {
-            freq_diffs[best_path[i]] -= worditer->second;
-            backpointers_to_remove[best_path[i]][worditer->first] = true;
+        for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
+            freq_diffs[it->first] -= worditer->second * it->second;
+            backpointers_to_remove[it->first][worditer->first] = true;
         }
-        for (int i=0; i<hypo_path.size(); i++) {
-            freq_diffs[hypo_path[i]] += worditer->second;
-            backpointers_to_add[hypo_path[i]][worditer->first] = true;
+        for (auto it = hypo_stats.cbegin(); it != hypo_stats.cend(); ++it) {
+            freq_diffs[it->first] += worditer->second * it->second;
+            backpointers_to_add[it->first][worditer->first] = true;
         }
     }
 }
@@ -411,7 +408,7 @@ int main(int argc, char* argv[]) {
 
         cerr << "ranking candidate subwords" << endl;
         vector<pair<string, double> > removal_scores;
-        rank_removal_candidates(words, vocab, diffs, freqs, maxlen, removal_scores);
+        rank_removal_candidates(words, vocab, diffs, freqs, removal_scores);
 
         // Perform removals one by one if likelihood change above threshold
         double curr_densum = get_sum(freqs);
@@ -430,7 +427,7 @@ int main(int argc, char* argv[]) {
             map<string, double> freq_diffs;
             map<string, map<string, bool> > backpointers_to_remove;
             map<string, map<string, bool> > backpointers_to_add;
-            remove_subword_update_backpointers(vocab, maxlen, removal_scores[i].first, backpointers,
+            remove_subword_update_backpointers(vocab, removal_scores[i].first, backpointers,
                                                backpointers_to_remove, backpointers_to_add, freq_diffs);
 
             double hypo_densum = get_sum(freqs, freq_diffs);

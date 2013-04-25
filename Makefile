@@ -3,7 +3,7 @@ cxxflags = -O3 -march=native -std=gnu++0x
 
 ##################################################
 
-progs = fe filefe opt
+progs = fe filefe opt dummy fbopt
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
 srcs = factorencoder.cc io.cc MorphSet.cc
