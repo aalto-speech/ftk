@@ -179,6 +179,51 @@ void viterbi(MorphSet &vocab,
 }
 
 
+void viterbi(MorphSet &vocab,
+             const string &sentence,
+             map<string, double> &stats)
+{
+    if (sentence.length() == 0) return;
+    vector<Token> search(sentence.length());
+
+    for (int i=0; i<sentence.length(); i++) {
+
+        // Iterate all factors starting from this position
+        MorphSet::Node *node = &vocab.root_node;
+        for (int j=i; j<sentence.length(); j++) {
+
+            MorphSet::Arc *arc = vocab.find_arc(sentence[j], node);
+
+            if (arc == NULL) break;
+            node = arc->target_node;
+
+            // Morph associated with this node
+            if (arc->morph.length() > 0) {
+                double cost = arc->cost;
+                if (i>0) cost += search[i-1].cost;
+
+                if (cost > search[j].cost) {
+                    search[j].cost = cost;
+                    search[j].source = i-1;
+                }
+            }
+        }
+    }
+
+    // Look up the best path
+    int target = search.size()-1;
+    if (search[target].cost == -numeric_limits<double>::max()) return;
+
+    int source = search[target].source;
+    while (true) {
+        stats[sentence.substr(source+1, target-source)] += 1;
+        if (source == -1) break;
+        target = source;
+        source = search[target].source;
+    }
+}
+
+
 double add_log_domain_probs(double a, double b) {
 
     if (b>a) {
