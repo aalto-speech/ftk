@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Print out the best path
-        for (int i=0; i<best_path.size()-1; i++)
+        for (unsigned int i=0; i<best_path.size()-1; i++)
             cout << best_path[i] << " ";
         cout << best_path[best_path.size()-1] << endl;
     }

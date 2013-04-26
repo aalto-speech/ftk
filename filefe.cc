@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Print out the best path
-        for (int i=0; i<best_path.size()-1; i++) {
+        for (unsigned int i=0; i<best_path.size()-1; i++) {
             fwrite(best_path[i].c_str(), 1, best_path[i].length(), outfile.file);
             fwrite(" ", 1, 1, outfile.file);
         }
