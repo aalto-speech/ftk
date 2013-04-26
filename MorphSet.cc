@@ -12,6 +12,15 @@ MorphSet::MorphSet(const std::map<std::string, double> &vocab) {
         add(it->first, it->second);
 }
 
+
+MorphSet::~MorphSet() {
+    for (unsigned int i=0; i<nodes.size(); i++)
+        delete nodes[i];
+    for (unsigned int i=0; i<arcs.size(); i++)
+        delete arcs[i];
+ }
+
+
 MorphSet::Node*
 MorphSet::insert(char letter, const std::string &morph, double cost, Node *node)
 {
@@ -24,8 +33,11 @@ MorphSet::insert(char letter, const std::string &morph, double cost, Node *node)
 
     // No existing arc: create a new arc
     if (arc == NULL) {
-      node->first_arc = new Arc(letter, morph, new Node(NULL), node->first_arc, cost);
+      Node *new_node = new Node(NULL);
+      node->first_arc = new Arc(letter, morph, new_node, node->first_arc, cost);
       arc = node->first_arc;
+      nodes.push_back(new_node);
+      arcs.push_back(arc);
     }
 
     // Update the existing arc if morph was set
@@ -73,7 +85,7 @@ MorphSet::remove(const std::string &morph)
 {
     MorphSet::Node *node = &root_node;
     MorphSet::Arc *arc;
-    for (int i=0; i<morph.length(); i++) {
+    for (unsigned int i=0; i<morph.length(); i++) {
         arc = find_arc(morph[i], node);
         if (arc == NULL) throw std::string("could not remove morph");
         node = arc->target_node;

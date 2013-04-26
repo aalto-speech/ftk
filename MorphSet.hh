@@ -22,8 +22,8 @@ public:
 
     char letter; //!< Letter of the morph
     std::string morph; //!< Non-zero if complete morph
-    double cost;
     Node *target_node; //!< Target node
+    double cost;
     Arc *sibling_arc; //!< Pointer to another arc from the source node.
   };
 
@@ -38,6 +38,7 @@ public:
   /** Default constructor. */
   MorphSet();
   MorphSet(const std::map<std::string, double> &vocab);
+  ~MorphSet();
 
   /** Insert a letter to a node (or follow an existing arc).
    * \param letter = a letter to insert to the node
@@ -65,6 +66,11 @@ public:
 
   Node root_node; //!< The root of the morph tree
   int max_morph_length; //!< The length of the longest morph in the set
+
+private:
+  // Just for destructor
+  std::vector<Arc*> arcs;
+  std::vector<Node*> nodes;
 };
 
 #endif /* MORPHSET_HH */
