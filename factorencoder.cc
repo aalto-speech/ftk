@@ -28,11 +28,12 @@ int read_vocab(const char* fname,
     ifstream vocabfile(fname);
     if (!vocabfile) return -1;
 
-    string line, word;
+    string line;
     double count;
     maxlen = -1;
     while (getline(vocabfile, line)) {
         stringstream ss(line);
+        string word;
         ss >> count;
         ss >> word;
         vocab[word] = count;
@@ -52,7 +53,7 @@ int write_vocab(const char* fname,
 
     vector<pair<string, double> > sorted_vocab;
     sort_vocab(vocab, sorted_vocab);
-    for (int i=0; i<sorted_vocab.size(); i++)
+    for (unsigned int i=0; i<sorted_vocab.size(); i++)
         vocabfile << sorted_vocab[i].second << " " << sorted_vocab[i].first << endl;
     vocabfile.close();
 
@@ -209,7 +210,7 @@ void forward_backward(MorphSet &vocab,
 
         if (i>0) {
             normalizers[i-1] = search[i-1][0].cost;
-            for (int t=1; t<search[i-1].size(); t++)
+            for (unsigned int t=1; t<search[i-1].size(); t++)
                 normalizers[i-1] = add_log_domain_probs(normalizers[i-1], search[i-1][t].cost);
         }
 

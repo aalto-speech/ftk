@@ -342,12 +342,12 @@ int main(int argc, char* argv[]) {
     }
 
     int cutoff_value = atoi(argv[3]);
-    int n_candidates_per_iter = atoi(argv[4]);
-    int n_removals_per_iter = atoi(argv[5]);
+    unsigned int n_candidates_per_iter = atoi(argv[4]);
+    unsigned int n_removals_per_iter = atoi(argv[5]);
     double threshold = atof(argv[6]);
     double threshold_decrease = atof(argv[7]);
-    int min_removals_per_iter = atoi(argv[8]);
-    int min_vocab_size = atoi(argv[9]);
+    unsigned int min_removals_per_iter = atoi(argv[8]);
+    unsigned int min_vocab_size = atoi(argv[9]);
 
     cerr << "parameters, initial vocabulary: " << argv[1] << endl;
     cerr << "parameters, wordlist: " << argv[2] << endl;
@@ -417,8 +417,8 @@ int main(int argc, char* argv[]) {
 
         cerr << "starting cost before removing subwords one by one: " << curr_cost << endl;
 
-        int n_removals = 0;
-        for (int i=0; i<removal_scores.size(); i++) {
+        unsigned int n_removals = 0;
+        for (unsigned int i=0; i<removal_scores.size(); i++) {
             if (removal_scores[i].first.length() == 1) continue;
 
             cout << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << endl;

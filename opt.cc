@@ -49,7 +49,7 @@ void resegment_words(const map<string, double> &words,
         }
 
         // Update statistics
-        for (int i=0; i<best_path.size(); i++)
+        for (unsigned int i=0; i<best_path.size(); i++)
             new_freqs[best_path[i]] += worditer->second;
     }
 }
@@ -75,7 +75,7 @@ void resegment_words_w_diff(const map<string, double> &words,
 
         // Update statistics
         map<string, double> best_path_types;
-        for (int i=0; i<best_path.size(); i++) {
+        for (unsigned int i=0; i<best_path.size(); i++) {
             new_freqs[best_path[i]] += worditer->second;
             best_path_types[best_path[i]] = 0.0;
         }
@@ -93,9 +93,9 @@ void resegment_words_w_diff(const map<string, double> &words,
                     exit(0);
                 }
 
-                for (int ib=0; ib<best_path.size(); ib++)
+                for (unsigned int ib=0; ib<best_path.size(); ib++)
                     diffs[hypoiter->first][best_path[ib]] -= worditer->second;
-                for (int ih=0; ih<hypo_path.size(); ih++)
+                for (unsigned int ih=0; ih<hypo_path.size(); ih++)
                     diffs[hypoiter->first][hypo_path[ih]] += worditer->second;
 
 //                diffs[hypoiter->first].erase(hypoiter->first);
@@ -281,7 +281,7 @@ void get_backpointers(const map<string, double> &words,
         }
 
         // Store backpointers
-        for (int i=0; i<best_path.size(); i++)
+        for (unsigned int i=0; i<best_path.size(); i++)
             backpointers[best_path[i]][worditer->first] = worditer->second;
     }
 }
@@ -322,11 +322,11 @@ void remove_subword_update_backpointers(const map<string, double> &vocab,
 
         // Collect frequency differences
         // Collect backpointer changes
-        for (int i=0; i<best_path.size(); i++) {
+        for (unsigned int i=0; i<best_path.size(); i++) {
             freq_diffs[best_path[i]] -= worditer->second;
             backpointers_to_remove[best_path[i]][worditer->first] += worditer->second;
         }
-        for (int i=0; i<hypo_path.size(); i++) {
+        for (unsigned int i=0; i<hypo_path.size(); i++) {
             freq_diffs[hypo_path[i]] += worditer->second;
             backpointers_to_add[hypo_path[i]][worditer->first] += worditer->second;
         }
@@ -342,12 +342,12 @@ int main(int argc, char* argv[]) {
     }
 
     int cutoff_value = atoi(argv[3]);
-    int n_candidates_per_iter = atoi(argv[4]);
+    unsigned int n_candidates_per_iter = atoi(argv[4]);
     int n_removals_per_iter = atoi(argv[5]);
     double threshold = atof(argv[6]);
     double threshold_decrease = atof(argv[7]);
     int min_removals_per_iter = atoi(argv[8]);
-    int min_vocab_size = atoi(argv[9]);
+    unsigned int min_vocab_size = atoi(argv[9]);
 
     cerr << "parameters, initial vocabulary: " << argv[1] << endl;
     cerr << "parameters, wordlist: " << argv[2] << endl;
@@ -418,7 +418,7 @@ int main(int argc, char* argv[]) {
         cerr << "starting cost before removing subwords one by one: " << curr_cost << endl;
 
         int n_removals = 0;
-        for (int i=0; i<removal_scores.size(); i++) {
+        for (unsigned int i=0; i<removal_scores.size(); i++) {
             if (removal_scores[i].first.length() == 1) continue;
 
             cout << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << endl;
