@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <cmath>
 #include <sstream>
@@ -230,7 +231,8 @@ void init_removal_candidates(int n_candidates,
     for (int i=0; i<n_candidates; i++) {
         pair<string, double> &subword = sorted_vocab[i];
         map<string, double> emptymap;
-        diffs[subword.first] = emptymap;
+        if (subword.first.length() > 1)
+            diffs[subword.first] = emptymap;
     }
 }
 
@@ -341,7 +343,7 @@ int main(int argc, char* argv[]) {
         exit(0);
     }
 
-    int cutoff_value = atoi(argv[3]);
+    double cutoff_value = exp(atof(argv[3]));
     unsigned int n_candidates_per_iter = atoi(argv[4]);
     unsigned int n_removals_per_iter = atoi(argv[5]);
     double threshold = atof(argv[6]);
@@ -351,7 +353,7 @@ int main(int argc, char* argv[]) {
 
     cerr << "parameters, initial vocabulary: " << argv[1] << endl;
     cerr << "parameters, wordlist: " << argv[2] << endl;
-    cerr << "parameters, cutoff: " << cutoff_value << endl;
+    cerr << "parameters, cutoff: " << setprecision(15) << cutoff_value << endl;
     cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
     cerr << "parameters, removals per iteration: " << n_removals_per_iter << endl;
     cerr << "parameters, threshold: " << threshold << endl;

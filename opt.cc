@@ -230,7 +230,8 @@ void init_removal_candidates(int n_candidates,
     for (int i=0; i<n_candidates; i++) {
         pair<string, double> &subword = sorted_vocab[i];
         map<string, double> emptymap;
-        diffs[subword.first] = emptymap;
+        if (subword.first.length() > 1)
+            diffs[subword.first] = emptymap;
     }
 }
 
