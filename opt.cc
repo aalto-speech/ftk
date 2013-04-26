@@ -34,8 +34,7 @@ int read_words(const char* fname,
 
 void resegment_words(const map<string, double> &words,
                      const map<string, double> &vocab,
-                     map<string, double> &new_freqs,
-                     const int maxlen)
+                     map<string, double> &new_freqs)
 {
     new_freqs.clear();
     MorphSet morphset_vocab(vocab);
@@ -59,8 +58,7 @@ void resegment_words(const map<string, double> &words,
 void resegment_words_w_diff(const map<string, double> &words,
                             const map<string, double> &vocab,
                             map<string, double> &new_freqs,
-                            map<string, map<string, double> > &diffs,
-                            const int maxlen)
+                            map<string, map<string, double> > &diffs)
 {
     new_freqs.clear();
     MorphSet morphset_vocab(vocab);
@@ -219,13 +217,12 @@ int cutoff(map<string, double> &vocab,
 // Select n_candidates number of subwords in the vocabulary as removal candidates
 // running from the least common subword
 void init_removal_candidates(int n_candidates,
-                             const int maxlen,
                              const map<string, double> &words,
                              const map<string, double> &vocab,
                              map<string, map<string, double> > &diffs)
 {
     map<string, double> new_morph_freqs;
-    resegment_words(words, vocab, new_morph_freqs, maxlen);
+    resegment_words(words, vocab, new_morph_freqs);
 
     vector<pair<string, double> > sorted_vocab;
     sort_vocab(new_morph_freqs, sorted_vocab, false);
@@ -246,13 +243,12 @@ void rank_removal_candidates(const map<string, double> &words,
                              const map<string, double> &vocab,
                              map<string, map<string, double> > &diffs,
                              map<string, double> &new_morph_freqs,
-                             const int maxlen,
                              vector<pair<string, double> > &removal_scores)
 {
     new_morph_freqs.clear();
     removal_scores.clear();
 
-    resegment_words_w_diff(words, vocab, new_morph_freqs, diffs, maxlen);
+    resegment_words_w_diff(words, vocab, new_morph_freqs, diffs);
     double densum = get_sum(new_morph_freqs);
     double cost = get_cost(new_morph_freqs, densum);
 
@@ -385,7 +381,7 @@ int main(int argc, char* argv[]) {
     cerr << "\t\t\t" << "vocabulary size: " << vocab.size() << endl;
 
     cerr << "Initial cutoff" << endl;
-    resegment_words(words, vocab, freqs, maxlen);
+    resegment_words(words, vocab, freqs);
     double densum = get_sum(freqs);
     double cost = get_cost(freqs, densum);
     cerr << "cost: " << cost << endl;
@@ -407,11 +403,11 @@ int main(int argc, char* argv[]) {
         cerr << "collecting candidate subwords for removal" << endl;
         map<string, map<string, double> > diffs;
         if (vocab.size()-n_candidates_per_iter < min_vocab_size) n_candidates_per_iter = vocab.size()-min_vocab_size;
-        init_removal_candidates(n_candidates_per_iter, maxlen, words, vocab, diffs);
+        init_removal_candidates(n_candidates_per_iter, words, vocab, diffs);
 
         cerr << "ranking candidate subwords" << endl;
         vector<pair<string, double> > removal_scores;
-        rank_removal_candidates(words, vocab, diffs, freqs, maxlen, removal_scores);
+        rank_removal_candidates(words, vocab, diffs, freqs, removal_scores);
 
         // Perform removals one by one if likelihood change above threshold
         double curr_densum = get_sum(freqs);
@@ -473,7 +469,7 @@ int main(int argc, char* argv[]) {
         double co_densum = get_sum(freqs);
         vocab = freqs;
         freqs_to_logprobs(vocab, co_densum);
-        resegment_words(words, vocab, freqs, maxlen);
+        resegment_words(words, vocab, freqs);
         curr_densum = get_sum(freqs);
         curr_cost = get_cost(freqs, densum);
 
