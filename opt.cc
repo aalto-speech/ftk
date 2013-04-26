@@ -206,7 +206,7 @@ int cutoff(map<string, double> &vocab,
     while (iter != vocab.end()) {
         if (iter->second <= limit && iter->first.length() > 1) {
             vocab.erase(iter++);
-            nremovals += 1;
+            nremovals++;
         }
         else ++iter;
     }
@@ -417,7 +417,7 @@ int main(int argc, char* argv[]) {
 
         cerr << "starting cost before removing subwords one by one: " << curr_cost << endl;
 
-        int n_removals = 0;
+        unsigned int n_removals = 0;
         for (unsigned int i=0; i<removal_scores.size(); i++) {
 
             if (removal_scores[i].first.length() == 1) continue;
