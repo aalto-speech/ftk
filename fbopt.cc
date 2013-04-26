@@ -455,10 +455,6 @@ int main(int argc, char* argv[]) {
                 ostringstream vocabfname;
                 vocabfname << "iter" << itern << "_" << vocab.size() << ".vocab";
                 write_vocab(vocabfname.str().c_str(), vocab);
-
-                ostringstream freqsfname;
-                freqsfname << "iter" << itern << "_" << vocab.size() << ".freqs";
-                write_vocab(freqsfname.str().c_str(), freqs);
             }
 
             if (n_removals >= n_removals_per_iter) break;
@@ -481,10 +477,6 @@ int main(int argc, char* argv[]) {
         ostringstream vocabfname;
         vocabfname << "iter" << itern << ".vocab";
         write_vocab(vocabfname.str().c_str(), vocab);
-
-        ostringstream freqsfname;
-        freqsfname << "iter" << itern << ".freqs";
-        write_vocab(freqsfname.str().c_str(), freqs);
 
         itern++;
         threshold -= threshold_decrease;
