@@ -175,7 +175,7 @@ void apply_freq_diffs(map<string, double> &freqs,
     }
 }
 
-// FIXME: is this correct?
+
 void apply_backpointer_changes(map<string, map<string, double> > &backpointers,
                                const map<string, map<string, double> > &bps_to_remove,
                                const map<string, map<string, double> > &bps_to_add)
@@ -290,27 +290,26 @@ void get_backpointers(const map<string, double> &words,
 
 
 // Really performs the removal and gives out updated freqs
-void hypo_removal(const map<string, double> &vocab,
+void hypo_removal(MorphSet &vocab,
                   const string &subword,
                   const map<string, map<string, double> > &backpointers,
                   map<string, map<string, double> > &backpointers_to_remove,
                   map<string, map<string, double> > &backpointers_to_add,
                   map<string, double> &freq_diffs)
 {
-    map<string, double> hypo_vocab = vocab;
-    hypo_vocab.erase(subword);
-
     backpointers_to_remove.clear();
     backpointers_to_add.clear();
     freq_diffs.clear();
 
     for (auto worditer = backpointers.at(subword).cbegin(); worditer != backpointers.at(subword).cend(); ++worditer) {
 
-        // FIXME: this is slow.. create MorphSet before calling this
         map<string, double> stats;
         forward_backward(vocab, worditer->first, stats);
+
         map<string, double> hypo_stats;
-        forward_backward(hypo_vocab, worditer->first, hypo_stats);
+        double stored_value = vocab.remove(subword);
+        forward_backward(vocab, worditer->first, hypo_stats);
+        vocab.add(subword, stored_value);
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
@@ -429,7 +428,8 @@ int main(int argc, char* argv[]) {
             map<string, double> freq_diffs;
             map<string, map<string, double> > backpointers_to_remove;
             map<string, map<string, double> > backpointers_to_add;
-            hypo_removal(vocab, removal_scores[i].first, backpointers,
+            MorphSet morphset_vocab(vocab);
+            hypo_removal(morphset_vocab, removal_scores[i].first, backpointers,
                          backpointers_to_remove, backpointers_to_add, freq_diffs);
 
             double hypo_densum = get_sum(freqs, freq_diffs);

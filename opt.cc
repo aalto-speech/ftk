@@ -289,28 +289,26 @@ void get_backpointers(const map<string, double> &words,
 
 
 // Gives out updated freqs for removal of this subword
-void hypo_removal(const map<string, double> &vocab,
-                  const int maxlen,
+void hypo_removal(MorphSet &vocab,
                   const string &subword,
                   const map<string, map<string, double> > &backpointers,
                   map<string, map<string, double> > &backpointers_to_remove,
                   map<string, map<string, double> > &backpointers_to_add,
                   map<string, double> &freq_diffs)
 {
-    map<string, double> hypo_vocab = vocab;
-    hypo_vocab.erase(subword);
-
     backpointers_to_remove.clear();
     backpointers_to_add.clear();
     freq_diffs.clear();
 
     for (auto worditer = backpointers.at(subword).cbegin(); worditer != backpointers.at(subword).cend(); ++worditer) {
 
-        // FIXME: this is slow.. create MorphSet before calling this
         vector<string> best_path;
-        viterbi(vocab, maxlen, worditer->first, best_path, false);
+        viterbi(vocab, worditer->first, best_path, false);
+
         vector<string> hypo_path;
-        viterbi(hypo_vocab, maxlen, worditer->first, hypo_path, false);
+        double stored_value = vocab.remove(subword);
+        viterbi(vocab, worditer->first, hypo_path, false);
+        vocab.add(subword, stored_value);
 
         if (best_path.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
@@ -429,7 +427,8 @@ int main(int argc, char* argv[]) {
             map<string, double> freq_diffs;
             map<string, map<string, double> > backpointers_to_remove;
             map<string, map<string, double> > backpointers_to_add;
-            hypo_removal(vocab, maxlen, removal_scores[i].first, backpointers,
+            MorphSet morphset_vocab(vocab);
+            hypo_removal(morphset_vocab, removal_scores[i].first, backpointers,
                          backpointers_to_remove, backpointers_to_add, freq_diffs);
 
             double hypo_densum = get_sum(freqs, freq_diffs);
