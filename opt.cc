@@ -13,13 +13,13 @@ using namespace std;
 
 
 int read_words(const char* fname,
-               map<string, long> &words)
+               map<string, double> &words)
 {
     ifstream vocabfile(fname);
     if (!vocabfile) return -1;
 
     string line, word;
-    long count;
+    double count;
     while (getline(vocabfile, line)) {
         stringstream ss(line);
         ss >> count;
@@ -32,7 +32,7 @@ int read_words(const char* fname,
 }
 
 
-void resegment_words(const map<string, long> &words,
+void resegment_words(const map<string, double> &words,
                      const map<string, double> &vocab,
                      map<string, double> &new_freqs,
                      const int maxlen)
@@ -51,12 +51,12 @@ void resegment_words(const map<string, long> &words,
 
         // Update statistics
         for (int i=0; i<best_path.size(); i++)
-            new_freqs[best_path[i]] += double(worditer->second);
+            new_freqs[best_path[i]] += worditer->second;
     }
 }
 
 
-void resegment_words_w_diff(const map<string, long> &words,
+void resegment_words_w_diff(const map<string, double> &words,
                             const map<string, double> &vocab,
                             map<string, double> &new_freqs,
                             map<string, map<string, double> > &diffs,
@@ -78,7 +78,7 @@ void resegment_words_w_diff(const map<string, long> &words,
         // Update statistics
         map<string, double> best_path_types;
         for (int i=0; i<best_path.size(); i++) {
-            new_freqs[best_path[i]] += double(worditer->second);
+            new_freqs[best_path[i]] += worditer->second;
             best_path_types[best_path[i]] = 0.0;
         }
 
@@ -96,9 +96,9 @@ void resegment_words_w_diff(const map<string, long> &words,
                 }
 
                 for (int ib=0; ib<best_path.size(); ib++)
-                    diffs[hypoiter->first][best_path[ib]] -= double(worditer->second);
+                    diffs[hypoiter->first][best_path[ib]] -= worditer->second;
                 for (int ih=0; ih<hypo_path.size(); ih++)
-                    diffs[hypoiter->first][hypo_path[ih]] += double(worditer->second);
+                    diffs[hypoiter->first][hypo_path[ih]] += worditer->second;
 
 //                diffs[hypoiter->first].erase(hypoiter->first);
                 hypo_vocab.add(hypoiter->first, stored_value);
@@ -177,17 +177,16 @@ void apply_freq_diffs(map<string, double> &freqs,
 }
 
 
-void apply_backpointer_changes(const map<string, long> &words,
-                               map<string, map<string, double> > &backpointers,
-                               const map<string, map<string, bool> > &bps_to_remove,
-                               const map<string, map<string, bool> > &bps_to_add)
+void apply_backpointer_changes(map<string, map<string, double> > &backpointers,
+                               const map<string, map<string, double> > &bps_to_remove,
+                               const map<string, map<string, double> > &bps_to_add)
 {
     for (auto switer = bps_to_remove.cbegin(); switer != bps_to_remove.cend(); ++switer)
         for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
             backpointers[switer->first].erase(worditer->first);
     for (auto switer = bps_to_add.cbegin(); switer != bps_to_add.cend(); ++switer)
         for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
-            backpointers[switer->first][worditer->first] = double(words.at(worditer->first));
+            backpointers[switer->first][worditer->first] = worditer->second;
 }
 
 
@@ -221,7 +220,7 @@ int cutoff(map<string, double> &vocab,
 // running from the least common subword
 void init_removal_candidates(int n_candidates,
                              const int maxlen,
-                             const map<string, long> &words,
+                             const map<string, double> &words,
                              const map<string, double> &vocab,
                              map<string, map<string, double> > &diffs)
 {
@@ -243,7 +242,7 @@ bool rank_desc_sort(pair<string, double> i,pair<string, double> j) { return (i.s
 
 // Perform each of the removals (independent of others in the list) to get
 // initial order for the removals
-void rank_removal_candidates(const map<string, long> &words,
+void rank_removal_candidates(const map<string, double> &words,
                              const map<string, double> &vocab,
                              map<string, map<string, double> > &diffs,
                              map<string, double> &new_morph_freqs,
@@ -268,10 +267,9 @@ void rank_removal_candidates(const map<string, long> &words,
 }
 
 
-void get_backpointers(const map<string, long> &words,
+void get_backpointers(const map<string, double> &words,
                       const map<string, double> &vocab,
-                      map<string, map<string, double> > &backpointers,
-                      const int maxlen)
+                      map<string, map<string, double> > &backpointers)
 {
     backpointers.clear();
     MorphSet morphset_vocab(vocab);
@@ -293,13 +291,13 @@ void get_backpointers(const map<string, long> &words,
 }
 
 
-// Really performs the removal and gives out updated freqs
+// Gives out updated freqs for removal of this subword
 void remove_subword_update_backpointers(const map<string, double> &vocab,
                                         const int maxlen,
                                         const string &subword,
                                         const map<string, map<string, double> > &backpointers,
-                                        map<string, map<string, bool> > &backpointers_to_remove,
-                                        map<string, map<string, bool> > &backpointers_to_add,
+                                        map<string, map<string, double> > &backpointers_to_remove,
+                                        map<string, map<string, double> > &backpointers_to_add,
                                         map<string, double> &freq_diffs)
 {
     map<string, double> hypo_vocab = vocab;
@@ -329,12 +327,12 @@ void remove_subword_update_backpointers(const map<string, double> &vocab,
         // Collect frequency differences
         // Collect backpointer changes
         for (int i=0; i<best_path.size(); i++) {
-            freq_diffs[best_path[i]] -= double(worditer->second);
-            backpointers_to_remove[best_path[i]][worditer->first] = true;
+            freq_diffs[best_path[i]] -= worditer->second;
+            backpointers_to_remove[best_path[i]][worditer->first] += worditer->second;
         }
         for (int i=0; i<hypo_path.size(); i++) {
-            freq_diffs[hypo_path[i]] += double(worditer->second);
-            backpointers_to_add[hypo_path[i]][worditer->first] = true;
+            freq_diffs[hypo_path[i]] += worditer->second;
+            backpointers_to_add[hypo_path[i]][worditer->first] += worditer->second;
         }
     }
 }
@@ -368,7 +366,7 @@ int main(int argc, char* argv[]) {
     int maxlen;
     map<string, double> vocab;
     map<string, double> freqs;
-    map<string, long> words;
+    map<string, double> words;
 
     cerr << "Reading vocabulary " << argv[1] << endl;
     int retval = read_vocab(argv[1], vocab, maxlen);
@@ -419,7 +417,7 @@ int main(int argc, char* argv[]) {
         double curr_densum = get_sum(freqs);
         double curr_cost = get_cost(freqs, curr_densum);
         map<string, map<string, double> > backpointers;
-        get_backpointers(words, vocab, backpointers, maxlen);
+        get_backpointers(words, vocab, backpointers);
 
         cerr << "starting cost before removing subwords one by one: " << curr_cost << endl;
 
@@ -430,8 +428,8 @@ int main(int argc, char* argv[]) {
             cout << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << endl;
 
             map<string, double> freq_diffs;
-            map<string, map<string, bool> > backpointers_to_remove;
-            map<string, map<string, bool> > backpointers_to_add;
+            map<string, map<string, double> > backpointers_to_remove;
+            map<string, map<string, double> > backpointers_to_add;
             remove_subword_update_backpointers(vocab, maxlen, removal_scores[i].first, backpointers,
                                                backpointers_to_remove, backpointers_to_add, freq_diffs);
 
@@ -447,7 +445,7 @@ int main(int argc, char* argv[]) {
 
             apply_freq_diffs(freqs, freq_diffs);
             freqs.erase(removal_scores[i].first);
-            apply_backpointer_changes(words, backpointers, backpointers_to_remove, backpointers_to_add);
+            apply_backpointer_changes(backpointers, backpointers_to_remove, backpointers_to_add);
             backpointers.erase(removal_scores[i].first);
 
             curr_densum = hypo_densum;
