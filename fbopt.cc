@@ -15,26 +15,6 @@
 using namespace std;
 
 
-int read_words(string fname,
-               map<string, double> &words)
-{
-    ifstream vocabfile(fname);
-    if (!vocabfile) return -1;
-
-    string line, word;
-    double count;
-    while (getline(vocabfile, line)) {
-        stringstream ss(line);
-        ss >> count;
-        ss >> word;
-        words[word] = count;
-    }
-    vocabfile.close();
-
-    return words.size();
-}
-
-
 void resegment_words(const map<string, double> &words,
                      const map<string, double> &vocab,
                      map<string, double> &new_freqs)
@@ -417,7 +397,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, min removals per iteration: " << min_removals_per_iter << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
 
-    int maxlen;
+    int maxlen, word_maxlen;
     map<string, double> vocab;
     map<string, double> freqs;
     map<string, double> words;
@@ -432,8 +412,13 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "maximum string length: " << maxlen << endl;
 
     cerr << "Reading word list" << wordlist_fname << endl;
-    read_words(wordlist_fname, words);
-    cerr << "\t\t\t" << "vocabulary size: " << vocab.size() << endl;
+    retval = read_vocab(wordlist_fname, words, word_maxlen);
+    if (retval < 0) {
+        cerr << "something went wrong reading word list" << endl;
+        exit(0);
+    }
+    cerr << "\t" << "wordlist size: " << words.size() << endl;
+    cerr << "\t" << "maximum word length: " << word_maxlen << endl;
 
     cerr << "Initial cutoff" << endl;
     resegment_words(words, vocab, freqs);
