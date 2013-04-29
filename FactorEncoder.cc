@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#include "factorencoder.hh"
+#include "FactorEncoder.hh"
 
 
 class Token {

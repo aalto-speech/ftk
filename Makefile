@@ -8,7 +8,7 @@ cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-sign-compare
 progs = fe filefe fbopt
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
-srcs = factorencoder.cc io.cc MorphSet.cc GreedyUnigrams.cc
+srcs = io.cc FactorEncoder.cc MorphSet.cc GreedyUnigrams.cc
 objs = $(srcs:.cc=.o)
 
 test_progs = test_fe

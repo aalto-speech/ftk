@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#include "factorencoder.hh"
+#include "FactorEncoder.hh"
 
 
 int main(int argc, char* argv[]) {

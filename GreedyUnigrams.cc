@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <iostream>
 
-#include "factorencoder.hh"
+#include "FactorEncoder.hh"
 #include "GreedyUnigrams.hh"
 
 using namespace std;

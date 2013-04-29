@@ -10,7 +10,7 @@
 
 #include <popt.h>
 
-#include "factorencoder.hh"
+#include "FactorEncoder.hh"
 #include "GreedyUnigrams.hh"
 
 using namespace std;

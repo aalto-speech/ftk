@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#include "factorencoder.hh"
+#include "FactorEncoder.hh"
 #include "io.hh"
 
 
