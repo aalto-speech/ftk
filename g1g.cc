@@ -25,6 +25,7 @@ int main(int argc, char* argv[]) {
     double threshold = -25.0;
     double threshold_decrease = 25.0;
     int target_vocab_size = 50000;
+    bool enable_forward_backward = false;
     string vocab_fname;
     string wordlist_fname;
 
@@ -40,6 +41,7 @@ int main(int argc, char* argv[]) {
         {"threshold", 't', POPT_ARG_DOUBLE, &threshold, 11005, NULL, "Likelihood threshold for removals"},
         {"threshold_decrease", 'd', POPT_ARG_DOUBLE, &threshold_decrease, 11006, NULL, "Threshold decrease between iterations"},
         {"vocab_size", 'g', POPT_ARG_INT, &target_vocab_size, 11007, NULL, "Target vocabulary size (stopping criterion)"},
+        {"forward_backward", 'f', POPT_ARG_NONE, &enable_forward_backward, 11007, "Use Forward-backward segmentation instead of Viterbi", NULL},
         POPT_AUTOHELP
         {NULL}
     };
@@ -95,6 +97,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, threshold decrease per iteration: " << threshold_decrease << endl;
     cerr << "parameters, min removals per iteration: " << min_removals_per_iter << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
+    cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
 
     int maxlen, word_maxlen;
     map<string, double> vocab;
@@ -119,7 +122,11 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "wordlist size: " << words.size() << endl;
     cerr << "\t" << "maximum word length: " << word_maxlen << endl;
 
-    GreedyUnigrams gg(forward_backward);
+    GreedyUnigrams gg;
+    if (enable_forward_backward)
+        gg.set_segmentation_method(forward_backward);
+    else
+        gg.set_segmentation_method(viterbi);
 
     cerr << "Initial cutoff" << endl;
     gg.resegment_words(words, vocab, freqs);

@@ -6,7 +6,12 @@
 class GreedyUnigrams {
 public:
 
+    GreedyUnigrams() {}
     GreedyUnigrams(void (*segf)(MorphSet &vocab, const string &sentence, map<string, double> &stats)) : segf(segf) {}
+
+    void set_segmentation_method(void (*segf)(MorphSet &vocab, const string &sentence, map<string, double> &stats)) {
+        this->segf = segf;
+    }
 
     void resegment_words(const std::map<std::string, double> &words,
                          const std::map<std::string, double> &vocab,
