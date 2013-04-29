@@ -342,11 +342,10 @@ int main(int argc, char* argv[]) {
     double cutoff_value = 0.0;
     int n_candidates_per_iter = 5000;
     int max_removals_per_iter = 5000;
+    int min_removals_per_iter = 0;
     double threshold = -25.0;
     double threshold_decrease = 25.0;
-    int min_removals_per_iter = 0;
     int target_vocab_size = 50000;
-
     string vocab_fname;
     string wordlist_fname;
 
@@ -367,12 +366,11 @@ int main(int argc, char* argv[]) {
     };
 
     pc = poptGetContext(NULL, argc, (const char **)argv, po, 0);
-    poptSetOtherOptionHelp(pc, "[ARG...]");
+    poptSetOtherOptionHelp(pc, "[INITIAL VOCABULARY] [WORDLIST]");
 
     int val;
-    while ((val = poptGetNextOpt(pc)) >= 0) {
+    while ((val = poptGetNextOpt(pc)) >= 0)
         continue;
-    }
 
     // poptGetNextOpt returns -1 when the final argument has been parsed
     // otherwise an error occured
@@ -424,8 +422,8 @@ int main(int argc, char* argv[]) {
     map<string, double> freqs;
     map<string, double> words;
 
-    cerr << "Reading vocabulary " << argv[1] << endl;
-    int retval = read_vocab(argv[1], vocab, maxlen);
+    cerr << "Reading vocabulary " << vocab_fname << endl;
+    int retval = read_vocab(vocab_fname, vocab, maxlen);
     if (retval < 0) {
         cerr << "something went wrong reading vocabulary" << endl;
         exit(0);
@@ -433,11 +431,8 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "size: " << vocab.size() << endl;
     cerr << "\t" << "maximum string length: " << maxlen << endl;
 
-    cerr << "Reading word list" << endl;
-
-    read_words(argv[2], words);
-
-
+    cerr << "Reading word list" << wordlist_fname << endl;
+    read_words(wordlist_fname, words);
     cerr << "\t\t\t" << "vocabulary size: " << vocab.size() << endl;
 
     cerr << "Initial cutoff" << endl;
@@ -445,7 +440,6 @@ int main(int argc, char* argv[]) {
     double densum = get_sum(freqs);
     double cost = get_cost(freqs, densum);
     cerr << "cost: " << cost << endl;
-
 
     cutoff(freqs, cutoff_value);
     cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
