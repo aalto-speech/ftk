@@ -119,17 +119,19 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "wordlist size: " << words.size() << endl;
     cerr << "\t" << "maximum word length: " << word_maxlen << endl;
 
+    GreedyUnigrams gg(forward_backward);
+
     cerr << "Initial cutoff" << endl;
-    resegment_words(words, vocab, freqs);
-    double densum = get_sum(freqs);
-    double cost = get_cost(freqs, densum);
+    gg.resegment_words(words, vocab, freqs);
+    double densum = gg.get_sum(freqs);
+    double cost = gg.get_cost(freqs, densum);
     cerr << "cost: " << cost << endl;
 
-    cutoff(freqs, cutoff_value);
+    gg.cutoff(freqs, cutoff_value);
     cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
     vocab = freqs;
-    densum = get_sum(vocab);
-    freqs_to_logprobs(vocab, densum);
+    densum = gg.get_sum(vocab);
+    gg.freqs_to_logprobs(vocab, densum);
 
 
     cerr << "Removing subwords one by one" << endl;
@@ -141,17 +143,17 @@ int main(int argc, char* argv[]) {
         cerr << "collecting candidate subwords for removal" << endl;
         map<string, map<string, double> > diffs;
         if (vocab.size()-n_candidates_per_iter < target_vocab_size) n_candidates_per_iter = vocab.size()-target_vocab_size;
-        init_removal_candidates(n_candidates_per_iter, words, vocab, diffs);
+        gg.init_removal_candidates(n_candidates_per_iter, words, vocab, diffs);
 
         cerr << "ranking candidate subwords" << endl;
         vector<pair<string, double> > removal_scores;
-        rank_removal_candidates(words, vocab, diffs, freqs, removal_scores);
+        gg.rank_removal_candidates(words, vocab, diffs, freqs, removal_scores);
 
         // Perform removals one by one if likelihood change above threshold
-        double curr_densum = get_sum(freqs);
-        double curr_cost = get_cost(freqs, curr_densum);
+        double curr_densum = gg.get_sum(freqs);
+        double curr_cost = gg.get_cost(freqs, curr_densum);
         map<string, map<string, double> > backpointers;
-        get_backpointers(words, vocab, backpointers);
+        gg.get_backpointers(words, vocab, backpointers);
 
         cerr << "starting cost before removing subwords one by one: " << curr_cost << endl;
 
@@ -166,11 +168,11 @@ int main(int argc, char* argv[]) {
             map<string, map<string, double> > backpointers_to_remove;
             map<string, map<string, double> > backpointers_to_add;
             MorphSet morphset_vocab(vocab);
-            hypo_removal(morphset_vocab, removal_scores[i].first, backpointers,
+            gg.hypo_removal(morphset_vocab, removal_scores[i].first, backpointers,
                          backpointers_to_remove, backpointers_to_add, freq_diffs);
 
-            double hypo_densum = get_sum(freqs, freq_diffs);
-            double hypo_cost = get_cost(freqs, freq_diffs, hypo_densum);
+            double hypo_densum = gg.get_sum(freqs, freq_diffs);
+            double hypo_cost = gg.get_cost(freqs, freq_diffs, hypo_densum);
 
             cout << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost;
             if (hypo_cost-curr_cost < threshold) {
@@ -179,15 +181,15 @@ int main(int argc, char* argv[]) {
             }
             cout << " removed, was above threshold " << threshold << endl;
 
-            apply_freq_diffs(freqs, freq_diffs);
+            gg.apply_freq_diffs(freqs, freq_diffs);
             freqs.erase(removal_scores[i].first);
-            apply_backpointer_changes(backpointers, backpointers_to_remove, backpointers_to_add);
+            gg.apply_backpointer_changes(backpointers, backpointers_to_remove, backpointers_to_add);
             backpointers.erase(removal_scores[i].first);
 
             curr_densum = hypo_densum;
             curr_cost = hypo_cost;
             vocab = freqs;
-            freqs_to_logprobs(vocab, hypo_densum);
+            gg.freqs_to_logprobs(vocab, hypo_densum);
 
             n_removals++;
 
@@ -201,13 +203,13 @@ int main(int argc, char* argv[]) {
             if (vocab.size() <= target_vocab_size) break;
         }
 
-        int n_cutoff = cutoff(freqs, cutoff_value);
-        double co_densum = get_sum(freqs);
+        int n_cutoff = gg.cutoff(freqs, cutoff_value);
+        double co_densum = gg.get_sum(freqs);
         vocab = freqs;
-        freqs_to_logprobs(vocab, co_densum);
-        resegment_words(words, vocab, freqs);
-        curr_densum = get_sum(freqs);
-        curr_cost = get_cost(freqs, densum);
+        gg.freqs_to_logprobs(vocab, co_densum);
+        gg.resegment_words(words, vocab, freqs);
+        curr_densum = gg.get_sum(freqs);
+        curr_cost = gg.get_cost(freqs, densum);
 
         cerr << "subwords removed in this iteration: " << n_removals << endl;
         cerr << "subwords removed with cutoff this iteration: " << n_cutoff << endl;
