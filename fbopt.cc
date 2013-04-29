@@ -8,9 +8,11 @@
 #include <string>
 #include <vector>
 
-using namespace std;
+#include <popt.h>
 
 #include "factorencoder.hh"
+
+using namespace std;
 
 
 int read_words(const char* fname,
@@ -337,28 +339,85 @@ void hypo_removal(MorphSet &vocab,
 
 int main(int argc, char* argv[]) {
 
-    if (argc < 10) {
-        cerr << "usage: " << argv[0] << " <vocabulary> <words> <cutoff> <#candidates> <#removals> <threshold> <threshold_decrease> <minremovals> <minvocabsize>" << endl;
-        exit(0);
+    double cutoff_value = 0.0;
+    int n_candidates_per_iter = 5000;
+    int max_removals_per_iter = 5000;
+    double threshold = -25.0;
+    double threshold_decrease = 25.0;
+    int min_removals_per_iter = 0;
+    int target_vocab_size = 50000;
+
+    string vocab_fname;
+    string wordlist_fname;
+
+    // Popt documentation:
+    // http://linux.die.net/man/3/popt
+    // http://privatemisc.blogspot.fi/2012/12/popt-basic-example.html
+    poptContext pc;
+    struct poptOption po[] = {
+        {"cutoff", 'u', POPT_ARG_DOUBLE, &cutoff_value, 11001, NULL, "Cutoff value for each iteration"},
+        {"candidates", 'c', POPT_ARG_INT, &n_candidates_per_iter, 11002, NULL, "Number of candidate subwords to try to remove per iteration"},
+        {"max_removals", 'a', POPT_ARG_INT, &max_removals_per_iter, 11003, NULL, "Maximum number of removals per iteration"},
+        {"min_removals", 'i', POPT_ARG_INT, &min_removals_per_iter, 11004, NULL, "Minimum number of removals per iteration (stopping criterion)"},
+        {"threshold", 't', POPT_ARG_DOUBLE, &threshold, 11005, NULL, "Likelihood threshold for removals"},
+        {"threshold_decrease", 'd', POPT_ARG_DOUBLE, &threshold_decrease, 11006, NULL, "Threshold decrease between iterations"},
+        {"vocab_size", 'g', POPT_ARG_INT, &target_vocab_size, 11007, NULL, "Target vocabulary size (stopping criterion)"},
+        POPT_AUTOHELP
+        {NULL}
+    };
+
+    pc = poptGetContext(NULL, argc, (const char **)argv, po, 0);
+    poptSetOtherOptionHelp(pc, "[ARG...]");
+
+    int val;
+    while ((val = poptGetNextOpt(pc)) >= 0) {
+        continue;
     }
 
-    double cutoff_value = exp(atof(argv[3]));
-    unsigned int n_candidates_per_iter = atoi(argv[4]);
-    unsigned int n_removals_per_iter = atoi(argv[5]);
-    double threshold = atof(argv[6]);
-    double threshold_decrease = atof(argv[7]);
-    unsigned int min_removals_per_iter = atoi(argv[8]);
-    unsigned int min_vocab_size = atoi(argv[9]);
+    // poptGetNextOpt returns -1 when the final argument has been parsed
+    // otherwise an error occured
+    if (val != -1) {
+        switch (val) {
+        case POPT_ERROR_NOARG:
+            cerr << "Argument missing for an option" << endl;
+            exit(1);
+        case POPT_ERROR_BADOPT:
+            cerr << "Option's argument could not be parsed" << endl;
+            exit(1);
+        case POPT_ERROR_BADNUMBER:
+        case POPT_ERROR_OVERFLOW:
+            cerr << "Option could not be converted to number" << endl;
+            exit(1);
+        default:
+            cerr << "Unknown error in option processing" << endl;
+            exit(1);
+        }
+    }
 
-    cerr << "parameters, initial vocabulary: " << argv[1] << endl;
-    cerr << "parameters, wordlist: " << argv[2] << endl;
+    // Handle ARG part of command line
+    if (poptPeekArg(pc) != NULL)
+        vocab_fname.assign((char*)poptGetArg(pc));
+    else {
+        cerr << "Initial vocabulary file not set" << endl;
+        exit(1);
+    }
+
+    if (poptPeekArg(pc) != NULL)
+        wordlist_fname.assign((char*)poptGetArg(pc));
+    else {
+        cerr << "Wordlist file not set" << endl;
+        exit(1);
+    }
+
+    cerr << "parameters, initial vocabulary: " << vocab_fname << endl;
+    cerr << "parameters, wordlist: " << wordlist_fname << endl;
     cerr << "parameters, cutoff: " << setprecision(15) << cutoff_value << endl;
     cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
-    cerr << "parameters, removals per iteration: " << n_removals_per_iter << endl;
+    cerr << "parameters, removals per iteration: " << max_removals_per_iter << endl;
     cerr << "parameters, threshold: " << threshold << endl;
     cerr << "parameters, threshold decrease per iteration: " << threshold_decrease << endl;
     cerr << "parameters, min removals per iteration: " << min_removals_per_iter << endl;
-    cerr << "parameters, target vocab size: " << min_vocab_size << endl;
+    cerr << "parameters, target vocab size: " << target_vocab_size << endl;
 
     int maxlen;
     map<string, double> vocab;
@@ -403,7 +462,7 @@ int main(int argc, char* argv[]) {
 
         cerr << "collecting candidate subwords for removal" << endl;
         map<string, map<string, double> > diffs;
-        if (vocab.size()-n_candidates_per_iter < min_vocab_size) n_candidates_per_iter = vocab.size()-min_vocab_size;
+        if (vocab.size()-n_candidates_per_iter < target_vocab_size) n_candidates_per_iter = vocab.size()-target_vocab_size;
         init_removal_candidates(n_candidates_per_iter, words, vocab, diffs);
 
         cerr << "ranking candidate subwords" << endl;
@@ -460,8 +519,8 @@ int main(int argc, char* argv[]) {
                 write_vocab(vocabfname.str().c_str(), vocab);
             }
 
-            if (n_removals >= n_removals_per_iter) break;
-            if (vocab.size() <= min_vocab_size) break;
+            if (n_removals >= max_removals_per_iter) break;
+            if (vocab.size() <= target_vocab_size) break;
         }
 
         int n_cutoff = cutoff(freqs, cutoff_value);
@@ -489,7 +548,7 @@ int main(int argc, char* argv[]) {
             break;
         }
 
-        if (vocab.size() <= min_vocab_size) {
+        if (vocab.size() <= target_vocab_size) {
             cerr << "stopping by min_vocab_size." << endl;
             break;
         }
