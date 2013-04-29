@@ -456,11 +456,11 @@ int main(int argc, char* argv[]) {
             if (vocab.size() % 5000 == 0) {
                 ostringstream vocabfname;
                 vocabfname << "iter" << itern << "_" << vocab.size() << ".vocab";
-                write_vocab(vocabfname.str().c_str(), vocab);
+                write_vocab(vocabfname.str(), vocab);
 
                 ostringstream freqsfname;
                 freqsfname << "iter" << itern << "_" << vocab.size() << ".freqs";
-                write_vocab(freqsfname.str().c_str(), freqs);
+                write_vocab(freqsfname.str(), freqs);
             }
 
             if (n_removals >= n_removals_per_iter) break;
@@ -482,11 +482,11 @@ int main(int argc, char* argv[]) {
 
         ostringstream vocabfname;
         vocabfname << "iter" << itern << ".vocab";
-        write_vocab(vocabfname.str().c_str(), vocab);
+        write_vocab(vocabfname.str(), vocab);
 
         ostringstream freqsfname;
         freqsfname << "iter" << itern << ".freqs";
-        write_vocab(freqsfname.str().c_str(), freqs);
+        write_vocab(freqsfname.str(), freqs);
 
         itern++;
         threshold -= threshold_decrease;

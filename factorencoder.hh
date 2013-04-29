@@ -13,7 +13,7 @@ int read_vocab(string fname,
                map<string, double> &vocab,
                int &maxlen);
 
-int write_vocab(const char* fname,
+int write_vocab(string fname,
                 const map<string, double> &vocab);
 
 void sort_vocab(const map<string, double> &vocab,

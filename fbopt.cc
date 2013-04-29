@@ -510,7 +510,7 @@ int main(int argc, char* argv[]) {
             if (vocab.size() % 5000 == 0) {
                 ostringstream vocabfname;
                 vocabfname << "iter" << itern << "_" << vocab.size() << ".vocab";
-                write_vocab(vocabfname.str().c_str(), vocab);
+                write_vocab(vocabfname.str(), vocab);
             }
 
             if (n_removals >= max_removals_per_iter) break;
@@ -532,7 +532,7 @@ int main(int argc, char* argv[]) {
 
         ostringstream vocabfname;
         vocabfname << "iter" << itern << ".vocab";
-        write_vocab(vocabfname.str().c_str(), vocab);
+        write_vocab(vocabfname.str(), vocab);
 
         itern++;
         threshold -= threshold_decrease;

@@ -45,7 +45,7 @@ int read_vocab(string fname,
 }
 
 
-int write_vocab(const char* fname,
+int write_vocab(string fname,
                 const map<string, double> &vocab)
 {
     ofstream vocabfile(fname);
