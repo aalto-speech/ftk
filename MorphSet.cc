@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cstdlib>
-#include <vector>
+
 #include "MorphSet.hh"
 
 
@@ -49,6 +49,7 @@ MorphSet::insert(char letter, const std::string &morph, double cost, Node *node)
             exit(1);
         }
         arc->morph = morph;
+        arc->cost = cost;
     }
 
     // Maintain the length of the longest morph

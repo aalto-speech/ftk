@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 /** A structure containing a set of morphs in a letter-tree format.
  * Input letters and output morphs are stored in arcs. Nodes are just
