@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
         if (it->first.length() == 1)
             all_chars[it->first] = 0.0;
 
-    cerr << "Reading word list" << wordlist_fname << endl;
+    cerr << "Reading word list " << wordlist_fname << endl;
     retval = read_vocab(wordlist_fname, words, word_maxlen);
     if (retval < 0) {
         cerr << "something went wrong reading word list" << endl;
@@ -183,6 +183,8 @@ int main(int argc, char* argv[]) {
         for (unsigned int i=0; i<removal_scores.size(); i++) {
 
             if (removal_scores[i].first.length() == 1) continue;
+            // Score most probably went to zero already
+            if (vocab.find(removal_scores[i].first) == vocab.end()) continue;
 
             cout << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << endl;
 
