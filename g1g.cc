@@ -16,6 +16,16 @@
 using namespace std;
 
 
+void assert_single_chars(map<string, double> &vocab,
+                         const map<string, double> &chars,
+                         double val)
+{
+    for (auto it = chars.cbegin(); it != chars.cend(); ++it)
+        if (vocab.find(it->first) == vocab.end())
+            vocab[it->first] = val;
+}
+
+
 int main(int argc, char* argv[]) {
 
     double cutoff_value = 0.0;
@@ -26,6 +36,7 @@ int main(int argc, char* argv[]) {
     double threshold_decrease = 25.0;
     int target_vocab_size = 50000;
     bool enable_forward_backward = false;
+    double one_char_min_lp = -25.0;
     string vocab_fname;
     string wordlist_fname;
 
@@ -100,6 +111,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
 
     int maxlen, word_maxlen;
+    map<string, double> all_chars;
     map<string, double> vocab;
     map<string, double> freqs;
     map<string, double> words;
@@ -112,6 +124,9 @@ int main(int argc, char* argv[]) {
     }
     cerr << "\t" << "size: " << vocab.size() << endl;
     cerr << "\t" << "maximum string length: " << maxlen << endl;
+    for (auto it = vocab.cbegin(); it != vocab.end(); ++it)
+        if (it->first.length() == 1)
+            all_chars[it->first] = 0.0;
 
     cerr << "Reading word list" << wordlist_fname << endl;
     retval = read_vocab(wordlist_fname, words, word_maxlen);
@@ -139,7 +154,7 @@ int main(int argc, char* argv[]) {
     vocab = freqs;
     densum = gg.get_sum(vocab);
     gg.freqs_to_logprobs(vocab, densum);
-
+    assert_single_chars(vocab, all_chars, one_char_min_lp);
 
     cerr << "Removing subwords one by one" << endl;
     int itern = 1;
@@ -176,7 +191,7 @@ int main(int argc, char* argv[]) {
             map<string, map<string, double> > backpointers_to_add;
             MorphSet morphset_vocab(vocab);
             gg.hypo_removal(morphset_vocab, removal_scores[i].first, backpointers,
-                         backpointers_to_remove, backpointers_to_add, freq_diffs);
+                            backpointers_to_remove, backpointers_to_add, freq_diffs);
 
             double hypo_densum = gg.get_sum(freqs, freq_diffs);
             double hypo_cost = gg.get_cost(freqs, freq_diffs, hypo_densum);
@@ -197,6 +212,7 @@ int main(int argc, char* argv[]) {
             curr_cost = hypo_cost;
             vocab = freqs;
             gg.freqs_to_logprobs(vocab, hypo_densum);
+            assert_single_chars(vocab, all_chars, one_char_min_lp);
 
             n_removals++;
 
@@ -214,6 +230,7 @@ int main(int argc, char* argv[]) {
         double co_densum = gg.get_sum(freqs);
         vocab = freqs;
         gg.freqs_to_logprobs(vocab, co_densum);
+        assert_single_chars(vocab, all_chars, one_char_min_lp);
         gg.resegment_words(words, vocab, freqs);
         curr_densum = gg.get_sum(freqs);
         curr_cost = gg.get_cost(freqs, densum);
