@@ -15,7 +15,7 @@
 using namespace std;
 
 
-int read_words(const char* fname,
+int read_words(string fname,
                map<string, double> &words)
 {
     ifstream vocabfile(fname);

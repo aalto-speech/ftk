@@ -21,7 +21,7 @@ class Token {
 };
 
 
-int read_vocab(const char* fname,
+int read_vocab(string fname,
                map<string, double> &vocab,
                int &maxlen)
 {
