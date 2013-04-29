@@ -5,7 +5,7 @@ cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-sign-compare
 
 ##################################################
 
-progs = fe filefe fbopt
+progs = fe filefe g1g
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
 srcs = io.cc FactorEncoder.cc MorphSet.cc GreedyUnigrams.cc
