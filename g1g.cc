@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
 
         cerr << "collecting candidate subwords for removal" << endl;
         map<string, map<string, double> > diffs;
-        if (vocab.size()-n_candidates_per_iter < target_vocab_size) n_candidates_per_iter = vocab.size()-target_vocab_size;
+        if ((int)vocab.size()-n_candidates_per_iter < target_vocab_size) n_candidates_per_iter = (int)vocab.size()-target_vocab_size;
         gg.init_removal_candidates(n_candidates_per_iter, words, vocab, diffs);
 
         cerr << "ranking candidate subwords" << endl;
