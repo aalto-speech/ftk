@@ -1,11 +1,11 @@
 
 cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-sign-compare
 #cxxflags = -O0 -gddb -std=gnu++0x -Wall
-#cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-sign-compare -DGLIBCXX_FORCE_NEW
+#cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-sign-compare
 
 ##################################################
 
-progs = fe filefe g1g dummy
+progs = fe filefe g1g g1g2
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
 srcs = io.cc FactorEncoder.cc GreedyUnigrams.cc
