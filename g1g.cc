@@ -10,6 +10,7 @@
 
 #include <popt.h>
 
+#include "StringSet.hh"
 #include "FactorEncoder.hh"
 #include "GreedyUnigrams.hh"
 
@@ -191,8 +192,8 @@ int main(int argc, char* argv[]) {
             map<string, double> freq_diffs;
             map<string, map<string, double> > backpointers_to_remove;
             map<string, map<string, double> > backpointers_to_add;
-            MorphSet morphset_vocab(vocab);
-            gg.hypo_removal(morphset_vocab, removal_scores[i].first, backpointers,
+            StringSet<double> stringset_vocab(vocab);
+            gg.hypo_removal(stringset_vocab, removal_scores[i].first, backpointers,
                             backpointers_to_remove, backpointers_to_add, freq_diffs);
 
             double hypo_densum = gg.get_sum(freqs, freq_diffs);

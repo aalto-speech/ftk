@@ -13,12 +13,12 @@ GreedyUnigrams::resegment_words(const map<string, double> &words,
                                 map<string, double> &new_freqs)
 {
     new_freqs.clear();
-    MorphSet morphset_vocab(vocab);
+    StringSet<double> stringset_vocab(vocab);
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, double> stats;
-        segf(morphset_vocab, worditer->first, stats);
+        segf(stringset_vocab, worditer->first, stats);
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
@@ -39,8 +39,8 @@ GreedyUnigrams::resegment_words_w_diff(const map<string, double> &words,
                                        map<string, map<string, double> > &diffs)
 {
     new_freqs.clear();
-    MorphSet morphset_vocab(vocab);
-    MorphSet hypo_vocab(vocab);
+    StringSet<double> morphset_vocab(vocab);
+    StringSet<double> hypo_vocab(vocab);
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
@@ -257,12 +257,12 @@ GreedyUnigrams::get_backpointers(const map<string, double> &words,
                                  map<string, map<string, double> > &backpointers)
 {
     backpointers.clear();
-    MorphSet morphset_vocab(vocab);
+    StringSet<double> stringset_vocab(vocab);
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, double> stats;
-        segf(morphset_vocab, worditer->first, stats);
+        segf(stringset_vocab, worditer->first, stats);
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
@@ -278,7 +278,7 @@ GreedyUnigrams::get_backpointers(const map<string, double> &words,
 
 // Hypothesizes removal and gives out updated freqs
 void
-GreedyUnigrams::hypo_removal(MorphSet &vocab,
+GreedyUnigrams::hypo_removal(StringSet<double> &vocab,
                              const string &subword,
                              const map<string, map<string, double> > &backpointers,
                              map<string, map<string, double> > &backpointers_to_remove,

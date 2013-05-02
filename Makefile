@@ -1,14 +1,14 @@
 
-#cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-sign-compare
+cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-sign-compare
 #cxxflags = -O0 -gddb -std=gnu++0x -Wall
-cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-sign-compare
+#cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-sign-compare -DGLIBCXX_FORCE_NEW
 
 ##################################################
 
-progs = fe filefe g1g
+progs = fe filefe g1g dummy
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
-srcs = io.cc FactorEncoder.cc MorphSet.cc GreedyUnigrams.cc
+srcs = io.cc FactorEncoder.cc GreedyUnigrams.cc
 objs = $(srcs:.cc=.o)
 
 test_progs = test_fe

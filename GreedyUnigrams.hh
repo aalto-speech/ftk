@@ -1,15 +1,15 @@
 #include <map>
 #include <vector>
 
-#include "MorphSet.hh"
+#include "StringSet.hh"
 
 class GreedyUnigrams {
 public:
 
     GreedyUnigrams() {}
-    GreedyUnigrams(void (*segf)(const MorphSet &vocab, const string &sentence, map<string, double> &stats)) : segf(segf) {}
+    GreedyUnigrams(void (*segf)(const StringSet<double> &vocab, const string &sentence, map<string, double> &stats)) : segf(segf) {}
 
-    void set_segmentation_method(void (*segf)(const MorphSet &vocab, const string &sentence, map<string, double> &stats)) {
+    void set_segmentation_method(void (*segf)(const StringSet<double> &vocab, const string &sentence, map<string, double> &stats)) {
         this->segf = segf;
     }
 
@@ -62,7 +62,7 @@ public:
                           const std::map<std::string, double> &vocab,
                           std::map<std::string, std::map<std::string, double> > &backpointers);
 
-    void hypo_removal(MorphSet &vocab,
+    void hypo_removal(StringSet<double> &vocab,
                       const std::string &subword,
                       const std::map<std::string, std::map<std::string, double> > &backpointers,
                       std::map<std::string, std::map<std::string, double> > &backpointers_to_remove,
@@ -70,5 +70,5 @@ public:
                       std::map<std::string, double> &freq_diffs);
 
 private:
-    void (*segf)(const MorphSet &vocab, const string &sentence, map<string, double> &stats);
+    void (*segf)(const StringSet<double> &vocab, const string &sentence, map<string, double> &stats);
 };

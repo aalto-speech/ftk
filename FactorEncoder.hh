@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "MorphSet.hh"
+#include "StringSet.hh"
 
 using namespace std;
 
@@ -22,28 +22,28 @@ void sort_vocab(const map<string, double> &vocab,
 
 void viterbi(const map<string, double> &vocab,
              int maxlen,
-             const string &sentence,
+             const string &text,
              vector<string> &best_path,
              bool reverse=true);
 
-void viterbi(const MorphSet &vocab,
-             const string &sentence,
+void viterbi(const StringSet<double> &vocab,
+             const string &text,
              vector<string> &best_path,
              bool reverse=true);
 
-void viterbi(const MorphSet &vocab,
-             const string &sentence,
+void viterbi(const StringSet<double> &vocab,
+             const string &text,
              map<string, double> &stats);
 
 double add_log_domain_probs(double a,
                             double b);
 
-void forward_backward(const MorphSet &vocab,
-                      const string &sentence,
+void forward_backward(const StringSet<double> &vocab,
+                      const string &text,
                       map<string, double> &stats);
 
 void forward_backward(const map<string, double> &vocab,
-                      const string &sentence,
+                      const string &text,
                       map<string, double> &stats);
 
 
