@@ -1,74 +1,80 @@
+#ifndef GREEDY_UNIGRAMS
+#define GREEDY_UNIGRAMS
+
 #include <map>
 #include <vector>
 
+#include "defs.hh"
 #include "StringSet.hh"
 
 class GreedyUnigrams {
 public:
 
     GreedyUnigrams() {}
-    GreedyUnigrams(void (*segf)(const StringSet<double> &vocab, const string &sentence, map<string, double> &stats)) : segf(segf) {}
+    GreedyUnigrams(void (*segf)(const StringSet<flt_type> &vocab, const string &sentence, map<string, flt_type> &stats)) : segf(segf) {}
 
-    void set_segmentation_method(void (*segf)(const StringSet<double> &vocab, const string &sentence, map<string, double> &stats)) {
+    void set_segmentation_method(void (*segf)(const StringSet<flt_type> &vocab, const string &sentence, map<string, flt_type> &stats)) {
         this->segf = segf;
     }
 
-    void resegment_words(const std::map<std::string, double> &words,
-                         const std::map<std::string, double> &vocab,
-                         std::map<std::string, double> &new_freqs);
+    void resegment_words(const std::map<std::string, flt_type> &words,
+                         const std::map<std::string, flt_type> &vocab,
+                         std::map<std::string, flt_type> &new_freqs);
 
-    void resegment_words_w_diff(const std::map<std::string, double> &words,
-                                const std::map<std::string, double> &vocab,
-                                std::map<std::string, double> &new_freqs,
-                                std::map<std::string, std::map<std::string, double> > &diffs);
+    void resegment_words_w_diff(const std::map<std::string, flt_type> &words,
+                                const std::map<std::string, flt_type> &vocab,
+                                std::map<std::string, flt_type> &new_freqs,
+                                std::map<std::string, std::map<std::string, flt_type> > &diffs);
 
-    double get_sum(const std::map<std::string, double> &freqs);
+    flt_type get_sum(const std::map<std::string, flt_type> &freqs);
 
-    double get_sum(const std::map<std::string, double> &freqs,
-                   const std::map<std::string, double> &freq_diffs);
+    flt_type get_sum(const std::map<std::string, flt_type> &freqs,
+                   const std::map<std::string, flt_type> &freq_diffs);
 
-    double get_cost(const std::map<std::string, double> &freqs,
-                    double densum);
+    flt_type get_cost(const std::map<std::string, flt_type> &freqs,
+                    flt_type densum);
 
-    double get_cost(const std::map<std::string, double> &freqs,
-                    const std::map<std::string, double> &freq_diffs,
-                    double densum);
+    flt_type get_cost(const std::map<std::string, flt_type> &freqs,
+                    const std::map<std::string, flt_type> &freq_diffs,
+                    flt_type densum);
 
-    void apply_freq_diffs(std::map<std::string, double> &freqs,
-                          const std::map<std::string, double> &freq_diffs);
+    void apply_freq_diffs(std::map<std::string, flt_type> &freqs,
+                          const std::map<std::string, flt_type> &freq_diffs);
 
-    void apply_backpointer_changes(std::map<std::string, std::map<std::string, double> > &backpointers,
-                                   const std::map<std::string, std::map<std::string, double> > &bps_to_remove,
-                                   const std::map<std::string, std::map<std::string, double> > &bps_to_add);
+    void apply_backpointer_changes(std::map<std::string, std::map<std::string, flt_type> > &backpointers,
+                                   const std::map<std::string, std::map<std::string, flt_type> > &bps_to_remove,
+                                   const std::map<std::string, std::map<std::string, flt_type> > &bps_to_add);
 
-    void freqs_to_logprobs(std::map<std::string, double> &vocab,
-                           double densum);
+    void freqs_to_logprobs(std::map<std::string, flt_type> &vocab,
+                           flt_type densum);
 
-    int cutoff(std::map<std::string, double> &vocab,
-               double limit);
+    int cutoff(std::map<std::string, flt_type> &vocab,
+               flt_type limit);
 
     void init_removal_candidates(int n_candidates,
-                                 const std::map<std::string, double> &words,
-                                 const std::map<std::string, double> &vocab,
-                                 std::map<std::string, std::map<std::string, double> > &diffs);
+                                 const std::map<std::string, flt_type> &words,
+                                 const std::map<std::string, flt_type> &vocab,
+                                 std::map<std::string, std::map<std::string, flt_type> > &diffs);
 
-    void rank_removal_candidates(const std::map<std::string, double> &words,
-                                 const std::map<std::string, double> &vocab,
-                                 std::map<std::string, std::map<std::string, double> > &diffs,
-                                 std::map<std::string, double> &new_morph_freqs,
-                                 vector<pair<std::string, double> > &removal_scores);
+    void rank_removal_candidates(const std::map<std::string, flt_type> &words,
+                                 const std::map<std::string, flt_type> &vocab,
+                                 std::map<std::string, std::map<std::string, flt_type> > &diffs,
+                                 std::map<std::string, flt_type> &new_morph_freqs,
+                                 vector<pair<std::string, flt_type> > &removal_scores);
 
-    void get_backpointers(const std::map<std::string, double> &words,
-                          const std::map<std::string, double> &vocab,
-                          std::map<std::string, std::map<std::string, double> > &backpointers);
+    void get_backpointers(const std::map<std::string, flt_type> &words,
+                          const std::map<std::string, flt_type> &vocab,
+                          std::map<std::string, std::map<std::string, flt_type> > &backpointers);
 
-    void hypo_removal(StringSet<double> &vocab,
+    void hypo_removal(StringSet<flt_type> &vocab,
                       const std::string &subword,
-                      const std::map<std::string, std::map<std::string, double> > &backpointers,
-                      std::map<std::string, std::map<std::string, double> > &backpointers_to_remove,
-                      std::map<std::string, std::map<std::string, double> > &backpointers_to_add,
-                      std::map<std::string, double> &freq_diffs);
+                      const std::map<std::string, std::map<std::string, flt_type> > &backpointers,
+                      std::map<std::string, std::map<std::string, flt_type> > &backpointers_to_remove,
+                      std::map<std::string, std::map<std::string, flt_type> > &backpointers_to_add,
+                      std::map<std::string, flt_type> &freq_diffs);
 
 private:
-    void (*segf)(const StringSet<double> &vocab, const string &sentence, map<string, double> &stats);
+    void (*segf)(const StringSet<flt_type> &vocab, const string &sentence, map<string, flt_type> &stats);
 };
+
+#endif /* GREEDY_UNIGRAMS */

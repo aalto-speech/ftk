@@ -7,6 +7,7 @@
 
 using namespace std;
 
+#include "defs.hh"
 #include "FactorEncoder.hh"
 
 
@@ -18,7 +19,7 @@ int main(int argc, char* argv[]) {
     }
 
     int maxlen;
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     cerr << "Reading vocabulary " << argv[1] << endl;
     int retval = read_vocab(argv[1], vocab, maxlen);
     if (retval < 0) {

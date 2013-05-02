@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 
+#include "defs.hh"
 #include "fetest.hh"
 
 #include <cppunit/TestFixture.h>
@@ -22,7 +23,7 @@ void fetest :: tearDown (void)
 
 void fetest :: viterbiTest1 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     string str1("a"); string str2("bc");
     vocab[str1] = -1.0;
     vocab[str2] = -2.0;
@@ -37,7 +38,7 @@ void fetest :: viterbiTest1 (void)
 
 void fetest :: viterbiTest2 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     string str1("a"); string str2("bc");
     string str3("ab"); string str4("c");
     vocab[str1] = -1.0;
@@ -56,7 +57,7 @@ void fetest :: viterbiTest2 (void)
 // No possible segmentation
 void fetest :: viterbiTest3 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     string str1("a");
     vocab[str1] = -1.0;
     string sentence("abc");
@@ -69,7 +70,7 @@ void fetest :: viterbiTest3 (void)
 // Empty string
 void fetest :: viterbiTest4 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     string str1("a");
     vocab[str1] = -1.0;
     string sentence("");
@@ -82,7 +83,7 @@ void fetest :: viterbiTest4 (void)
 // One character sentence
 void fetest :: viterbiTest5 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     string str1("a");
     vocab[str1] = -1.0;
     string sentence("a");
@@ -96,7 +97,7 @@ void fetest :: viterbiTest5 (void)
 // No segmentation
 void fetest :: viterbiTest6 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     string str1("a"); string str2("b");
     string str3("c"); string str4("d");
     vocab[str1] = -1.0;
@@ -113,11 +114,11 @@ void fetest :: viterbiTest6 (void)
 // Empty string
 void fetest :: ForwardBackwardTest1 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     string str1("a");
     vocab[str1] = -1.0;
     string sentence("");
-    map<string, double> stats;
+    map<string, flt_type> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
 }
@@ -125,7 +126,7 @@ void fetest :: ForwardBackwardTest1 (void)
 // No segmentation
 void fetest :: ForwardBackwardTest2 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     string str1("a"); string str2("b");
     string str3("c"); string str4("d");
     vocab[str1] = -1.0;
@@ -133,7 +134,7 @@ void fetest :: ForwardBackwardTest2 (void)
     vocab[str3] = 0.0;
     vocab[str4] = 0.0;
     string sentence("a-bcd");
-    map<string, double> stats;
+    map<string, flt_type> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
 }
@@ -141,77 +142,77 @@ void fetest :: ForwardBackwardTest2 (void)
 // One character string
 void fetest :: ForwardBackwardTest3 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     vocab["a"] = -1.0;
     string sentence("a");
-    map<string, double> stats;
+    map<string, flt_type> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(1, (int)stats.size());
-    CPPUNIT_ASSERT_EQUAL(1.0, stats["a"]);
+    CPPUNIT_ASSERT_EQUAL((flt_type)1.0, stats["a"]);
 }
 
 // Two character string, one segmentation
 void fetest :: ForwardBackwardTest4 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     vocab["a"] = -1.0;
     vocab["b"] = -1.0;
     string sentence("ab");
-    map<string, double> stats;
+    map<string, flt_type> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(2, (int)stats.size());
-    CPPUNIT_ASSERT_EQUAL(1.0, stats["b"]);
-    CPPUNIT_ASSERT_EQUAL(1.0, stats["a"]);
+    CPPUNIT_ASSERT_EQUAL((flt_type)1.0, stats["b"]);
+    CPPUNIT_ASSERT_EQUAL((flt_type)1.0, stats["a"]);
 }
 
 // Two character string, two segmentations
 // Independent paths
 void fetest :: ForwardBackwardTest5 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     vocab["a"] = -1.0;
     vocab["b"] = -1.0;
     vocab["ab"] = -2.0;
     string sentence("ab");
-    map<string, double> stats;
+    map<string, flt_type> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(3, (int)stats.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["ab"], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["b"], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["a"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( (flt_type)0.50, stats["ab"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( (flt_type)0.50, stats["b"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( (flt_type)0.50, stats["a"], DBL_ACCURACY );
 }
 
 // Three character string, two segmentations
 // Dependent paths
 void fetest :: ForwardBackwardTest6 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     vocab["a"] = -1.0;
     vocab["b"] = -1.0;
     vocab["c"] = -1.0;
     vocab["d"] = -1.0;
     vocab["bc"] = -2.0;
     string sentence("abc");
-    map<string, double> stats;
+    map<string, flt_type> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(4, (int)stats.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["bc"], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["c"], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.50, stats["b"], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 1.0, stats["a"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( (flt_type)0.50, stats["bc"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( (flt_type)0.50, stats["c"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( (flt_type)0.50, stats["b"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( (flt_type)1.0, stats["a"], DBL_ACCURACY );
 }
 
 // Multiple paths
 void fetest :: ForwardBackwardTest7 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     vocab["a"] = log(0.25);
     vocab["sa"] = log(0.25);
     vocab["s"] = log(0.25);
     vocab["ki"] = log(0.50);
     vocab["kis"] = log(0.50);
     string sentence("kissa");
-    map<string, double> stats;
+    map<string, flt_type> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(5, (int)stats.size());
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.80, stats["kis"], DBL_ACCURACY );
@@ -224,7 +225,7 @@ void fetest :: ForwardBackwardTest7 (void)
 // Multiple paths
 void fetest :: ForwardBackwardTest8 (void)
 {
-    map<string, double> vocab;
+    map<string, flt_type> vocab;
     vocab["a"] = log(0.25);
     vocab["sa"] = log(0.25);
     vocab["s"] = log(0.25);
@@ -232,7 +233,7 @@ void fetest :: ForwardBackwardTest8 (void)
     vocab["kis"] = log(0.50);
     vocab["kissa"] = log(0.1953125);
     string sentence("kissa");
-    map<string, double> stats;
+    map<string, flt_type> stats;
     forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(6, (int)stats.size());
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5, stats["kissa"], DBL_ACCURACY );

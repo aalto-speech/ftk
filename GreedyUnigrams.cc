@@ -8,16 +8,16 @@ using namespace std;
 
 
 void
-GreedyUnigrams::resegment_words(const map<string, double> &words,
-                                const map<string, double> &vocab,
-                                map<string, double> &new_freqs)
+GreedyUnigrams::resegment_words(const map<string, flt_type> &words,
+                                const map<string, flt_type> &vocab,
+                                map<string, flt_type> &new_freqs)
 {
     new_freqs.clear();
-    StringSet<double> stringset_vocab(vocab);
+    StringSet<flt_type> stringset_vocab(vocab);
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
-        map<string, double> stats;
+        map<string, flt_type> stats;
         segf(stringset_vocab, worditer->first, stats);
 
         if (stats.size() == 0) {
@@ -33,18 +33,18 @@ GreedyUnigrams::resegment_words(const map<string, double> &words,
 
 
 void
-GreedyUnigrams::resegment_words_w_diff(const map<string, double> &words,
-                                       const map<string, double> &vocab,
-                                       map<string, double> &new_freqs,
-                                       map<string, map<string, double> > &diffs)
+GreedyUnigrams::resegment_words_w_diff(const map<string, flt_type> &words,
+                                       const map<string, flt_type> &vocab,
+                                       map<string, flt_type> &new_freqs,
+                                       map<string, map<string, flt_type> > &diffs)
 {
     new_freqs.clear();
-    StringSet<double> morphset_vocab(vocab);
-    StringSet<double> hypo_vocab(vocab);
+    StringSet<flt_type> morphset_vocab(vocab);
+    StringSet<flt_type> hypo_vocab(vocab);
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
-        map<string, double> stats;
+        map<string, flt_type> stats;
         segf(morphset_vocab, worditer->first, stats);
 
         if (stats.size() == 0) {
@@ -62,8 +62,8 @@ GreedyUnigrams::resegment_words_w_diff(const map<string, double> &words,
             // If wanting to hypothesize removal of this subword
             if (diffs.find(hypoiter->first) != diffs.end()) {
 
-                double stored_value = hypo_vocab.remove(hypoiter->first);
-                map<string, double> hypo_stats;
+                flt_type stored_value = hypo_vocab.remove(hypoiter->first);
+                map<string, flt_type> hypo_stats;
 
                 segf(hypo_vocab, worditer->first, hypo_stats);
 
@@ -84,21 +84,21 @@ GreedyUnigrams::resegment_words_w_diff(const map<string, double> &words,
 }
 
 
-double
-GreedyUnigrams::get_sum(const map<string, double> &freqs)
+flt_type
+GreedyUnigrams::get_sum(const map<string, flt_type> &freqs)
 {
-    double total = 0.0;
+    flt_type total = 0.0;
     for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter)
         total += iter->second;
     return total;
 }
 
 
-double
-GreedyUnigrams::get_sum(const map<string, double> &freqs,
-                        const map<string, double> &freq_diffs)
+flt_type
+GreedyUnigrams::get_sum(const map<string, flt_type> &freqs,
+                        const map<string, flt_type> &freq_diffs)
 {
-    double total = 0.0;
+    flt_type total = 0.0;
     for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter)
         total += iter->second;
     for (auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
@@ -107,12 +107,12 @@ GreedyUnigrams::get_sum(const map<string, double> &freqs,
 }
 
 
-double
-GreedyUnigrams::get_cost(const map<string, double> &freqs,
-                         double densum)
+flt_type
+GreedyUnigrams::get_cost(const map<string, flt_type> &freqs,
+                         flt_type densum)
 {
-    double total = 0.0;
-    double tmp = 0.0;
+    flt_type total = 0.0;
+    flt_type tmp = 0.0;
     densum = log2(densum);
     for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
         tmp = iter->second * (log2(iter->second)-densum);
@@ -122,13 +122,13 @@ GreedyUnigrams::get_cost(const map<string, double> &freqs,
 }
 
 
-double
-GreedyUnigrams::get_cost(const map<string, double> &freqs,
-                         const map<string, double> &freq_diffs,
-                         double densum)
+flt_type
+GreedyUnigrams::get_cost(const map<string, flt_type> &freqs,
+                         const map<string, flt_type> &freq_diffs,
+                         flt_type densum)
 {
-    double total = 0.0;
-    double tmp = 0.0;
+    flt_type total = 0.0;
+    flt_type tmp = 0.0;
     densum = log2(densum);
     for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
         tmp = iter->second;
@@ -142,8 +142,8 @@ GreedyUnigrams::get_cost(const map<string, double> &freqs,
 
 
 void
-GreedyUnigrams::apply_freq_diffs(map<string, double> &freqs,
-                                 const map<string, double> &freq_diffs)
+GreedyUnigrams::apply_freq_diffs(map<string, flt_type> &freqs,
+                                 const map<string, flt_type> &freq_diffs)
 {
     for (auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
         freqs[iter->first] += iter->second;
@@ -158,9 +158,9 @@ GreedyUnigrams::apply_freq_diffs(map<string, double> &freqs,
 
 
 void
-GreedyUnigrams::apply_backpointer_changes(map<string, map<string, double> > &backpointers,
-                                          const map<string, map<string, double> > &bps_to_remove,
-                                          const map<string, map<string, double> > &bps_to_add)
+GreedyUnigrams::apply_backpointer_changes(map<string, map<string, flt_type> > &backpointers,
+                                          const map<string, map<string, flt_type> > &bps_to_remove,
+                                          const map<string, map<string, flt_type> > &bps_to_add)
 {
     for (auto switer = bps_to_remove.cbegin(); switer != bps_to_remove.cend(); ++switer)
         for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
@@ -172,8 +172,8 @@ GreedyUnigrams::apply_backpointer_changes(map<string, map<string, double> > &bac
 
 
 void
-GreedyUnigrams::freqs_to_logprobs(map<string, double> &vocab,
-                                  double densum)
+GreedyUnigrams::freqs_to_logprobs(map<string, flt_type> &vocab,
+                                  flt_type densum)
 {
     densum = log2(densum);
     for (auto iter = vocab.begin(); iter != vocab.end(); ++iter)
@@ -182,8 +182,8 @@ GreedyUnigrams::freqs_to_logprobs(map<string, double> &vocab,
 
 
 int
-GreedyUnigrams::cutoff(map<string, double> &vocab,
-                       double limit)
+GreedyUnigrams::cutoff(map<string, flt_type> &vocab,
+                       flt_type limit)
 {
     // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
     int nremovals = 0;
@@ -203,47 +203,47 @@ GreedyUnigrams::cutoff(map<string, double> &vocab,
 // running from the least common subword
 void
 GreedyUnigrams::init_removal_candidates(int n_candidates,
-                                        const map<string, double> &words,
-                                        const map<string, double> &vocab,
-                                        map<string, map<string, double> > &diffs)
+                                        const map<string, flt_type> &words,
+                                        const map<string, flt_type> &vocab,
+                                        map<string, map<string, flt_type> > &diffs)
 {
-    map<string, double> new_morph_freqs;
+    map<string, flt_type> new_morph_freqs;
     resegment_words(words, vocab, new_morph_freqs);
 
-    vector<pair<string, double> > sorted_vocab;
+    vector<pair<string, flt_type> > sorted_vocab;
     sort_vocab(new_morph_freqs, sorted_vocab, false);
 
     for (int i=0; i<n_candidates; i++) {
-        pair<string, double> &subword = sorted_vocab[i];
-        map<string, double> emptymap;
+        pair<string, flt_type> &subword = sorted_vocab[i];
+        map<string, flt_type> emptymap;
         if (subword.first.length() > 1)
             diffs[subword.first] = emptymap;
     }
 }
 
 
-bool rank_desc_sort(pair<string, double> i,pair<string, double> j) { return (i.second > j.second); }
+bool rank_desc_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return (i.second > j.second); }
 
 // Perform each of the removals (independent of others in the list) to get
 // initial order for the removals
 void
-GreedyUnigrams::rank_removal_candidates(const map<string, double> &words,
-                                        const map<string, double> &vocab,
-                                        map<string, map<string, double> > &diffs,
-                                        map<string, double> &new_morph_freqs,
-                                        vector<pair<string, double> > &removal_scores)
+GreedyUnigrams::rank_removal_candidates(const map<string, flt_type> &words,
+                                        const map<string, flt_type> &vocab,
+                                        map<string, map<string, flt_type> > &diffs,
+                                        map<string, flt_type> &new_morph_freqs,
+                                        vector<pair<string, flt_type> > &removal_scores)
 {
     new_morph_freqs.clear();
     removal_scores.clear();
 
     resegment_words_w_diff(words, vocab, new_morph_freqs, diffs);
-    double densum = get_sum(new_morph_freqs);
-    double cost = get_cost(new_morph_freqs, densum);
+    flt_type densum = get_sum(new_morph_freqs);
+    flt_type cost = get_cost(new_morph_freqs, densum);
 
     for (auto iter = diffs.begin(); iter != diffs.end(); ++iter) {
-        double hypo_densum = get_sum(new_morph_freqs, iter->second);
-        double hypo_cost = get_cost(new_morph_freqs, iter->second, hypo_densum);
-        pair<string, double> removal_score = make_pair(iter->first, hypo_cost-cost);
+        flt_type hypo_densum = get_sum(new_morph_freqs, iter->second);
+        flt_type hypo_cost = get_cost(new_morph_freqs, iter->second, hypo_densum);
+        pair<string, flt_type> removal_score = make_pair(iter->first, hypo_cost-cost);
         removal_scores.push_back(removal_score);
     }
 
@@ -252,16 +252,16 @@ GreedyUnigrams::rank_removal_candidates(const map<string, double> &words,
 
 
 void
-GreedyUnigrams::get_backpointers(const map<string, double> &words,
-                                 const map<string, double> &vocab,
-                                 map<string, map<string, double> > &backpointers)
+GreedyUnigrams::get_backpointers(const map<string, flt_type> &words,
+                                 const map<string, flt_type> &vocab,
+                                 map<string, map<string, flt_type> > &backpointers)
 {
     backpointers.clear();
-    StringSet<double> stringset_vocab(vocab);
+    StringSet<flt_type> stringset_vocab(vocab);
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
-        map<string, double> stats;
+        map<string, flt_type> stats;
         segf(stringset_vocab, worditer->first, stats);
 
         if (stats.size() == 0) {
@@ -278,12 +278,12 @@ GreedyUnigrams::get_backpointers(const map<string, double> &words,
 
 // Hypothesizes removal and gives out updated freqs
 void
-GreedyUnigrams::hypo_removal(StringSet<double> &vocab,
+GreedyUnigrams::hypo_removal(StringSet<flt_type> &vocab,
                              const string &subword,
-                             const map<string, map<string, double> > &backpointers,
-                             map<string, map<string, double> > &backpointers_to_remove,
-                             map<string, map<string, double> > &backpointers_to_add,
-                             map<string, double> &freq_diffs)
+                             const map<string, map<string, flt_type> > &backpointers,
+                             map<string, map<string, flt_type> > &backpointers_to_remove,
+                             map<string, map<string, flt_type> > &backpointers_to_add,
+                             map<string, flt_type> &freq_diffs)
 {
     backpointers_to_remove.clear();
     backpointers_to_add.clear();
@@ -291,11 +291,11 @@ GreedyUnigrams::hypo_removal(StringSet<double> &vocab,
 
     for (auto worditer = backpointers.at(subword).cbegin(); worditer != backpointers.at(subword).cend(); ++worditer) {
 
-        map<string, double> stats;
+        map<string, flt_type> stats;
         segf(vocab, worditer->first, stats);
 
-        map<string, double> hypo_stats;
-        double stored_value = vocab.remove(subword);
+        map<string, flt_type> hypo_stats;
+        flt_type stored_value = vocab.remove(subword);
         segf(vocab, worditer->first, hypo_stats);
         vocab.add(subword, stored_value);
 

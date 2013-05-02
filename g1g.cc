@@ -10,6 +10,7 @@
 
 #include <popt.h>
 
+#include "defs.hh"
 #include "StringSet.hh"
 #include "FactorEncoder.hh"
 #include "GreedyUnigrams.hh"
@@ -17,9 +18,9 @@
 using namespace std;
 
 
-void assert_single_chars(map<string, double> &vocab,
-                         const map<string, double> &chars,
-                         double val)
+void assert_single_chars(map<string, flt_type> &vocab,
+                         const map<string, flt_type> &chars,
+                         flt_type val)
 {
     for (auto it = chars.cbegin(); it != chars.cend(); ++it)
         if (vocab.find(it->first) == vocab.end())
@@ -29,15 +30,15 @@ void assert_single_chars(map<string, double> &vocab,
 
 int main(int argc, char* argv[]) {
 
-    double cutoff_value = 0.0;
+    float cutoff_value = 0.0;
     int n_candidates_per_iter = 5000;
     int max_removals_per_iter = 5000;
     int min_removals_per_iter = 0;
-    double threshold = -25.0;
-    double threshold_decrease = 25.0;
+    float threshold = -25.0;
+    float threshold_decrease = 25.0;
     int target_vocab_size = 50000;
     bool enable_forward_backward = false;
-    double one_char_min_lp = -25.0;
+    flt_type one_char_min_lp = -25.0;
     string vocab_fname;
     string wordlist_fname;
 
@@ -46,12 +47,12 @@ int main(int argc, char* argv[]) {
     // http://privatemisc.blogspot.fi/2012/12/popt-basic-example.html
     poptContext pc;
     struct poptOption po[] = {
-        {"cutoff", 'u', POPT_ARG_DOUBLE, &cutoff_value, 11001, NULL, "Cutoff value for each iteration"},
+        {"cutoff", 'u', POPT_ARG_FLOAT, &cutoff_value, 11001, NULL, "Cutoff value for each iteration"},
         {"candidates", 'c', POPT_ARG_INT, &n_candidates_per_iter, 11002, NULL, "Number of candidate subwords to try to remove per iteration"},
         {"max_removals", 'a', POPT_ARG_INT, &max_removals_per_iter, 11003, NULL, "Maximum number of removals per iteration"},
         {"min_removals", 'i', POPT_ARG_INT, &min_removals_per_iter, 11004, NULL, "Minimum number of removals per iteration (stopping criterion)"},
-        {"threshold", 't', POPT_ARG_DOUBLE, &threshold, 11005, NULL, "Likelihood threshold for removals"},
-        {"threshold_decrease", 'd', POPT_ARG_DOUBLE, &threshold_decrease, 11006, NULL, "Threshold decrease between iterations"},
+        {"threshold", 't', POPT_ARG_FLOAT, &threshold, 11005, NULL, "Likelihood threshold for removals"},
+        {"threshold_decrease", 'd', POPT_ARG_FLOAT, &threshold_decrease, 11006, NULL, "Threshold decrease between iterations"},
         {"vocab_size", 'g', POPT_ARG_INT, &target_vocab_size, 11007, NULL, "Target vocabulary size (stopping criterion)"},
         {"forward_backward", 'f', POPT_ARG_NONE, &enable_forward_backward, 11007, "Use Forward-backward segmentation instead of Viterbi", NULL},
         POPT_AUTOHELP
@@ -112,10 +113,10 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
 
     int maxlen, word_maxlen;
-    map<string, double> all_chars;
-    map<string, double> vocab;
-    map<string, double> freqs;
-    map<string, double> words;
+    map<string, flt_type> all_chars;
+    map<string, flt_type> vocab;
+    map<string, flt_type> freqs;
+    map<string, flt_type> words;
 
     cerr << "Reading vocabulary " << vocab_fname << endl;
     int retval = read_vocab(vocab_fname, vocab, maxlen);
@@ -146,11 +147,11 @@ int main(int argc, char* argv[]) {
 
     cerr << "Initial cutoff" << endl;
     gg.resegment_words(words, vocab, freqs);
-    double densum = gg.get_sum(freqs);
-    double cost = gg.get_cost(freqs, densum);
+    flt_type densum = gg.get_sum(freqs);
+    flt_type cost = gg.get_cost(freqs, densum);
     cerr << "cost: " << cost << endl;
 
-    gg.cutoff(freqs, cutoff_value);
+    gg.cutoff(freqs, (flt_type)cutoff_value);
     cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
     vocab = freqs;
     densum = gg.get_sum(vocab);
@@ -164,18 +165,18 @@ int main(int argc, char* argv[]) {
         cerr << "iteration " << itern << endl;
 
         cerr << "collecting candidate subwords for removal" << endl;
-        map<string, map<string, double> > diffs;
+        map<string, map<string, flt_type> > diffs;
         if ((int)vocab.size()-n_candidates_per_iter < target_vocab_size) n_candidates_per_iter = (int)vocab.size()-target_vocab_size;
         gg.init_removal_candidates(n_candidates_per_iter, words, vocab, diffs);
 
         cerr << "ranking candidate subwords" << endl;
-        vector<pair<string, double> > removal_scores;
+        vector<pair<string, flt_type> > removal_scores;
         gg.rank_removal_candidates(words, vocab, diffs, freqs, removal_scores);
 
         // Perform removals one by one if likelihood change above threshold
-        double curr_densum = gg.get_sum(freqs);
-        double curr_cost = gg.get_cost(freqs, curr_densum);
-        map<string, map<string, double> > backpointers;
+        flt_type curr_densum = gg.get_sum(freqs);
+        flt_type curr_cost = gg.get_cost(freqs, curr_densum);
+        map<string, map<string, flt_type> > backpointers;
         gg.get_backpointers(words, vocab, backpointers);
 
         cerr << "starting cost before removing subwords one by one: " << curr_cost << endl;
@@ -189,15 +190,15 @@ int main(int argc, char* argv[]) {
 
             cout << removal_scores[i].first << "\t" << "expected ll diff: " << removal_scores[i].second << endl;
 
-            map<string, double> freq_diffs;
-            map<string, map<string, double> > backpointers_to_remove;
-            map<string, map<string, double> > backpointers_to_add;
-            StringSet<double> stringset_vocab(vocab);
+            map<string, flt_type> freq_diffs;
+            map<string, map<string, flt_type> > backpointers_to_remove;
+            map<string, map<string, flt_type> > backpointers_to_add;
+            StringSet<flt_type> stringset_vocab(vocab);
             gg.hypo_removal(stringset_vocab, removal_scores[i].first, backpointers,
                             backpointers_to_remove, backpointers_to_add, freq_diffs);
 
-            double hypo_densum = gg.get_sum(freqs, freq_diffs);
-            double hypo_cost = gg.get_cost(freqs, freq_diffs, hypo_densum);
+            flt_type hypo_densum = gg.get_sum(freqs, freq_diffs);
+            flt_type hypo_cost = gg.get_cost(freqs, freq_diffs, hypo_densum);
 
             cout << removal_scores[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost;
             if (hypo_cost-curr_cost < threshold) {
@@ -230,7 +231,7 @@ int main(int argc, char* argv[]) {
         }
 
         int n_cutoff = gg.cutoff(freqs, cutoff_value);
-        double co_densum = gg.get_sum(freqs);
+        flt_type co_densum = gg.get_sum(freqs);
         vocab = freqs;
         gg.freqs_to_logprobs(vocab, co_densum);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
