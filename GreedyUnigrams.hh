@@ -29,14 +29,14 @@ public:
     flt_type get_sum(const std::map<std::string, flt_type> &freqs);
 
     flt_type get_sum(const std::map<std::string, flt_type> &freqs,
-                   const std::map<std::string, flt_type> &freq_diffs);
+                     const std::map<std::string, flt_type> &freq_diffs);
 
     flt_type get_cost(const std::map<std::string, flt_type> &freqs,
-                    flt_type densum);
+                      flt_type densum);
 
     flt_type get_cost(const std::map<std::string, flt_type> &freqs,
-                    const std::map<std::string, flt_type> &freq_diffs,
-                    flt_type densum);
+                      const std::map<std::string, flt_type> &freq_diffs,
+                      flt_type densum);
 
     void apply_freq_diffs(std::map<std::string, flt_type> &freqs,
                           const std::map<std::string, flt_type> &freq_diffs);
