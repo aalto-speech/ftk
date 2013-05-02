@@ -131,7 +131,7 @@ void viterbi(const map<string, double> &vocab,
 }
 
 
-void viterbi(MorphSet &vocab,
+void viterbi(const MorphSet &vocab,
              const string &sentence,
              vector<string> &best_path,
              bool reverse)
@@ -142,7 +142,7 @@ void viterbi(MorphSet &vocab,
     for (int i=0; i<sentence.length(); i++) {
 
         // Iterate all factors starting from this position
-        MorphSet::Node *node = &vocab.root_node;
+        const MorphSet::Node *node = &vocab.root_node;
         for (int j=i; j<sentence.length(); j++) {
 
             MorphSet::Arc *arc = vocab.find_arc(sentence[j], node);
@@ -179,7 +179,7 @@ void viterbi(MorphSet &vocab,
 }
 
 
-void viterbi(MorphSet &vocab,
+void viterbi(const MorphSet &vocab,
              const string &sentence,
              map<string, double> &stats)
 {
@@ -189,7 +189,7 @@ void viterbi(MorphSet &vocab,
     for (int i=0; i<sentence.length(); i++) {
 
         // Iterate all factors starting from this position
-        MorphSet::Node *node = &vocab.root_node;
+        const MorphSet::Node *node = &vocab.root_node;
         for (int j=i; j<sentence.length(); j++) {
 
             MorphSet::Arc *arc = vocab.find_arc(sentence[j], node);
@@ -236,7 +236,7 @@ double add_log_domain_probs(double a, double b) {
 }
 
 
-void forward_backward(MorphSet &vocab,
+void forward_backward(const MorphSet &vocab,
                       const string &sentence,
                       map<string, double> &stats)
 {
@@ -260,7 +260,7 @@ void forward_backward(MorphSet &vocab,
         }
 
         // Iterate all factors starting from this position
-        MorphSet::Node *node = &vocab.root_node;
+        const MorphSet::Node *node = &vocab.root_node;
         for (int j=i; j<sentence.length(); j++) {
 
             MorphSet::Arc *arc = vocab.find_arc(sentence[j], node);

@@ -7,9 +7,9 @@ class GreedyUnigrams {
 public:
 
     GreedyUnigrams() {}
-    GreedyUnigrams(void (*segf)(MorphSet &vocab, const string &sentence, map<string, double> &stats)) : segf(segf) {}
+    GreedyUnigrams(void (*segf)(const MorphSet &vocab, const string &sentence, map<string, double> &stats)) : segf(segf) {}
 
-    void set_segmentation_method(void (*segf)(MorphSet &vocab, const string &sentence, map<string, double> &stats)) {
+    void set_segmentation_method(void (*segf)(const MorphSet &vocab, const string &sentence, map<string, double> &stats)) {
         this->segf = segf;
     }
 
@@ -70,5 +70,5 @@ public:
                       std::map<std::string, double> &freq_diffs);
 
 private:
-    void (*segf)(MorphSet &vocab, const string &sentence, map<string, double> &stats);
+    void (*segf)(const MorphSet &vocab, const string &sentence, map<string, double> &stats);
 };

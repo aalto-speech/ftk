@@ -26,19 +26,19 @@ void viterbi(const map<string, double> &vocab,
              vector<string> &best_path,
              bool reverse=true);
 
-void viterbi(MorphSet &vocab,
+void viterbi(const MorphSet &vocab,
              const string &sentence,
              vector<string> &best_path,
              bool reverse=true);
 
-void viterbi(MorphSet &vocab,
+void viterbi(const MorphSet &vocab,
              const string &sentence,
              map<string, double> &stats);
 
 double add_log_domain_probs(double a,
                             double b);
 
-void forward_backward(MorphSet &vocab,
+void forward_backward(const MorphSet &vocab,
                       const string &sentence,
                       map<string, double> &stats);
 

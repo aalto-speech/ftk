@@ -60,7 +60,7 @@ MorphSet::insert(char letter, const std::string &morph, double cost, Node *node)
 }
 
 MorphSet::Arc*
-MorphSet::find_arc(char letter, const Node *node)
+MorphSet::find_arc(char letter, const Node *node) const
 {
     Arc *arc = node->first_arc;
     while (arc != NULL) {

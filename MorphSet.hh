@@ -54,7 +54,7 @@ public:
    * \param node = the source node
    * \return the arc containing the letter or NULL if no such arc exists
    */
-  Arc *find_arc(char letter, const Node *node);
+  Arc *find_arc(char letter, const Node *node) const;
 
   /** Add a new morph to the set */
   void add(const std::string &morph, double cost);
