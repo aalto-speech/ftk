@@ -85,7 +85,7 @@ double
 MorphSet::remove(const std::string &morph)
 {
     MorphSet::Node *node = &root_node;
-    MorphSet::Arc *arc;
+    MorphSet::Arc *arc = NULL;
     for (unsigned int i=0; i<morph.length(); i++) {
         arc = find_arc(morph[i], node);
         if (arc == NULL) throw std::string("could not remove morph");
