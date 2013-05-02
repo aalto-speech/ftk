@@ -1,9 +1,6 @@
-#include <algorithm>
-#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <cmath>
 #include <sstream>
 #include <string>
 #include <vector>
