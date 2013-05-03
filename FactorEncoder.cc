@@ -240,7 +240,7 @@ void forward_backward(const StringSet<flt_type> &vocab,
                       const string &text,
                       map<string, flt_type> &stats)
 {
-    flt_type len = text.length();
+    int len = text.length();
     if (len == 0) return;
 
     stats.clear();
