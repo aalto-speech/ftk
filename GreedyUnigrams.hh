@@ -11,9 +11,9 @@ class GreedyUnigrams {
 public:
 
     GreedyUnigrams() {}
-    GreedyUnigrams(void (*segf)(const StringSet<flt_type> &vocab, const string &sentence, map<string, flt_type> &stats)) : segf(segf) {}
+    GreedyUnigrams(void (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) : segf(segf) {}
 
-    void set_segmentation_method(void (*segf)(const StringSet<flt_type> &vocab, const string &sentence, map<string, flt_type> &stats)) {
+    void set_segmentation_method(void (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) {
         this->segf = segf;
     }
 
@@ -60,7 +60,7 @@ public:
                                  const std::map<std::string, flt_type> &vocab,
                                  std::map<std::string, std::map<std::string, flt_type> > &diffs,
                                  std::map<std::string, flt_type> &new_morph_freqs,
-                                 vector<pair<std::string, flt_type> > &removal_scores);
+                                 std::vector<std::pair<std::string, flt_type> > &removal_scores);
 
     void get_backpointers(const std::map<std::string, flt_type> &words,
                           const std::map<std::string, flt_type> &vocab,
@@ -74,7 +74,7 @@ public:
                       std::map<std::string, flt_type> &freq_diffs);
 
 private:
-    void (*segf)(const StringSet<flt_type> &vocab, const string &sentence, map<string, flt_type> &stats);
+    void (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);
 };
 
 #endif /* GREEDY_UNIGRAMS */

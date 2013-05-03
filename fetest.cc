@@ -9,6 +9,8 @@
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+using namespace std;
+
 double DBL_ACCURACY = 0.0001;
 
 CPPUNIT_TEST_SUITE_REGISTRATION (fetest);

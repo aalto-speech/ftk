@@ -8,43 +8,48 @@
 #include "defs.hh"
 #include "StringSet.hh"
 
-using namespace std;
 
-int read_vocab(string fname,
-               map<string, flt_type> &vocab,
+int read_vocab(std::string fname,
+               std::map<std::string, flt_type> &vocab,
                int &maxlen);
 
-int write_vocab(string fname,
-                const map<string, flt_type> &vocab);
+int write_vocab(std::string fname,
+                const std::map<std::string, flt_type> &vocab);
 
-void sort_vocab(const map<string, flt_type> &vocab,
-                vector<pair<string, flt_type> > &sorted_vocab,
+void sort_vocab(const std::map<std::string, flt_type> &vocab,
+                std::vector<std::pair<std::string, flt_type> > &sorted_vocab,
                 bool descending=true);
 
-void viterbi(const map<string, flt_type> &vocab,
+void viterbi(const std::map<std::string, flt_type> &vocab,
              int maxlen,
-             const string &text,
-             vector<string> &best_path,
+             const std::string &text,
+             std::vector<std::string> &best_path,
              bool reverse=true);
 
 void viterbi(const StringSet<flt_type> &vocab,
-             const string &text,
-             vector<string> &best_path,
+             const std::string &text,
+             std::vector<std::string> &best_path,
              bool reverse=true);
 
 void viterbi(const StringSet<flt_type> &vocab,
-             const string &text,
-             map<string, flt_type> &stats);
+             const std::string &text,
+             std::map<std::string, flt_type> &stats);
 
 flt_type add_log_domain_probs(flt_type a,
                               flt_type b);
 
 void forward_backward(const StringSet<flt_type> &vocab,
-                      const string &text,
-                      map<string, flt_type> &stats);
+                      const std::string &text,
+                      std::map<std::string, flt_type> &stats);
 
-void forward_backward(const map<string, flt_type> &vocab,
-                      const string &text,
-                      map<string, flt_type> &stats);
+void forward_backward(const std::map<std::string, flt_type> &vocab,
+                      const std::string &text,
+                      std::map<std::string, flt_type> &stats);
+
+void viterbi(const std::map<std::pair<std::string,std::string>, flt_type> &vocab,
+             int maxlen,
+             const std::string &text,
+             std::vector<std::string> &best_path,
+             bool reverse=true);
 
 #endif /* FACTOR_ENCODER */
