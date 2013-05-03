@@ -113,6 +113,35 @@ void fetest :: viterbiTest6 (void)
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
+void fetest :: viterbiTest7 (void)
+{
+    map<string, flt_type> vocab;
+    string str1("k"); string str2("i");
+    string str3("s"); string str4("a");
+    string str5("l"); string str6("kissa");
+    string str7("lla"); string str8("kissalla");
+    vocab[str1] = -1.0;
+    vocab[str2] = -2.0;
+    vocab[str3] = -1.5;
+    vocab[str4] = -2.0;
+    vocab[str5] = -3.0;
+    vocab[str6] = -3.0;
+    vocab[str7] = -2.0;
+    vocab[str8] = -1.0;
+    string sentence("kissalla");
+    vector<string> best_path;
+    int maxlen = 8;
+    viterbi(vocab, maxlen, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(str8, best_path[0]);
+    vocab[str8] = -6.0;
+    viterbi(vocab, maxlen, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(str6, best_path[0]);
+    CPPUNIT_ASSERT_EQUAL(str7, best_path[1]);
+}
+
+
 // Empty string
 void fetest :: ForwardBackwardTest1 (void)
 {
