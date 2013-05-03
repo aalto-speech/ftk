@@ -245,3 +245,106 @@ void fetest :: ForwardBackwardTest8 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( (0.2+0.2)/2.0, stats["s"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.2/2.0, stats["a"], DBL_ACCURACY );
 }
+
+void fetest :: TransitionViterbiTest1 (void)
+{
+    map<pair<string,string>, flt_type> transitions;
+    string start_end("_");
+    string str1("a"); string str2("bc");
+    transitions[make_pair(str1, str2)] = -1.0;
+    transitions[make_pair(start_end, str2)] = -1.0;
+    transitions[make_pair(str2, start_end)] = -1.0;
+    string sentence("abc");
+    vector<string> best_path;
+    int maxlen = 2;
+    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
+    CPPUNIT_ASSERT_EQUAL(str2, best_path[1]);
+}
+
+void fetest :: TransitionViterbiTest2 (void)
+{
+    map<pair<string,string>, flt_type> transitions;
+    string start_end("_");
+    string str1("a"); string str2("bc");
+    string str3("ab"); string str4("c");
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(start_end, str3)] = -1.0;
+    transitions[make_pair(str2, start_end)] = -1.0;
+    transitions[make_pair(str4, start_end)] = -1.0;
+    transitions[make_pair(str1, str2)] = -2.0;
+    transitions[make_pair(str3, str4)] = -1.0;
+    string sentence("abc");
+    vector<string> best_path;
+    int maxlen = 2;
+    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(str3, best_path[0]);
+    CPPUNIT_ASSERT_EQUAL(str4, best_path[1]);
+}
+
+// No possible segmentation
+void fetest :: TransitionViterbiTest3 (void)
+{
+    map<pair<string,string>, flt_type> transitions;
+    string start_end("_");
+    string str1("a");
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(str1, start_end)] = -1.0;
+    string sentence("abc");
+    vector<string> best_path;
+    int maxlen = 1;
+    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+}
+
+// Empty string
+void fetest :: TransitionViterbiTest4 (void)
+{
+    map<pair<string,string>, flt_type> transitions;
+    string start_end("_");
+    string str1("a");
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(str1, start_end)] = -1.0;
+    string sentence("");
+    vector<string> best_path;
+    int maxlen = 1;
+    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+}
+
+// One character sentence
+void fetest :: TransitionViterbiTest5 (void)
+{
+    map<pair<string,string>, flt_type> transitions;
+    string start_end("_");
+    string str1("a");
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(str1, start_end)] = -1.0;
+    string sentence("a");
+    vector<string> best_path;
+    int maxlen = 1;
+    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
+}
+
+// No segmentation
+void fetest :: TransitionViterbiTest6 (void)
+{
+    map<pair<string,string>, flt_type> transitions;
+    string start_end("_");
+    string str1("a"); string str2("b");
+    string str3("c"); string str4("d");
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(str4, start_end)] = -1.0;
+    transitions[make_pair(str1, str2)] = -1.0;
+    transitions[make_pair(str2, str3)] = -1.0;
+    transitions[make_pair(str3, str4)] = -1.0;
+    string sentence("a-bcd");
+    vector<string> best_path;
+    int maxlen = 1;
+    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+}
