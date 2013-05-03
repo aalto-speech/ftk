@@ -328,12 +328,23 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
 
         if (i>0 && search[i-1].size() == 0) continue;
 
-        // Iterate all factors starting from this position
-        for (int j=i; j<text.length(); j++) {
-
-        }
+        // Iterate for .. all strings ending in this position
+        //             .. all factors starting from this position
+        for (auto toki = search[i].cbegin(); toki != search[i].cend(); ++toki) {
+            string src_state(text.substr(toki->source, i));
+            for (int j=i; j<text.length(); j++) {
+                string tgt_state(text.substr(i,j+1));
+                if (transitions.find(make_pair(src_state, tgt_state)) != transitions.end()) {
+                    Token tok;
+                    tok.cost = 0.0;
+                    tok.source = i-1;
+                    search[j].push_back(tok);
+                }
+            }
+         }
     }
 
     if (search[len-1].size() == 0) return;
-
 }
+
+
