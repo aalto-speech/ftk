@@ -86,6 +86,7 @@ void viterbi(const map<string, flt_type> &vocab,
              vector<string> &best_path,
              bool reverse)
 {
+    best_path.clear();
     if (text.length() == 0) return;
     vector<Token> search(text.length());
     int start_pos = 0;
@@ -136,6 +137,7 @@ void viterbi(const StringSet<flt_type> &vocab,
              vector<string> &best_path,
              bool reverse)
 {
+    best_path.clear();
     if (text.length() == 0) return;
     vector<Token> search(text.length());
 
