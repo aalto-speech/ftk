@@ -9,6 +9,41 @@
 #include "StringSet.hh"
 
 
+class FactorGraph {
+public:
+
+    /** Arc of a factor graph. */
+    class Arc {
+    public:
+        Arc(int source_node, int target_node) : source_node(source_node),
+                                                target_node(target_node),
+                                                cost(0.0) {}
+        unsigned int source_node;
+        unsigned int target_node;
+        double cost;
+    };
+
+    /** Node of a factor graph. */
+    class Node {
+    public:
+        Node(int start_pos, int end_pos) : start_pos(start_pos),
+                                           len(len) { }
+        ~Node() { incoming.clear(); outgoing.clear(); }
+        size_t start_pos; // text indices
+        size_t len;
+        std::vector<Arc> incoming;
+        std::vector<Arc> outgoing;
+    };
+
+    FactorGraph(const std::map<std::string, flt_type> &vocab, const std::string &text);
+    FactorGraph(const StringSet<flt_type> &vocab, const std::string &text);
+    ~FactorGraph();
+    void get_string(const Node &node, std::string &nstr) { nstr.assign(this->text, node.start_pos, node.len); }
+    std::string text;
+    std::vector<Node> nodes;
+};
+
+
 int read_vocab(std::string fname,
                std::map<std::string, flt_type> &vocab,
                int &maxlen);

@@ -11,6 +11,25 @@ using namespace std;
 #include "FactorEncoder.hh"
 
 
+
+FactorGraph::FactorGraph(const std::map<std::string, flt_type> &vocab,
+                         const std::string &text)
+{
+    this->text.assign(text);
+
+    for (int i=0; i<text.size(); i++)
+        continue;
+    return;
+}
+
+FactorGraph::FactorGraph(const StringSet<flt_type> &vocab,
+                         const std::string &text)
+{
+
+
+}
+
+
 class Token {
     public:
         int source;
@@ -321,6 +340,7 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
 {
     int len = text.length();
     if (len == 0) return;
+    best_path.clear();
 
     vector<vector<Token> > search(len);
 
@@ -328,23 +348,43 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
 
         if (i>0 && search[i-1].size() == 0) continue;
 
-        // Iterate for .. all strings ending in this position
+        // Iterate for .. all factors ending in this position
         //             .. all factors starting from this position
-        for (auto toki = search[i].cbegin(); toki != search[i].cend(); ++toki) {
-            string src_state(text.substr(toki->source, i));
+        for (auto tok = search[i].cbegin(); tok != search[i].cend(); ++tok) {
+            string src_state(text.substr(tok->source, i));
             for (int j=i; j<text.length(); j++) {
                 string tgt_state(text.substr(i,j+1));
-                if (transitions.find(make_pair(src_state, tgt_state)) != transitions.end()) {
-                    Token tok;
-                    tok.cost = 0.0;
-                    tok.source = i-1;
-                    search[j].push_back(tok);
+                auto state_pair = make_pair(src_state, tgt_state);
+                if (transitions.find(state_pair) != transitions.end()) {
+                    Token new_tok;
+                    new_tok.cost = transitions.at(state_pair) + tok->cost;
+                    new_tok.source = i-1;
+                    search[j].push_back(new_tok);
                 }
             }
          }
     }
 
+    // Look up the best path
     if (search[len-1].size() == 0) return;
+
+    /*
+    int target = len-1;
+    Token best_tok;
+    for (auto tok = search[target].cbegin(); tok != search[target].cend(); ++tok)
+        if (tok->cost > best_tok.cost)
+            best_tok = tok;
+
+    int source = best_tok.source;
+    while (true) {
+        best_path.push_back(text.substr(source+1, target-source));
+        if (source == -1) break;
+        target = source;
+        source = search[target].source;
+    }
+
+    if (reverse) std::reverse(best_path.begin(), best_path.end());
+    */
 }
 
 
