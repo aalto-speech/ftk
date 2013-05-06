@@ -397,39 +397,29 @@ void assert_node(const FactorGraph &fg,
 // only forward possible routes in the graph
 void fetest :: FactorGraphTest1 (void)
 {
-    string str1("hal");
-    string str2("halojaa");
-    string str3("ojaa");
-    string str4("jaa");
-
     map<std::string, flt_type> vocab;
-    vocab[str1] = 0.0;
-    vocab[str2] = 0.0;
-    vocab[str3] = 0.0;
-    vocab[str4] = 0.0;
+    vocab.insert(make_pair("hal", 0.0));
+    vocab.insert(make_pair("halojaa", 0.0));
+    vocab.insert(make_pair("ojaa", 0.0));
+    vocab.insert(make_pair("jaa", 0.0));
 
     FactorGraph fg("halojaa", vocab, 7);
     CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
 
     StringSet<flt_type> ssvocab(vocab);
     FactorGraph ssfg("halojaa", ssvocab);
-    CPPUNIT_ASSERT_EQUAL(3, (int)ssfg.nodes.size());
+    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 }
 
 // Testing constructor
 // pruning out impossible paths, simple case
 void fetest :: FactorGraphTest2 (void)
 {
-    string str1("hal");
-    string str2("halojaa");
-    string str3("ojaa");
-    string str4("oj");
-
     map<std::string, flt_type> vocab;
-    vocab[str1] = 0.0;
-    vocab[str2] = 0.0;
-    vocab[str3] = 0.0;
-    vocab[str4] = 0.0;
+    vocab.insert(make_pair("hal", 0.0));
+    vocab.insert(make_pair("halojaa", 0.0));
+    vocab.insert(make_pair("ojaa", 0.0));
+    vocab.insert(make_pair("oj", 0.0));
 
     FactorGraph fg("halojaa", vocab, 7);
     CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
@@ -443,14 +433,10 @@ void fetest :: FactorGraphTest2 (void)
 // No possible segmentations
 void fetest :: FactorGraphTest3 (void)
 {
-    string str1("hal");
-    string str2("oja");
-    string str3("oj");
-
     map<std::string, flt_type> vocab;
-    vocab[str1] = 0.0;
-    vocab[str2] = 0.0;
-    vocab[str3] = 0.0;
+    vocab.insert(make_pair("hal", 0.0));
+    vocab.insert(make_pair("oja", 0.0));
+    vocab.insert(make_pair("oj", 0.0));
 
     FactorGraph fg("halojaa", vocab, 3);
     CPPUNIT_ASSERT_EQUAL(0, (int)fg.nodes.size());
