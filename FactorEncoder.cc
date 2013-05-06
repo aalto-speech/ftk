@@ -49,12 +49,35 @@ FactorGraph::FactorGraph(const std::string &text,
     }
 
     // Prune non-reachable nodes
-    for (auto it = nodes.begin(); it != nodes.end() ;) {
+    for (auto it = nodes.begin(); it != nodes.end(); ) {
         if (possible_start_nodes.find(it->start_pos) == possible_start_nodes.end() ||
             possible_start_nodes.find(it->start_pos+it->len) == possible_start_nodes.end())
             it = nodes.erase(it);
         else
             ++it;
+    }
+
+    // Collect nodes by start position
+    vector<vector<int> > nodes_by_start_pos(text.size()+1);
+    for (int i=0; i<nodes.size(); i++)
+        nodes_by_start_pos[nodes[i].start_pos].push_back(i);
+
+    // Set arcs
+    for (int i=0; i<nodes.size(); i++) {
+        if (nodes[i].start_pos == 0) {
+            Arc *arc = new Arc(-1, 0, 0.0);
+            arcs.push_back(arc);
+            nodes[i].incoming.push_back(arc);
+        }
+
+        int end_pos = nodes[i].start_pos + nodes[i].len;
+        for (int j=0; j<nodes_by_start_pos[end_pos].size(); j++) {
+            int nodei = nodes_by_start_pos[end_pos][j];
+            Arc *arc = new Arc(i, nodei, 0.0);
+            arcs.push_back(arc);
+            nodes[i].outgoing.push_back(arc);
+            nodes[nodei].incoming.push_back(arc);
+        }
     }
 }
 
@@ -65,7 +88,10 @@ FactorGraph::FactorGraph(const std::string &text,
 }
 
 
-FactorGraph::~FactorGraph() { }
+FactorGraph::~FactorGraph() {
+    for (auto it = arcs.begin(); it != arcs.end(); ++it)
+        delete *it;
+}
 
 
 class Token {

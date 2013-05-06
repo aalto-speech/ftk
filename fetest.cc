@@ -417,9 +417,20 @@ void fetest :: FactorGraphTest2 (void)
 }
 
 // Testing constructor
+// No possible segmentations
 void fetest :: FactorGraphTest3 (void)
 {
+    string str1("hal");
+    string str2("oja");
+    string str3("oj");
 
+    map<std::string, flt_type> vocab;
+    vocab[str1] = 0.0;
+    vocab[str2] = 0.0;
+    vocab[str3] = 0.0;
+
+    FactorGraph fg("halojaa", vocab, 3);
+    CPPUNIT_ASSERT_EQUAL(0, (int)fg.nodes.size());
 }
 
 

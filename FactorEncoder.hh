@@ -15,9 +15,9 @@ public:
     /** Arc of a factor graph. */
     class Arc {
     public:
-        Arc(unsigned int source_node, unsigned int target_node) : source_node(source_node),
-                                                                  target_node(target_node),
-                                                                  cost(0.0) {}
+        Arc(unsigned int source_node, unsigned int target_node, double cost=0.0) : source_node(source_node),
+                                                                                   target_node(target_node),
+                                                                                   cost(0.0) {}
         unsigned int source_node;
         unsigned int target_node;
         double cost;
@@ -31,8 +31,8 @@ public:
         ~Node() { incoming.clear(); outgoing.clear(); }
         size_t start_pos; // text indices
         size_t len;
-        std::vector<Arc> incoming;
-        std::vector<Arc> outgoing;
+        std::vector<Arc*> incoming;
+        std::vector<Arc*> outgoing;
     };
 
     FactorGraph(const std::string &text, const std::map<std::string, flt_type> &vocab, int maxlen);
@@ -41,6 +41,7 @@ public:
     void get_string(const Node &node, std::string &nstr) { nstr.assign(this->text, node.start_pos, node.len); }
     std::string text;
     std::vector<Node> nodes;
+    std::vector<Arc*> arcs;
 };
 
 
