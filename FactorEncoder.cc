@@ -15,10 +15,11 @@ void
 FactorGraph::create_nodes(const string &text, const map<std::string, flt_type> &vocab,
                           int maxlen, vector<map<unsigned int, bool> > &incoming)
 {
-    for (unsigned int i=0; i<text.size(); i++) {
+    for (unsigned int i=0; i<text.length(); i++) {
         if (incoming[i].size() == 0) continue;
         for (unsigned int j=i+1; j<=text.size(); j++) {
             unsigned int len = j-i;
+            if (len>maxlen) break;
             if (vocab.find(text.substr(i, len)) != vocab.end()) {
                 nodes.push_back(Node(i, len));
                 incoming[j][i] = true;
@@ -32,7 +33,24 @@ void
 FactorGraph::create_nodes(const string &text, const StringSet<flt_type> &vocab,
                           vector<map<unsigned int, bool> > &incoming)
 {
-    return;
+    // Iterate all factors starting from this position
+    const StringSet<flt_type>::Node *node = &vocab.root_node;
+
+    for (unsigned int i=0; i<text.length(); i++) {
+    for (unsigned int j=i; j<text.length(); j++) {
+
+        StringSet<flt_type>::Arc *arc = vocab.find_arc(text[j], node);
+
+        if (arc == NULL) break;
+        node = arc->target_node;
+
+        // String associated with this node
+        if (arc->morph.length() > 0) {
+            nodes.push_back(Node(i, j+1-i));
+            incoming[j+1][i] = true;
+        }
+    }
+    }
 }
 
 
