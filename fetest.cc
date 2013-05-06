@@ -395,6 +395,10 @@ void fetest :: FactorGraphTest1 (void)
 
     FactorGraph fg("halojaa", vocab, 7);
     CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
+
+    StringSet<flt_type> ssvocab(vocab);
+    FactorGraph ssfg("halojaa", ssvocab);
+    CPPUNIT_ASSERT_EQUAL(3, (int)ssfg.nodes.size());
 }
 
 // Testing constructor
@@ -414,6 +418,10 @@ void fetest :: FactorGraphTest2 (void)
 
     FactorGraph fg("halojaa", vocab, 7);
     CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
+
+    StringSet<flt_type> ssvocab(vocab);
+    FactorGraph ssfg("halojaa", ssvocab);
+    CPPUNIT_ASSERT_EQUAL(3, (int)ssfg.nodes.size());
 }
 
 // Testing constructor
@@ -431,6 +439,10 @@ void fetest :: FactorGraphTest3 (void)
 
     FactorGraph fg("halojaa", vocab, 3);
     CPPUNIT_ASSERT_EQUAL(0, (int)fg.nodes.size());
+
+    StringSet<flt_type> ssvocab(vocab);
+    FactorGraph ssfg("halojaa", ssvocab);
+    CPPUNIT_ASSERT_EQUAL(0, (int)ssfg.nodes.size());
 }
 
 

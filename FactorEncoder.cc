@@ -34,22 +34,23 @@ FactorGraph::create_nodes(const string &text, const StringSet<flt_type> &vocab,
                           vector<map<unsigned int, bool> > &incoming)
 {
     // Iterate all factors starting from this position
-    const StringSet<flt_type>::Node *node = &vocab.root_node;
-
     for (unsigned int i=0; i<text.length(); i++) {
-    for (unsigned int j=i; j<text.length(); j++) {
+        if (incoming[i].size() == 0) continue;
 
-        StringSet<flt_type>::Arc *arc = vocab.find_arc(text[j], node);
+        const StringSet<flt_type>::Node *node = &vocab.root_node;
+        for (unsigned int j=i; j<text.length(); j++) {
 
-        if (arc == NULL) break;
-        node = arc->target_node;
+            StringSet<flt_type>::Arc *arc = vocab.find_arc(text[j], node);
 
-        // String associated with this node
-        if (arc->morph.length() > 0) {
-            nodes.push_back(Node(i, j+1-i));
-            incoming[j+1][i] = true;
+            if (arc == NULL) break;
+            node = arc->target_node;
+
+            // String associated with this node
+            if (arc->morph.length() > 0) {
+                nodes.push_back(Node(i, j+1-i));
+                incoming[j+1][i] = true;
+            }
         }
-    }
     }
 }
 
@@ -57,19 +58,19 @@ FactorGraph::create_nodes(const string &text, const StringSet<flt_type> &vocab,
 void
 FactorGraph::prune_and_create_arcs(vector<map<unsigned int, bool> > &incoming)
 {
-    // Find all possible start nodes
-    map<int, bool> possible_start_nodes;
-    possible_start_nodes[text.size()] = true;
+    // Find all possible node start positions
+    map<int, bool> possible_node_starts;
+    possible_node_starts[text.size()] = true;
     for (int i=incoming.size()-1; i>= 0; i--) {
-        if (possible_start_nodes.find(i) == possible_start_nodes.end()) continue;
+        if (possible_node_starts.find(i) == possible_node_starts.end()) continue;
         for (auto it = incoming[i].cbegin(); it != incoming[i].cend(); ++it)
-            possible_start_nodes[it->first] = true;
+            possible_node_starts[it->first] = true;
     }
 
     // Prune non-reachable nodes
     for (auto it = nodes.begin(); it != nodes.end(); ) {
-        if (possible_start_nodes.find(it->start_pos) == possible_start_nodes.end() ||
-            possible_start_nodes.find(it->start_pos+it->len) == possible_start_nodes.end())
+        if (possible_node_starts.find(it->start_pos) == possible_node_starts.end() ||
+            possible_node_starts.find(it->start_pos+it->len) == possible_node_starts.end())
             it = nodes.erase(it);
         else
             ++it;
