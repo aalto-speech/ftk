@@ -378,6 +378,21 @@ void fetest :: TransitionViterbiTest6 (void)
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
+
+void assert_node(const FactorGraph &fg,
+                 int node,
+                 const std::string &nstr,
+                 unsigned int incoming_sz,
+                 unsigned int outgoing_sz)
+{
+    std::string tst;
+    fg.get_string(fg.nodes[node], tst);
+    CPPUNIT_ASSERT_EQUAL( nstr, tst );
+    CPPUNIT_ASSERT_EQUAL( incoming_sz, (unsigned int)fg.nodes[node].incoming.size() );
+    CPPUNIT_ASSERT_EQUAL( outgoing_sz, (unsigned int)fg.nodes[node].outgoing.size() );
+}
+
+
 // Testing constructor
 // only forward possible routes in the graph
 void fetest :: FactorGraphTest1 (void)
@@ -473,5 +488,27 @@ void fetest :: FactorGraphTest4 (void)
     StringSet<flt_type> ssvocab(vocab);
     FactorGraph ssfg("kaupungistuminen", ssvocab);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
+
+    assert_node(fg, 0, std::string("k"), 1, 1);
+    assert_node(fg, 1, std::string("kau"), 1, 1);
+    assert_node(fg, 2, std::string("kaupun"), 1, 3);
+    assert_node(fg, 3, std::string("a"), 1, 1);
+    assert_node(fg, 4, std::string("u"), 1, 1);
+    assert_node(fg, 5, std::string("p"), 2, 1);
+    assert_node(fg, 6, std::string("u"), 1, 1);
+    assert_node(fg, 7, std::string("n"), 1, 3);
+    assert_node(fg, 8, std::string("g"), 2, 1);
+    assert_node(fg, 9, std::string("gis"), 2, 1);
+    assert_node(fg, 10, std::string("gistu"), 2, 2);
+    assert_node(fg, 11, std::string("i"), 1, 1);
+    assert_node(fg, 12, std::string("s"), 1, 1);
+    assert_node(fg, 13, std::string("t"), 2, 1);
+    assert_node(fg, 14, std::string("u"), 1, 2);
+    assert_node(fg, 15, std::string("m"), 2, 1);
+    assert_node(fg, 16, std::string("minen"), 2, 0);
+    assert_node(fg, 17, std::string("i"), 1, 1);
+    assert_node(fg, 18, std::string("n"), 1, 1);
+    assert_node(fg, 19, std::string("e"), 1, 1);
+    assert_node(fg, 20, std::string("n"), 1, 0);
 }
 

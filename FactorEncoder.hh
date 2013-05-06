@@ -50,8 +50,8 @@ public:
     FactorGraph(const std::string &text, const std::map<std::string, flt_type> &vocab, int maxlen);
     FactorGraph(const std::string &text, const StringSet<flt_type> &vocab);
     ~FactorGraph();
-    void get_string(const Node &node, std::string &nstr) { nstr.assign(this->text, node.start_pos, node.len); }
-    bool assert_equal(const FactorGraph &other);
+    void get_string(const Node &node, std::string &nstr) const { nstr.assign(this->text, node.start_pos, node.len); }
+    bool assert_equal(const FactorGraph &other) const;
 
     std::string text;
     std::vector<Node> nodes;

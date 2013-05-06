@@ -145,7 +145,7 @@ FactorGraph::FactorGraph(const std::string &text,
 
 
 bool
-FactorGraph::assert_equal(const FactorGraph &other)
+FactorGraph::assert_equal(const FactorGraph &other) const
 {
     if (nodes.size() != other.nodes.size()) return false;
 
