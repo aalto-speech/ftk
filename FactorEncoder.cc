@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <limits>
 #include <sstream>
 #include <queue>
 
@@ -478,57 +477,15 @@ void forward_backward(const map<string, flt_type> &vocab,
 void viterbi(const map<pair<string,string>, flt_type> &transitions,
              int maxlen,
              const string &start_end_symbol,
-             const string &text,
+             FactorGraph &text,
              vector<string> &best_path,
              bool reverse)
 {
-    int len = text.length();
+    int len = text.text.length();
     if (len == 0) return;
     best_path.clear();
 
-    vector<vector<Token> > search(len);
 
-    for (int i=0; i<len; i++) {
-
-        if (i>0 && search[i-1].size() == 0) continue;
-
-        // Iterate for .. all factors ending in this position
-        //             .. all factors starting from this position
-        for (auto tok = search[i].cbegin(); tok != search[i].cend(); ++tok) {
-            string src_state(text.substr(tok->source, i));
-            for (int j=i; j<text.length(); j++) {
-                string tgt_state(text.substr(i,j+1));
-                auto state_pair = make_pair(src_state, tgt_state);
-                if (transitions.find(state_pair) != transitions.end()) {
-                    Token new_tok;
-                    new_tok.cost = transitions.at(state_pair) + tok->cost;
-                    new_tok.source = i-1;
-                    search[j].push_back(new_tok);
-                }
-            }
-         }
-    }
-
-    // Look up the best path
-    if (search[len-1].size() == 0) return;
-
-    /*
-    int target = len-1;
-    Token best_tok;
-    for (auto tok = search[target].cbegin(); tok != search[target].cend(); ++tok)
-        if (tok->cost > best_tok.cost)
-            best_tok = tok;
-
-    int source = best_tok.source;
-    while (true) {
-        best_path.push_back(text.substr(source+1, target-source));
-        if (source == -1) break;
-        target = source;
-        source = search[target].source;
-    }
-
-    if (reverse) std::reverse(best_path.begin(), best_path.end());
-    */
 }
 
 

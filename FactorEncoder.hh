@@ -1,6 +1,7 @@
 #ifndef FACTOR_ENCODER
 #define FACTOR_ENCODER
 
+#include <limits>
 #include <map>
 #include <string>
 #include <vector>
@@ -15,9 +16,11 @@ public:
     /** Arc of a factor graph. */
     class Arc {
     public:
-        Arc(unsigned int source_node, unsigned int target_node, double cost=0.0) : source_node(source_node),
-                                                                                   target_node(target_node),
-                                                                                   cost(0.0) {}
+        Arc(unsigned int source_node, unsigned int target_node,
+            double cost=-std::numeric_limits<flt_type>::max())
+        : source_node(source_node),
+          target_node(target_node),
+          cost(0.0) {}
         bool operator==(Arc& rhs) const {
             if (source_node != rhs.source_node) return false;
             if (target_node != rhs.target_node) return false;
@@ -107,8 +110,9 @@ void forward_backward(const std::map<std::string, flt_type> &vocab,
 void viterbi(const std::map<std::pair<std::string,std::string>, flt_type> &transitions,
              int maxlen,
              const std::string &start_end_symbol,
-             const std::string &text,
+             FactorGraph &text,
              std::vector<std::string> &best_path,
              bool reverse=true);
+
 
 #endif /* FACTOR_ENCODER */

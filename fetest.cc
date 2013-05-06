@@ -277,16 +277,21 @@ void fetest :: ForwardBackwardTest8 (void)
 
 void fetest :: TransitionViterbiTest1 (void)
 {
+    map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
     string start_end("_");
     string str1("a"); string str2("bc");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
+    vocab[str2] = -1.0;
     transitions[make_pair(str1, str2)] = -1.0;
     transitions[make_pair(start_end, str2)] = -1.0;
     transitions[make_pair(str2, start_end)] = -1.0;
     string sentence("abc");
+    FactorGraph fg(sentence, vocab, 2);
     vector<string> best_path;
     int maxlen = 2;
-    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    viterbi(transitions, maxlen, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str2, best_path[1]);
@@ -294,10 +299,16 @@ void fetest :: TransitionViterbiTest1 (void)
 
 void fetest :: TransitionViterbiTest2 (void)
 {
+    map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
     string start_end("_");
     string str1("a"); string str2("bc");
     string str3("ab"); string str4("c");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
+    vocab[str2] = -1.0;
+    vocab[str3] = -1.0;
+    vocab[str4] = -1.0;
     transitions[make_pair(start_end, str1)] = -1.0;
     transitions[make_pair(start_end, str3)] = -1.0;
     transitions[make_pair(str2, start_end)] = -1.0;
@@ -305,9 +316,10 @@ void fetest :: TransitionViterbiTest2 (void)
     transitions[make_pair(str1, str2)] = -2.0;
     transitions[make_pair(str3, str4)] = -1.0;
     string sentence("abc");
+    FactorGraph fg(sentence, vocab, 2);
     vector<string> best_path;
     int maxlen = 2;
-    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    viterbi(transitions, maxlen, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str3, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str4, best_path[1]);
@@ -316,45 +328,57 @@ void fetest :: TransitionViterbiTest2 (void)
 // No possible segmentation
 void fetest :: TransitionViterbiTest3 (void)
 {
+    map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
     string start_end("_");
     string str1("a");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
     transitions[make_pair(start_end, str1)] = -1.0;
     transitions[make_pair(str1, start_end)] = -1.0;
     string sentence("abc");
+    FactorGraph fg(sentence, vocab, 1);
     vector<string> best_path;
     int maxlen = 1;
-    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    viterbi(transitions, maxlen, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
 // Empty string
 void fetest :: TransitionViterbiTest4 (void)
 {
+    map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
     string start_end("_");
     string str1("a");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
     transitions[make_pair(start_end, str1)] = -1.0;
     transitions[make_pair(str1, start_end)] = -1.0;
     string sentence("");
+    FactorGraph fg(sentence, vocab, 1);
     vector<string> best_path;
     int maxlen = 1;
-    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    viterbi(transitions, maxlen, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
 // One character sentence
 void fetest :: TransitionViterbiTest5 (void)
 {
+    map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
     string start_end("_");
     string str1("a");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
     transitions[make_pair(start_end, str1)] = -1.0;
     transitions[make_pair(str1, start_end)] = -1.0;
     string sentence("a");
+    FactorGraph fg(sentence, vocab, 1);
     vector<string> best_path;
     int maxlen = 1;
-    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    viterbi(transitions, maxlen, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
 }
@@ -362,19 +386,26 @@ void fetest :: TransitionViterbiTest5 (void)
 // No segmentation
 void fetest :: TransitionViterbiTest6 (void)
 {
+    map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
     string start_end("_");
     string str1("a"); string str2("b");
     string str3("c"); string str4("d");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
+    vocab[str2] = -1.0;
+    vocab[str3] = -1.0;
+    vocab[str4] = -1.0;
     transitions[make_pair(start_end, str1)] = -1.0;
     transitions[make_pair(str4, start_end)] = -1.0;
     transitions[make_pair(str1, str2)] = -1.0;
     transitions[make_pair(str2, str3)] = -1.0;
     transitions[make_pair(str3, str4)] = -1.0;
     string sentence("a-bcd");
+    FactorGraph fg(sentence, vocab, 4);
     vector<string> best_path;
     int maxlen = 1;
-    viterbi(transitions, maxlen, start_end, sentence, best_path);
+    viterbi(transitions, maxlen, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
