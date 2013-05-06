@@ -144,6 +144,30 @@ FactorGraph::FactorGraph(const std::string &text,
 }
 
 
+bool
+FactorGraph::assert_equal(const FactorGraph &other)
+{
+    if (nodes.size() != other.nodes.size()) return false;
+
+    auto it = nodes.begin();
+    auto it2 = other.nodes.begin();
+    for (; it != nodes.end(); ) {
+        if (it->start_pos != it2->start_pos) return false;
+        if (it->len != it2->len) return false;
+        if (it->incoming.size() != it2->incoming.size()) return false;
+        if (it->outgoing.size() != it2->outgoing.size()) return false;
+        for (int i=0; i<it->incoming.size(); i++)
+            if (*(it->incoming[i]) != *(it2->incoming[i])) return false;
+        for (int i=0; i<it->outgoing.size(); i++)
+            if (*(it->outgoing[i]) != *(it2->outgoing[i])) return false;
+        it++;
+        it2++;
+    }
+
+    return true;
+}
+
+
 FactorGraph::~FactorGraph() {
     for (auto it = arcs.begin(); it != arcs.end(); ++it)
         delete *it;

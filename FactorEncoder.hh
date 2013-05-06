@@ -18,6 +18,18 @@ public:
         Arc(unsigned int source_node, unsigned int target_node, double cost=0.0) : source_node(source_node),
                                                                                    target_node(target_node),
                                                                                    cost(0.0) {}
+        bool operator==(Arc& rhs) const {
+            if (source_node != rhs.source_node) return false;
+            if (target_node != rhs.target_node) return false;
+            if (cost != rhs.cost) return false;
+            return true;
+        }
+        bool operator!=(Arc& rhs) const {
+            if (source_node != rhs.source_node) return true;
+            if (target_node != rhs.target_node) return true;
+            if (cost != rhs.cost) return true;
+            return false;
+        }
         unsigned int source_node;
         unsigned int target_node;
         double cost;
@@ -39,6 +51,8 @@ public:
     FactorGraph(const std::string &text, const StringSet<flt_type> &vocab);
     ~FactorGraph();
     void get_string(const Node &node, std::string &nstr) { nstr.assign(this->text, node.start_pos, node.len); }
+    bool assert_equal(const FactorGraph &other);
+
     std::string text;
     std::vector<Node> nodes;
     std::vector<Arc*> arcs;

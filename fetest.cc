@@ -421,7 +421,7 @@ void fetest :: FactorGraphTest2 (void)
 
     StringSet<flt_type> ssvocab(vocab);
     FactorGraph ssfg("halojaa", ssvocab);
-    CPPUNIT_ASSERT_EQUAL(3, (int)ssfg.nodes.size());
+    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 }
 
 // Testing constructor
@@ -442,7 +442,36 @@ void fetest :: FactorGraphTest3 (void)
 
     StringSet<flt_type> ssvocab(vocab);
     FactorGraph ssfg("halojaa", ssvocab);
-    CPPUNIT_ASSERT_EQUAL(0, (int)ssfg.nodes.size());
+    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 }
 
+// Testing constructor
+// Normal case
+void fetest :: FactorGraphTest4 (void)
+{
+    map<std::string, flt_type> vocab;
+    vocab.insert(make_pair("k", 0.0));
+    vocab.insert(make_pair("a", 0.0));
+    vocab.insert(make_pair("u", 0.0));
+    vocab.insert(make_pair("p", 0.0));
+    vocab.insert(make_pair("n", 0.0));
+    vocab.insert(make_pair("g", 0.0));
+    vocab.insert(make_pair("i", 0.0));
+    vocab.insert(make_pair("s", 0.0));
+    vocab.insert(make_pair("t", 0.0));
+    vocab.insert(make_pair("m", 0.0));
+    vocab.insert(make_pair("e", 0.0));
+    vocab.insert(make_pair("kaupun", 0.0));
+    vocab.insert(make_pair("gis", 0.0));
+    vocab.insert(make_pair("gistu", 0.0));
+    vocab.insert(make_pair("minen", 0.0));
+    vocab.insert(make_pair("kau", 0.0));
+
+    FactorGraph fg("kaupungistuminen", vocab, 6);
+    CPPUNIT_ASSERT_EQUAL(21, (int)fg.nodes.size());
+
+    StringSet<flt_type> ssvocab(vocab);
+    FactorGraph ssfg("kaupungistuminen", ssvocab);
+    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
+}
 
