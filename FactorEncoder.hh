@@ -18,9 +18,7 @@ public:
     public:
         Arc(unsigned int source_node, unsigned int target_node,
             double cost=-std::numeric_limits<flt_type>::max())
-        : source_node(source_node),
-          target_node(target_node),
-          cost(0.0) {}
+        : source_node(source_node), target_node(target_node), cost(0.0) {}
         bool operator==(Arc& rhs) const {
             if (source_node != rhs.source_node) return false;
             if (target_node != rhs.target_node) return false;
@@ -41,11 +39,12 @@ public:
     /** Node of a factor graph. */
     class Node {
     public:
-        Node(int start_pos, int len) : start_pos(start_pos),
-                                       len(len) { }
+        Node(int start_pos, int len, double cost=-std::numeric_limits<flt_type>::max())
+        : start_pos(start_pos), len(len), cost(cost) { }
         ~Node() { incoming.clear(); outgoing.clear(); }
         size_t start_pos; // text indices
         size_t len;
+        double cost;
         std::vector<Arc*> incoming;
         std::vector<Arc*> outgoing;
     };
@@ -54,6 +53,7 @@ public:
     FactorGraph(const std::string &text, const StringSet<flt_type> &vocab);
     ~FactorGraph();
     void get_string(const Node &node, std::string &nstr) const { nstr.assign(this->text, node.start_pos, node.len); }
+    void get_string(int node, std::string &nstr) const { nstr.assign(this->text, nodes[node].start_pos, nodes[node].len); }
     bool assert_equal(const FactorGraph &other) const;
 
     std::string text;
