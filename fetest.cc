@@ -377,3 +377,49 @@ void fetest :: TransitionViterbiTest6 (void)
     viterbi(transitions, maxlen, start_end, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
+
+// Testing constructor
+// only forward possible routes in the graph
+void fetest :: FactorGraphTest1 (void)
+{
+    string str1("hal");
+    string str2("halojaa");
+    string str3("ojaa");
+    string str4("jaa");
+
+    map<std::string, flt_type> vocab;
+    vocab[str1] = 0.0;
+    vocab[str2] = 0.0;
+    vocab[str3] = 0.0;
+    vocab[str4] = 0.0;
+
+    FactorGraph fg("halojaa", vocab, 7);
+    CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
+}
+
+// Testing constructor
+// pruning out impossible paths, simple case
+void fetest :: FactorGraphTest2 (void)
+{
+    string str1("hal");
+    string str2("halojaa");
+    string str3("ojaa");
+    string str4("oj");
+
+    map<std::string, flt_type> vocab;
+    vocab[str1] = 0.0;
+    vocab[str2] = 0.0;
+    vocab[str3] = 0.0;
+    vocab[str4] = 0.0;
+
+    FactorGraph fg("halojaa", vocab, 7);
+    CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
+}
+
+// Testing constructor
+void fetest :: FactorGraphTest3 (void)
+{
+
+}
+
+

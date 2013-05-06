@@ -24,6 +24,9 @@ class fetest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (ForwardBackwardTest6);
     CPPUNIT_TEST (ForwardBackwardTest7);
     CPPUNIT_TEST (ForwardBackwardTest8);
+    CPPUNIT_TEST (FactorGraphTest1);
+    CPPUNIT_TEST (FactorGraphTest2);
+    CPPUNIT_TEST (FactorGraphTest3);
     CPPUNIT_TEST (TransitionViterbiTest1);
     CPPUNIT_TEST (TransitionViterbiTest2);
     CPPUNIT_TEST (TransitionViterbiTest3);
@@ -53,6 +56,9 @@ class fetest : public CPPUNIT_NS :: TestFixture
         void ForwardBackwardTest6(void);
         void ForwardBackwardTest7(void);
         void ForwardBackwardTest8(void);
+        void FactorGraphTest1(void);
+        void FactorGraphTest2(void);
+        void FactorGraphTest3(void);
         void TransitionViterbiTest1(void);
         void TransitionViterbiTest2(void);
         void TransitionViterbiTest3(void);

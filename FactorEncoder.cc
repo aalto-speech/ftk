@@ -12,22 +12,60 @@ using namespace std;
 
 
 
-FactorGraph::FactorGraph(const std::map<std::string, flt_type> &vocab,
-                         const std::string &text)
+FactorGraph::FactorGraph(const std::string &text,
+                         const std::map<std::string, flt_type> &vocab,
+                         int maxlen)
 {
     this->text.assign(text);
 
-    for (int i=0; i<text.size(); i++)
-        continue;
-    return;
+    vector<map<unsigned int, bool> > incoming(text.size()+1); // (pos in text, source pos)
+
+    // Create all nodes
+    incoming[0][0] = true;
+    for (unsigned int i=0; i<text.size(); i++) {
+        if (incoming[i].size() == 0) continue;
+        for (unsigned int j=i+1; j<=text.size(); j++) {
+            unsigned int len = j-i;
+            if (vocab.find(text.substr(i, len)) != vocab.end()) {
+                nodes.push_back(Node(i, len));
+                incoming[j][i] = true;
+            }
+        }
+    }
+
+    // No possible segmentations
+    if (incoming[text.size()].size() == 0) {
+        nodes.clear();
+        return;
+    }
+
+    // Find all possible start nodes
+    map<int, bool> possible_start_nodes;
+    possible_start_nodes[text.size()] = true;
+    for (int i=incoming.size()-1; i>= 0; i--) {
+        if (possible_start_nodes.find(i) == possible_start_nodes.end()) continue;
+        for (auto it = incoming[i].cbegin(); it != incoming[i].cend(); ++it)
+            possible_start_nodes[it->first] = true;
+    }
+
+    // Prune non-reachable nodes
+    for (auto it = nodes.begin(); it != nodes.end() ;) {
+        if (possible_start_nodes.find(it->start_pos) == possible_start_nodes.end() ||
+            possible_start_nodes.find(it->start_pos+it->len) == possible_start_nodes.end())
+            it = nodes.erase(it);
+        else
+            ++it;
+    }
 }
 
-FactorGraph::FactorGraph(const StringSet<flt_type> &vocab,
-                         const std::string &text)
+
+FactorGraph::FactorGraph(const std::string &text,
+                         const StringSet<flt_type> &vocab)
 {
-
-
 }
+
+
+FactorGraph::~FactorGraph() { }
 
 
 class Token {
