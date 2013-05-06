@@ -42,6 +42,14 @@ public:
     std::string text;
     std::vector<Node> nodes;
     std::vector<Arc*> arcs;
+
+private:
+    // Constructor helpers
+    void create_nodes(const std::string &text, const std::map<std::string, flt_type> &vocab,
+                      int maxlen, std::vector<std::map<unsigned int, bool> > &incoming);
+    void create_nodes(const std::string &text, const StringSet<flt_type> &vocab,
+                      std::vector<std::map<unsigned int, bool> > &incoming);
+    void prune_and_create_arcs(std::vector<std::map<unsigned int, bool> > &incoming);
 };
 
 

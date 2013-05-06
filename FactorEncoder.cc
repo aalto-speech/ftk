@@ -11,17 +11,10 @@ using namespace std;
 #include "FactorEncoder.hh"
 
 
-
-FactorGraph::FactorGraph(const std::string &text,
-                         const std::map<std::string, flt_type> &vocab,
-                         int maxlen)
+void
+FactorGraph::create_nodes(const string &text, const map<std::string, flt_type> &vocab,
+                          int maxlen, vector<map<unsigned int, bool> > &incoming)
 {
-    this->text.assign(text);
-
-    vector<map<unsigned int, bool> > incoming(text.size()+1); // (pos in text, source pos)
-
-    // Create all nodes
-    incoming[0][0] = true;
     for (unsigned int i=0; i<text.size(); i++) {
         if (incoming[i].size() == 0) continue;
         for (unsigned int j=i+1; j<=text.size(); j++) {
@@ -32,13 +25,20 @@ FactorGraph::FactorGraph(const std::string &text,
             }
         }
     }
+}
 
-    // No possible segmentations
-    if (incoming[text.size()].size() == 0) {
-        nodes.clear();
-        return;
-    }
 
+void
+FactorGraph::create_nodes(const string &text, const StringSet<flt_type> &vocab,
+                          vector<map<unsigned int, bool> > &incoming)
+{
+    return;
+}
+
+
+void
+FactorGraph::prune_and_create_arcs(vector<map<unsigned int, bool> > &incoming)
+{
     // Find all possible start nodes
     map<int, bool> possible_start_nodes;
     possible_start_nodes[text.size()] = true;
@@ -83,8 +83,45 @@ FactorGraph::FactorGraph(const std::string &text,
 
 
 FactorGraph::FactorGraph(const std::string &text,
+                         const std::map<std::string, flt_type> &vocab,
+                         int maxlen)
+{
+    this->text.assign(text);
+
+    vector<map<unsigned int, bool> > incoming(text.size()+1); // (pos in text, source pos)
+
+    // Create all nodes
+    incoming[0][0] = true;
+    create_nodes(text, vocab, maxlen, incoming);
+
+    // No possible segmentations
+    if (incoming[text.size()].size() == 0) {
+        nodes.clear();
+        return;
+    }
+
+    prune_and_create_arcs(incoming);
+}
+
+
+FactorGraph::FactorGraph(const std::string &text,
                          const StringSet<flt_type> &vocab)
 {
+    this->text.assign(text);
+
+    vector<map<unsigned int, bool> > incoming(text.size()+1); // (pos in text, source pos)
+
+    // Create all nodes
+    incoming[0][0] = true;
+    create_nodes(text, vocab, incoming);
+
+    // No possible segmentations
+    if (incoming[text.size()].size() == 0) {
+        nodes.clear();
+        return;
+    }
+
+    prune_and_create_arcs(incoming);
 }
 
 
