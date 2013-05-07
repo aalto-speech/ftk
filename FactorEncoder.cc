@@ -490,6 +490,10 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
     for (auto arc = text.arcs.begin(); arc != text.arcs.end(); ++arc) {
         int src_node = (**arc).source_node;
         int tgt_node = (**arc).target_node;
+        if (src_node == -1) {
+            (**arc).cost = 0.0;
+            continue;
+        }
         text.get_string(src_node, source_node_str);
         text.get_string(tgt_node, target_node_str);
         (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
@@ -536,6 +540,5 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
         best_path.push_back(bpn);
         node = source_nodes[node];
     }
+    if (reverse) std::reverse(best_path.begin(), best_path.end());
 }
-
-
