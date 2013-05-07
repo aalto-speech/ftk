@@ -555,16 +555,24 @@ void fetest :: TransitionViterbiTest7 (void)
     transitions[make_pair(str8, start_end)] = -6.0;
     transitions[make_pair(str1, str2)] = -1.0;
     transitions[make_pair(str2, str3)] = -1.0;
+    transitions[make_pair(str3, str3)] = -1.0;
     transitions[make_pair(str3, str4)] = -1.0;
     transitions[make_pair(str4, str5)] = -1.0;
+    transitions[make_pair(str4, str7)] = -1.0;
     transitions[make_pair(str5, str4)] = -1.0;
+    transitions[make_pair(str5, str5)] = -1.0;
     transitions[make_pair(str6, str7)] = -1.0;
+    transitions[make_pair(str6, str5)] = -1.0;
     string sentence("kissalla");
     int maxlen = 8;
     FactorGraph fg(sentence, start_end, vocab, maxlen);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
-    CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(4, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
+    CPPUNIT_ASSERT_EQUAL(str6, best_path[1]);
+    CPPUNIT_ASSERT_EQUAL(str7, best_path[2]);
+    CPPUNIT_ASSERT_EQUAL(start_end, best_path[3]);
 }
 
 
