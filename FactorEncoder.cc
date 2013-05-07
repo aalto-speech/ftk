@@ -493,30 +493,17 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
     for (auto arc = text.arcs.begin(); arc != text.arcs.end(); ++arc) {
         int src_node = (**arc).source_node;
         int tgt_node = (**arc).target_node;
-        if (src_node == -1) {
-            (**arc).cost = 0.0;
-            continue;
-        }
         text.get_string(src_node, source_node_str);
         text.get_string(tgt_node, target_node_str);
         (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
     }
 
-    // Initialize node scores, FIXME
+    // Initialize node scores
     vector<flt_type> costs(text.nodes.size(), -numeric_limits<flt_type>::max());
     vector<int> source_nodes(text.nodes.size());
-    for (unsigned int i=0; i<text.nodes.size(); i++) {
-        vector<FactorGraph::Arc*> &incoming = text.nodes[i].incoming;
-        if (incoming.size() == 1 && (*(incoming[0])).source_node == -1) {
-            costs[i] = 0.0;
-            source_nodes[i] = -1;
-        }
-        else break;
-    }
+    costs[0] = 0.0; source_nodes[0] = -1;
 
-    // Traverse paths, FIXME
-    flt_type best_end_score = -numeric_limits<flt_type>::max();
-    unsigned int best_end_node = 0;
+    // Traverse paths
     for (int i=0; i<text.nodes.size(); i++) {
         FactorGraph::Node &node = text.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
@@ -525,24 +512,20 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
             if (new_cost > curr_cost) {
                 costs[(**arc).target_node] = new_cost;
                 source_nodes[(**arc).target_node] = i;
-                unsigned int end_pos = text.nodes[(**arc).target_node].start_pos
-                        + text.nodes[(**arc).target_node].len;
-                if (end_pos == len && new_cost > best_end_score) {
-                    best_end_node = (**arc).target_node;
-                    best_end_score = new_cost;
-                }
             }
         }
     }
 
     // Find best path
-    unsigned int node = best_end_node;
+    string bpn;
+    unsigned int node = text.nodes.size()-1;
+    text.get_string(node, bpn);
+    best_path.push_back(bpn);
     while (true) {
-        string bpn;
-        text.get_string(node, bpn);
-        best_path.push_back(bpn);
         node = source_nodes[node];
         if (node == -1) break;
+        text.get_string(node, bpn);
+        best_path.push_back(bpn);
     }
     if (reverse_result) std::reverse(best_path.begin(), best_path.end());
 }

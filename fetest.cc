@@ -411,15 +411,17 @@ void fetest :: TransitionViterbiTest1 (void)
     vocab[str1] = -1.0;
     vocab[str2] = -1.0;
     transitions[make_pair(str1, str2)] = -1.0;
-    transitions[make_pair(start_end, str2)] = -1.0;
+    transitions[make_pair(start_end, str1)] = -1.0;
     transitions[make_pair(str2, start_end)] = -1.0;
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
-    CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
-    CPPUNIT_ASSERT_EQUAL(str2, best_path[1]);
+    CPPUNIT_ASSERT_EQUAL(4, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
+    CPPUNIT_ASSERT_EQUAL(str1, best_path[1]);
+    CPPUNIT_ASSERT_EQUAL(str2, best_path[2]);
+    CPPUNIT_ASSERT_EQUAL(start_end, best_path[3]);
 }
 
 void fetest :: TransitionViterbiTest2 (void)
@@ -443,9 +445,11 @@ void fetest :: TransitionViterbiTest2 (void)
     FactorGraph fg(sentence, start_end, vocab, 2);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
-    CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(str3, best_path[0]);
-    CPPUNIT_ASSERT_EQUAL(str4, best_path[1]);
+    CPPUNIT_ASSERT_EQUAL(4, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
+    CPPUNIT_ASSERT_EQUAL(str3, best_path[1]);
+    CPPUNIT_ASSERT_EQUAL(str4, best_path[2]);
+    CPPUNIT_ASSERT_EQUAL(start_end, best_path[3]);
 }
 
 // No possible segmentation
@@ -496,8 +500,10 @@ void fetest :: TransitionViterbiTest5 (void)
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
-    CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
+    CPPUNIT_ASSERT_EQUAL(3, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
+    CPPUNIT_ASSERT_EQUAL(str1, best_path[1]);
+    CPPUNIT_ASSERT_EQUAL(start_end, best_path[2]);
 }
 
 // No segmentation
