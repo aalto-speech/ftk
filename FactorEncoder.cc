@@ -447,7 +447,7 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
              const string &start_end_symbol,
              FactorGraph &text,
              vector<string> &best_path,
-             bool reverse_result)
+             bool reverse)
 {
     int len = text.text.length();
     if (len == 0) return;
@@ -494,5 +494,19 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
         text.get_string(node, bpn);
         best_path.push_back(bpn);
     }
-    if (reverse_result) std::reverse(best_path.begin(), best_path.end());
+    if (reverse) std::reverse(best_path.begin(), best_path.end());
+}
+
+
+void viterbi(const map<pair<string,string>, flt_type> &transitions,
+             const string &start_end_symbol,
+             FactorGraph &text,
+             map<pair<string,string>, flt_type> &stats)
+{
+    stats.clear();
+    vector<string> best_path;
+    viterbi(transitions, start_end_symbol, text, best_path, true);
+    if (best_path.size() < 2) return;
+    for (int i=1; i<best_path.size(); i++)
+        stats[make_pair(best_path[i-1], best_path[i])] += 1.0;
 }

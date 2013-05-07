@@ -119,5 +119,9 @@ void viterbi(const std::map<std::pair<std::string,std::string>, flt_type> &trans
              std::vector<std::string> &best_path,
              bool reverse=true);
 
+void viterbi(const std::map<std::pair<std::string,std::string>, flt_type> &transitions,
+             const std::string &start_end_symbol,
+             FactorGraph &text,
+             std::map<std::pair<std::string,std::string>, flt_type> &stats);
 
 #endif /* FACTOR_ENCODER */
