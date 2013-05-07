@@ -349,44 +349,11 @@ void viterbi(const StringSet<flt_type> &vocab,
              const string &text,
              map<string, flt_type> &stats)
 {
-    if (text.length() == 0) return;
-    vector<Token> search(text.length());
-
-    for (int i=0; i<text.length(); i++) {
-
-        // Iterate all factors starting from this position
-        const StringSet<flt_type>::Node *node = &vocab.root_node;
-        for (int j=i; j<text.length(); j++) {
-
-            StringSet<flt_type>::Arc *arc = vocab.find_arc(text[j], node);
-
-            if (arc == NULL) break;
-            node = arc->target_node;
-
-            // Morph associated with this node
-            if (arc->morph.length() > 0) {
-                flt_type cost = arc->cost;
-                if (i>0) cost += search[i-1].cost;
-
-                if (cost > search[j].cost) {
-                    search[j].cost = cost;
-                    search[j].source = i-1;
-                }
-            }
-        }
-    }
-
-    // Look up the best path
-    int target = search.size()-1;
-    if (search[target].cost == -numeric_limits<flt_type>::max()) return;
-
-    int source = search[target].source;
-    while (true) {
-        stats[text.substr(source+1, target-source)] += 1;
-        if (source == -1) break;
-        target = source;
-        source = search[target].source;
-    }
+    stats.clear();
+    vector<string> best_path;
+    viterbi(vocab, text, best_path, false);
+    for (auto it = best_path.begin(); it != best_path.end; ++it)
+        stats[*it] += 1.0;
 }
 
 
