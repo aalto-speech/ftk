@@ -530,6 +530,7 @@ void fetest :: TransitionViterbiTest6 (void)
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
+// Normal scenario with few variations
 void fetest :: TransitionViterbiTest7 (void)
 {
     map<string, flt_type> vocab;
@@ -586,4 +587,50 @@ void fetest :: TransitionViterbiTest7 (void)
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[5]);
 }
 
+// Check that non-existing transitions throw for now
+void fetest :: TransitionViterbiTest8 (void)
+{
+    map<string, flt_type> vocab;
+    map<pair<string,string>, flt_type> transitions;
+    string str1("k"); string str2("i");
+    string str3("s"); string str4("a");
+    string str5("l"); string str6("kissa");
+    string str7("lla"); string str8("kissalla");
+    vocab[start_end] = 0.0;
+    vocab[str1] = 0.0;
+    vocab[str2] = 0.0;
+    vocab[str3] = 0.0;
+    vocab[str4] = 0.0;
+    vocab[str5] = 0.0;
+    vocab[str6] = 0.0;
+    vocab[str7] = 0.0;
+    vocab[str8] = 0.0;
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(start_end, str6)] = -1.0;
+    transitions[make_pair(start_end, str8)] = -6.0;
+    transitions[make_pair(str4, start_end)] = -1.0;
+    transitions[make_pair(str7, start_end)] = -1.0;
+    transitions[make_pair(str8, start_end)] = -6.0;
+    transitions[make_pair(str1, str2)] = -1.0;
+    transitions[make_pair(str2, str3)] = -1.0;
+    transitions[make_pair(str3, str4)] = -1.0;
+    transitions[make_pair(str4, str5)] = -1.0;
+    transitions[make_pair(str4, str7)] = -1.0;
+    transitions[make_pair(str5, str4)] = -1.0;
+    transitions[make_pair(str6, str7)] = -1.0;
+    transitions[make_pair(str6, str5)] = -1.0;
+    string sentence("kissalla");
+    int maxlen = 8;
+    FactorGraph fg(sentence, start_end, vocab, maxlen);
+    vector<string> best_path;
+
+    try {
+        viterbi(transitions, start_end, fg, best_path);
+    }
+    catch (exception& e)
+    {
+        return;
+    }
+    CPPUNIT_ASSERT(false);
+}
 

@@ -35,6 +35,7 @@ class fetest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (TransitionViterbiTest5);
     CPPUNIT_TEST (TransitionViterbiTest6);
     CPPUNIT_TEST (TransitionViterbiTest7);
+    CPPUNIT_TEST (TransitionViterbiTest8);
     CPPUNIT_TEST_SUITE_END ();
 
     public:
@@ -68,6 +69,7 @@ class fetest : public CPPUNIT_NS :: TestFixture
         void TransitionViterbiTest5(void);
         void TransitionViterbiTest6(void);
         void TransitionViterbiTest7(void);
+        void TransitionViterbiTest8(void);
 };
 
 #endif
