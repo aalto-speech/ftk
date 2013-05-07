@@ -510,3 +510,12 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
     for (int i=1; i<best_path.size(); i++)
         stats[make_pair(best_path[i-1], best_path[i])] += 1.0;
 }
+
+
+void forward_backward(const map<pair<string,string>, flt_type> &transitions,
+                      const string &start_end_symbol,
+                      FactorGraph &text,
+                      map<pair<string,string>, flt_type> &stats)
+{
+    stats.clear();
+}

@@ -124,4 +124,9 @@ void viterbi(const std::map<std::pair<std::string,std::string>, flt_type> &trans
              FactorGraph &text,
              std::map<std::pair<std::string,std::string>, flt_type> &stats);
 
+void forward_backward(const std::map<std::pair<std::string,std::string>, flt_type> &transitions,
+                      const std::string &start_end_symbol,
+                      FactorGraph &text,
+                      std::map<std::pair<std::string,std::string>, flt_type> &stats);
+
 #endif /* FACTOR_ENCODER */

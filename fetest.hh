@@ -36,6 +36,12 @@ class fetest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (TransitionViterbiTest6);
     CPPUNIT_TEST (TransitionViterbiTest7);
     CPPUNIT_TEST (TransitionViterbiTest8);
+    CPPUNIT_TEST (TransitionForwardBackwardTest1);
+    CPPUNIT_TEST (TransitionForwardBackwardTest2);
+    CPPUNIT_TEST (TransitionForwardBackwardTest3);
+    CPPUNIT_TEST (TransitionForwardBackwardTest4);
+    CPPUNIT_TEST (TransitionForwardBackwardTest5);
+    CPPUNIT_TEST (TransitionForwardBackwardTest6);
     CPPUNIT_TEST_SUITE_END ();
 
     public:
@@ -70,6 +76,12 @@ class fetest : public CPPUNIT_NS :: TestFixture
         void TransitionViterbiTest6(void);
         void TransitionViterbiTest7(void);
         void TransitionViterbiTest8(void);
+        void TransitionForwardBackwardTest1(void);
+        void TransitionForwardBackwardTest2(void);
+        void TransitionForwardBackwardTest3(void);
+        void TransitionForwardBackwardTest4(void);
+        void TransitionForwardBackwardTest5(void);
+        void TransitionForwardBackwardTest6(void);
 };
 
 #endif

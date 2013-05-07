@@ -524,7 +524,7 @@ void fetest :: TransitionViterbiTest6 (void)
     transitions[make_pair(str2, str3)] = -1.0;
     transitions[make_pair(str3, str4)] = -1.0;
     string sentence("a-bcd");
-    FactorGraph fg(sentence, start_end, vocab, 4);
+    FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
@@ -634,3 +634,124 @@ void fetest :: TransitionViterbiTest8 (void)
     CPPUNIT_ASSERT(false);
 }
 
+
+void fetest :: TransitionForwardBackwardTest1 (void)
+{
+    map<string, flt_type> vocab;
+    map<pair<string,string>, flt_type> transitions;
+    string str1("a"); string str2("bc");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
+    vocab[str2] = -1.0;
+    transitions[make_pair(str1, str2)] = -1.0;
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(str2, start_end)] = -1.0;
+    string sentence("abc");
+    FactorGraph fg(sentence, start_end, vocab, 2);
+    map<pair<string,string>, flt_type> stats;
+    forward_backward(transitions, start_end, fg, stats);
+    CPPUNIT_ASSERT_EQUAL(3, (int)stats.size());
+    CPPUNIT_ASSERT_EQUAL(1.0, transitions[make_pair(start_end, str1)]);
+    CPPUNIT_ASSERT_EQUAL(1.0, transitions[make_pair(str1, str2)]);
+    CPPUNIT_ASSERT_EQUAL(1.0, transitions[make_pair(str2, start_end)]);
+}
+
+void fetest :: TransitionForwardBackwardTest2 (void)
+{
+    map<string, flt_type> vocab;
+    map<pair<string,string>, flt_type> transitions;
+    string str1("a"); string str2("bc");
+    string str3("ab"); string str4("c");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
+    vocab[str2] = -1.0;
+    vocab[str3] = -1.0;
+    vocab[str4] = -1.0;
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(start_end, str3)] = -1.0;
+    transitions[make_pair(str2, start_end)] = -1.0;
+    transitions[make_pair(str4, start_end)] = -1.0;
+    transitions[make_pair(str1, str2)] = -2.0;
+    transitions[make_pair(str3, str4)] = -1.0;
+    string sentence("abc");
+    FactorGraph fg(sentence, start_end, vocab, 2);
+    map<pair<string,string>, flt_type> stats;
+    forward_backward(transitions, start_end, fg, stats);
+    CPPUNIT_ASSERT_EQUAL(7, (int)stats.size());
+}
+
+
+// No possible segmentation
+void fetest :: TransitionForwardBackwardTest3 (void)
+{
+    map<string, flt_type> vocab;
+    map<pair<string,string>, flt_type> transitions;
+    string str1("a");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(str1, start_end)] = -1.0;
+    string sentence("abc");
+    FactorGraph fg(sentence, start_end, vocab, 1);
+    map<pair<string,string>, flt_type> stats;
+    forward_backward(transitions, start_end, fg, stats);
+    CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
+}
+
+// Empty string
+void fetest :: TransitionForwardBackwardTest4 (void)
+{
+    map<string, flt_type> vocab;
+    map<pair<string,string>, flt_type> transitions;
+    string str1("a");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(str1, start_end)] = -1.0;
+    string sentence("");
+    FactorGraph fg(sentence, start_end, vocab, 1);
+    map<pair<string,string>, flt_type> stats;
+    forward_backward(transitions, start_end, fg, stats);
+    CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
+}
+
+// One character sentence
+void fetest :: TransitionForwardBackwardTest5 (void)
+{
+    map<string, flt_type> vocab;
+    map<pair<string,string>, flt_type> transitions;
+    string str1("a");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(str1, start_end)] = -1.0;
+    string sentence("a");
+    FactorGraph fg(sentence, start_end, vocab, 1);
+    map<pair<string,string>, flt_type> stats;
+    forward_backward(transitions, start_end, fg, stats);
+    CPPUNIT_ASSERT_EQUAL(2, (int)stats.size());
+}
+
+// No segmentation
+void fetest :: TransitionForwardBackwardTest6 (void)
+{
+    map<string, flt_type> vocab;
+    map<pair<string,string>, flt_type> transitions;
+    string str1("a"); string str2("b");
+    string str3("c"); string str4("d");
+    vocab[start_end] = -1.0;
+    vocab[str1] = -1.0;
+    vocab[str2] = -1.0;
+    vocab[str3] = -1.0;
+    vocab[str4] = -1.0;
+    transitions[make_pair(start_end, str1)] = -1.0;
+    transitions[make_pair(str4, start_end)] = -1.0;
+    transitions[make_pair(str1, str2)] = -1.0;
+    transitions[make_pair(str2, str3)] = -1.0;
+    transitions[make_pair(str3, str4)] = -1.0;
+    string sentence("a-bcd");
+    FactorGraph fg(sentence, start_end, vocab, 1);
+    map<pair<string,string>, flt_type> stats;
+    forward_backward(transitions, start_end, fg, stats);
+    CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
+}
