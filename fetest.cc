@@ -567,12 +567,23 @@ void fetest :: TransitionViterbiTest7 (void)
     int maxlen = 8;
     FactorGraph fg(sentence, start_end, vocab, maxlen);
     vector<string> best_path;
+
     viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(4, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str6, best_path[1]);
     CPPUNIT_ASSERT_EQUAL(str7, best_path[2]);
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[3]);
+
+    transitions[make_pair(str6, str7)] = -10.0;
+    viterbi(transitions, start_end, fg, best_path);
+    CPPUNIT_ASSERT_EQUAL(6, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
+    CPPUNIT_ASSERT_EQUAL(str6, best_path[1]);
+    CPPUNIT_ASSERT_EQUAL(str5, best_path[2]);
+    CPPUNIT_ASSERT_EQUAL(str5, best_path[3]);
+    CPPUNIT_ASSERT_EQUAL(str4, best_path[4]);
+    CPPUNIT_ASSERT_EQUAL(start_end, best_path[5]);
 }
 
 
