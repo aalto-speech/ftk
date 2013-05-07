@@ -352,7 +352,7 @@ void viterbi(const StringSet<flt_type> &vocab,
     stats.clear();
     vector<string> best_path;
     viterbi(vocab, text, best_path, false);
-    for (auto it = best_path.begin(); it != best_path.end; ++it)
+    for (auto it = best_path.begin(); it != best_path.end(); ++it)
         stats[*it] += 1.0;
 }
 
