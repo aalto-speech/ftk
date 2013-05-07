@@ -501,7 +501,7 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
 
     // Initialize node scores, FIXME
     vector<flt_type> costs(text.nodes.size(), -std::numeric_limits<flt_type>::max());
-    vector<unsigned int> source_nodes(text.nodes.size());
+    vector<int> source_nodes(text.nodes.size());
     for (unsigned int i=0; i<text.nodes.size(); i++) {
         vector<FactorGraph::Arc*> &incoming = text.nodes[i].incoming;
         if (incoming.size() == 1 && (*(incoming[0])).source_node == -1) {
@@ -534,11 +534,12 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
 
     // Find best path
     unsigned int node = best_end_node;
-    while (node != -1) {
+    while (true) {
         string bpn;
-        text.get_string(best_end_node, bpn);
+        text.get_string(node, bpn);
         best_path.push_back(bpn);
         node = source_nodes[node];
+        if (node == -1) break;
     }
     if (reverse) std::reverse(best_path.begin(), best_path.end());
 }
