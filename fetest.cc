@@ -290,8 +290,7 @@ void fetest :: TransitionViterbiTest1 (void)
     string sentence("abc");
     FactorGraph fg(sentence, vocab, 2);
     vector<string> best_path;
-    int maxlen = 2;
-    viterbi(transitions, maxlen, start_end, fg, best_path);
+    viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str2, best_path[1]);
@@ -318,8 +317,7 @@ void fetest :: TransitionViterbiTest2 (void)
     string sentence("abc");
     FactorGraph fg(sentence, vocab, 2);
     vector<string> best_path;
-    int maxlen = 2;
-    viterbi(transitions, maxlen, start_end, fg, best_path);
+    viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str3, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str4, best_path[1]);
@@ -339,8 +337,7 @@ void fetest :: TransitionViterbiTest3 (void)
     string sentence("abc");
     FactorGraph fg(sentence, vocab, 1);
     vector<string> best_path;
-    int maxlen = 1;
-    viterbi(transitions, maxlen, start_end, fg, best_path);
+    viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
@@ -358,8 +355,7 @@ void fetest :: TransitionViterbiTest4 (void)
     string sentence("");
     FactorGraph fg(sentence, vocab, 1);
     vector<string> best_path;
-    int maxlen = 1;
-    viterbi(transitions, maxlen, start_end, fg, best_path);
+    viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
@@ -377,8 +373,7 @@ void fetest :: TransitionViterbiTest5 (void)
     string sentence("a");
     FactorGraph fg(sentence, vocab, 1);
     vector<string> best_path;
-    int maxlen = 1;
-    viterbi(transitions, maxlen, start_end, fg, best_path);
+    viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
 }
@@ -404,8 +399,7 @@ void fetest :: TransitionViterbiTest6 (void)
     string sentence("a-bcd");
     FactorGraph fg(sentence, vocab, 4);
     vector<string> best_path;
-    int maxlen = 1;
-    viterbi(transitions, maxlen, start_end, fg, best_path);
+    viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 

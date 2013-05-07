@@ -33,18 +33,17 @@ public:
         }
         unsigned int source_node;
         unsigned int target_node;
-        double cost;
+        flt_type cost;
     };
 
     /** Node of a factor graph. */
     class Node {
     public:
-        Node(int start_pos, int len, double cost=-std::numeric_limits<flt_type>::max())
-        : start_pos(start_pos), len(len), cost(cost) { }
+        Node(int start_pos, int len)
+        : start_pos(start_pos), len(len) { }
         ~Node() { incoming.clear(); outgoing.clear(); }
         size_t start_pos; // text indices
         size_t len;
-        double cost;
         std::vector<Arc*> incoming;
         std::vector<Arc*> outgoing;
     };
@@ -108,7 +107,6 @@ void forward_backward(const std::map<std::string, flt_type> &vocab,
                       std::map<std::string, flt_type> &stats);
 
 void viterbi(const std::map<std::pair<std::string,std::string>, flt_type> &transitions,
-             int maxlen,
              const std::string &start_end_symbol,
              FactorGraph &text,
              std::vector<std::string> &best_path,

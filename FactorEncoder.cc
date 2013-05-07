@@ -475,7 +475,6 @@ void forward_backward(const map<string, flt_type> &vocab,
 
 
 void viterbi(const map<pair<string,string>, flt_type> &transitions,
-             int maxlen,
              const string &start_end_symbol,
              FactorGraph &text,
              vector<string> &best_path,
@@ -485,6 +484,7 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
     if (len == 0) return;
     best_path.clear();
 
+    // Rescore arcs
     string source_node_str;
     string target_node_str;
     for (auto arc = text.arcs.begin(); arc != text.arcs.end(); ++arc) {
@@ -495,6 +495,47 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
         (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
     }
 
+    // Initialize node scores, FIXME
+    vector<flt_type> costs(text.nodes.size(), -std::numeric_limits<flt_type>::max());
+    vector<unsigned int> source_nodes(text.nodes.size());
+    for (unsigned int i=0; i<text.nodes.size(); i++) {
+        vector<FactorGraph::Arc*> &incoming = text.nodes[i].incoming;
+        if (incoming.size() == 1 && (*(incoming[0])).source_node == -1) {
+            costs[i] = 0.0;
+            source_nodes[i] = -1;
+        }
+        else break;
+    }
+
+    // Traverse paths, FIXME
+    flt_type best_end_score = -std::numeric_limits<flt_type>::max();
+    unsigned int best_end_node = 0;
+    for (int i=0; i<text.nodes.size(); i++) {
+        FactorGraph::Node &node = text.nodes[i];
+        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+            flt_type curr_cost = costs[(**arc).target_node];
+            flt_type new_cost = costs[i] + (*arc)->cost;
+            if (new_cost > curr_cost) {
+                costs[(**arc).target_node] = new_cost;
+                source_nodes[(**arc).target_node] = i;
+                unsigned int end_pos = text.nodes[(**arc).target_node].start_pos
+                        + text.nodes[(**arc).target_node].len;
+                if (end_pos == len && new_cost > best_end_score) {
+                    best_end_node = (**arc).target_node;
+                    best_end_score = new_cost;
+                }
+            }
+        }
+    }
+
+    // Find best path
+    unsigned int node = best_end_node;
+    while (node != -1) {
+        string bpn;
+        text.get_string(best_end_node, bpn);
+        best_path.push_back(bpn);
+        node = source_nodes[node];
+    }
 }
 
 
