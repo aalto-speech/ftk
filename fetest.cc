@@ -289,6 +289,8 @@ void assert_node(const FactorGraph &fg,
     CPPUNIT_ASSERT_EQUAL( outgoing_sz, (unsigned int)fg.nodes[node].outgoing.size() );
 }
 
+string start_end("*");
+
 
 // Testing constructor
 // only forward possible routes in the graph
@@ -373,27 +375,28 @@ void fetest :: FactorGraphTest4 (void)
     FactorGraph ssfg("kaupungistuminen", ssvocab);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 
-    assert_node(fg, 0, std::string("k"), 1, 1);
-    assert_node(fg, 1, std::string("kau"), 1, 1);
-    assert_node(fg, 2, std::string("kaupun"), 1, 3);
-    assert_node(fg, 3, std::string("a"), 1, 1);
-    assert_node(fg, 4, std::string("u"), 1, 1);
-    assert_node(fg, 5, std::string("p"), 2, 1);
-    assert_node(fg, 6, std::string("u"), 1, 1);
-    assert_node(fg, 7, std::string("n"), 1, 3);
-    assert_node(fg, 8, std::string("g"), 2, 1);
-    assert_node(fg, 9, std::string("gis"), 2, 1);
-    assert_node(fg, 10, std::string("gistu"), 2, 2);
-    assert_node(fg, 11, std::string("i"), 1, 1);
-    assert_node(fg, 12, std::string("s"), 1, 1);
-    assert_node(fg, 13, std::string("t"), 2, 1);
-    assert_node(fg, 14, std::string("u"), 1, 2);
-    assert_node(fg, 15, std::string("m"), 2, 1);
-    assert_node(fg, 16, std::string("minen"), 2, 0);
-    assert_node(fg, 17, std::string("i"), 1, 1);
-    assert_node(fg, 18, std::string("n"), 1, 1);
-    assert_node(fg, 19, std::string("e"), 1, 1);
-    assert_node(fg, 20, std::string("n"), 1, 0);
+    int node_idx = 0;
+    assert_node(fg, node_idx++, std::string("k"), 1, 1);
+    assert_node(fg, node_idx++, std::string("kau"), 1, 1);
+    assert_node(fg, node_idx++, std::string("kaupun"), 1, 3);
+    assert_node(fg, node_idx++, std::string("a"), 1, 1);
+    assert_node(fg, node_idx++, std::string("u"), 1, 1);
+    assert_node(fg, node_idx++, std::string("p"), 2, 1);
+    assert_node(fg, node_idx++, std::string("u"), 1, 1);
+    assert_node(fg, node_idx++, std::string("n"), 1, 3);
+    assert_node(fg, node_idx++, std::string("g"), 2, 1);
+    assert_node(fg, node_idx++, std::string("gis"), 2, 1);
+    assert_node(fg, node_idx++, std::string("gistu"), 2, 2);
+    assert_node(fg, node_idx++, std::string("i"), 1, 1);
+    assert_node(fg, node_idx++, std::string("s"), 1, 1);
+    assert_node(fg, node_idx++, std::string("t"), 2, 1);
+    assert_node(fg, node_idx++, std::string("u"), 1, 2);
+    assert_node(fg, node_idx++, std::string("m"), 2, 1);
+    assert_node(fg, node_idx++, std::string("minen"), 2, 0);
+    assert_node(fg, node_idx++, std::string("i"), 1, 1);
+    assert_node(fg, node_idx++, std::string("n"), 1, 1);
+    assert_node(fg, node_idx++, std::string("e"), 1, 1);
+    assert_node(fg, node_idx++, std::string("n"), 1, 0);
 }
 
 
@@ -401,7 +404,6 @@ void fetest :: TransitionViterbiTest1 (void)
 {
     map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
-    string start_end("_");
     string str1("a"); string str2("bc");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
@@ -422,7 +424,6 @@ void fetest :: TransitionViterbiTest2 (void)
 {
     map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
-    string start_end("_");
     string str1("a"); string str2("bc");
     string str3("ab"); string str4("c");
     vocab[start_end] = -1.0;
@@ -450,7 +451,6 @@ void fetest :: TransitionViterbiTest3 (void)
 {
     map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
-    string start_end("_");
     string str1("a");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
@@ -468,7 +468,6 @@ void fetest :: TransitionViterbiTest4 (void)
 {
     map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
-    string start_end("_");
     string str1("a");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
@@ -486,7 +485,6 @@ void fetest :: TransitionViterbiTest5 (void)
 {
     map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
-    string start_end("_");
     string str1("a");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
@@ -505,7 +503,6 @@ void fetest :: TransitionViterbiTest6 (void)
 {
     map<string, flt_type> vocab;
     map<pair<string,string>, flt_type> transitions;
-    string start_end("_");
     string str1("a"); string str2("b");
     string str3("c"); string str4("d");
     vocab[start_end] = -1.0;
