@@ -482,6 +482,7 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
 {
     int len = text.text.length();
     if (len == 0) return;
+    if (text.nodes.size() == 0) return;
     best_path.clear();
 
     // Rescore arcs
