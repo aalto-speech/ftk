@@ -275,6 +275,128 @@ void fetest :: ForwardBackwardTest8 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.2/2.0, stats["a"], DBL_ACCURACY );
 }
 
+
+void assert_node(const FactorGraph &fg,
+                 int node,
+                 const std::string &nstr,
+                 unsigned int incoming_sz,
+                 unsigned int outgoing_sz)
+{
+    std::string tst;
+    fg.get_string(fg.nodes[node], tst);
+    CPPUNIT_ASSERT_EQUAL( nstr, tst );
+    CPPUNIT_ASSERT_EQUAL( incoming_sz, (unsigned int)fg.nodes[node].incoming.size() );
+    CPPUNIT_ASSERT_EQUAL( outgoing_sz, (unsigned int)fg.nodes[node].outgoing.size() );
+}
+
+
+// Testing constructor
+// only forward possible routes in the graph
+void fetest :: FactorGraphTest1 (void)
+{
+    map<std::string, flt_type> vocab;
+    vocab.insert(make_pair("hal", 0.0));
+    vocab.insert(make_pair("halojaa", 0.0));
+    vocab.insert(make_pair("ojaa", 0.0));
+    vocab.insert(make_pair("jaa", 0.0));
+
+    FactorGraph fg("halojaa", vocab, 7);
+    CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
+
+    StringSet<flt_type> ssvocab(vocab);
+    FactorGraph ssfg("halojaa", ssvocab);
+    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
+}
+
+// Testing constructor
+// pruning out impossible paths, simple case
+void fetest :: FactorGraphTest2 (void)
+{
+    map<std::string, flt_type> vocab;
+    vocab.insert(make_pair("hal", 0.0));
+    vocab.insert(make_pair("halojaa", 0.0));
+    vocab.insert(make_pair("ojaa", 0.0));
+    vocab.insert(make_pair("oj", 0.0));
+
+    FactorGraph fg("halojaa", vocab, 7);
+    CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
+
+    StringSet<flt_type> ssvocab(vocab);
+    FactorGraph ssfg("halojaa", ssvocab);
+    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
+}
+
+// Testing constructor
+// No possible segmentations
+void fetest :: FactorGraphTest3 (void)
+{
+    map<std::string, flt_type> vocab;
+    vocab.insert(make_pair("hal", 0.0));
+    vocab.insert(make_pair("oja", 0.0));
+    vocab.insert(make_pair("oj", 0.0));
+
+    FactorGraph fg("halojaa", vocab, 3);
+    CPPUNIT_ASSERT_EQUAL(0, (int)fg.nodes.size());
+
+    StringSet<flt_type> ssvocab(vocab);
+    FactorGraph ssfg("halojaa", ssvocab);
+    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
+}
+
+
+// Testing constructor
+// Normal case
+void fetest :: FactorGraphTest4 (void)
+{
+    map<std::string, flt_type> vocab;
+    vocab.insert(make_pair("k", 0.0));
+    vocab.insert(make_pair("a", 0.0));
+    vocab.insert(make_pair("u", 0.0));
+    vocab.insert(make_pair("p", 0.0));
+    vocab.insert(make_pair("n", 0.0));
+    vocab.insert(make_pair("g", 0.0));
+    vocab.insert(make_pair("i", 0.0));
+    vocab.insert(make_pair("s", 0.0));
+    vocab.insert(make_pair("t", 0.0));
+    vocab.insert(make_pair("m", 0.0));
+    vocab.insert(make_pair("e", 0.0));
+    vocab.insert(make_pair("kaupun", 0.0));
+    vocab.insert(make_pair("gis", 0.0));
+    vocab.insert(make_pair("gistu", 0.0));
+    vocab.insert(make_pair("minen", 0.0));
+    vocab.insert(make_pair("kau", 0.0));
+
+    FactorGraph fg("kaupungistuminen", vocab, 6);
+    CPPUNIT_ASSERT_EQUAL(21, (int)fg.nodes.size());
+
+    StringSet<flt_type> ssvocab(vocab);
+    FactorGraph ssfg("kaupungistuminen", ssvocab);
+    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
+
+    assert_node(fg, 0, std::string("k"), 1, 1);
+    assert_node(fg, 1, std::string("kau"), 1, 1);
+    assert_node(fg, 2, std::string("kaupun"), 1, 3);
+    assert_node(fg, 3, std::string("a"), 1, 1);
+    assert_node(fg, 4, std::string("u"), 1, 1);
+    assert_node(fg, 5, std::string("p"), 2, 1);
+    assert_node(fg, 6, std::string("u"), 1, 1);
+    assert_node(fg, 7, std::string("n"), 1, 3);
+    assert_node(fg, 8, std::string("g"), 2, 1);
+    assert_node(fg, 9, std::string("gis"), 2, 1);
+    assert_node(fg, 10, std::string("gistu"), 2, 2);
+    assert_node(fg, 11, std::string("i"), 1, 1);
+    assert_node(fg, 12, std::string("s"), 1, 1);
+    assert_node(fg, 13, std::string("t"), 2, 1);
+    assert_node(fg, 14, std::string("u"), 1, 2);
+    assert_node(fg, 15, std::string("m"), 2, 1);
+    assert_node(fg, 16, std::string("minen"), 2, 0);
+    assert_node(fg, 17, std::string("i"), 1, 1);
+    assert_node(fg, 18, std::string("n"), 1, 1);
+    assert_node(fg, 19, std::string("e"), 1, 1);
+    assert_node(fg, 20, std::string("n"), 1, 0);
+}
+
+
 void fetest :: TransitionViterbiTest1 (void)
 {
     map<string, flt_type> vocab;
@@ -401,125 +523,5 @@ void fetest :: TransitionViterbiTest6 (void)
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
-}
-
-
-void assert_node(const FactorGraph &fg,
-                 int node,
-                 const std::string &nstr,
-                 unsigned int incoming_sz,
-                 unsigned int outgoing_sz)
-{
-    std::string tst;
-    fg.get_string(fg.nodes[node], tst);
-    CPPUNIT_ASSERT_EQUAL( nstr, tst );
-    CPPUNIT_ASSERT_EQUAL( incoming_sz, (unsigned int)fg.nodes[node].incoming.size() );
-    CPPUNIT_ASSERT_EQUAL( outgoing_sz, (unsigned int)fg.nodes[node].outgoing.size() );
-}
-
-
-// Testing constructor
-// only forward possible routes in the graph
-void fetest :: FactorGraphTest1 (void)
-{
-    map<std::string, flt_type> vocab;
-    vocab.insert(make_pair("hal", 0.0));
-    vocab.insert(make_pair("halojaa", 0.0));
-    vocab.insert(make_pair("ojaa", 0.0));
-    vocab.insert(make_pair("jaa", 0.0));
-
-    FactorGraph fg("halojaa", vocab, 7);
-    CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
-
-    StringSet<flt_type> ssvocab(vocab);
-    FactorGraph ssfg("halojaa", ssvocab);
-    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
-}
-
-// Testing constructor
-// pruning out impossible paths, simple case
-void fetest :: FactorGraphTest2 (void)
-{
-    map<std::string, flt_type> vocab;
-    vocab.insert(make_pair("hal", 0.0));
-    vocab.insert(make_pair("halojaa", 0.0));
-    vocab.insert(make_pair("ojaa", 0.0));
-    vocab.insert(make_pair("oj", 0.0));
-
-    FactorGraph fg("halojaa", vocab, 7);
-    CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
-
-    StringSet<flt_type> ssvocab(vocab);
-    FactorGraph ssfg("halojaa", ssvocab);
-    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
-}
-
-// Testing constructor
-// No possible segmentations
-void fetest :: FactorGraphTest3 (void)
-{
-    map<std::string, flt_type> vocab;
-    vocab.insert(make_pair("hal", 0.0));
-    vocab.insert(make_pair("oja", 0.0));
-    vocab.insert(make_pair("oj", 0.0));
-
-    FactorGraph fg("halojaa", vocab, 3);
-    CPPUNIT_ASSERT_EQUAL(0, (int)fg.nodes.size());
-
-    StringSet<flt_type> ssvocab(vocab);
-    FactorGraph ssfg("halojaa", ssvocab);
-    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
-}
-
-// Testing constructor
-// Normal case
-void fetest :: FactorGraphTest4 (void)
-{
-    map<std::string, flt_type> vocab;
-    vocab.insert(make_pair("k", 0.0));
-    vocab.insert(make_pair("a", 0.0));
-    vocab.insert(make_pair("u", 0.0));
-    vocab.insert(make_pair("p", 0.0));
-    vocab.insert(make_pair("n", 0.0));
-    vocab.insert(make_pair("g", 0.0));
-    vocab.insert(make_pair("i", 0.0));
-    vocab.insert(make_pair("s", 0.0));
-    vocab.insert(make_pair("t", 0.0));
-    vocab.insert(make_pair("m", 0.0));
-    vocab.insert(make_pair("e", 0.0));
-    vocab.insert(make_pair("kaupun", 0.0));
-    vocab.insert(make_pair("gis", 0.0));
-    vocab.insert(make_pair("gistu", 0.0));
-    vocab.insert(make_pair("minen", 0.0));
-    vocab.insert(make_pair("kau", 0.0));
-
-    FactorGraph fg("kaupungistuminen", vocab, 6);
-    CPPUNIT_ASSERT_EQUAL(21, (int)fg.nodes.size());
-
-    StringSet<flt_type> ssvocab(vocab);
-    FactorGraph ssfg("kaupungistuminen", ssvocab);
-    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
-
-    assert_node(fg, 0, std::string("k"), 1, 1);
-    assert_node(fg, 1, std::string("kau"), 1, 1);
-    assert_node(fg, 2, std::string("kaupun"), 1, 3);
-    assert_node(fg, 3, std::string("a"), 1, 1);
-    assert_node(fg, 4, std::string("u"), 1, 1);
-    assert_node(fg, 5, std::string("p"), 2, 1);
-    assert_node(fg, 6, std::string("u"), 1, 1);
-    assert_node(fg, 7, std::string("n"), 1, 3);
-    assert_node(fg, 8, std::string("g"), 2, 1);
-    assert_node(fg, 9, std::string("gis"), 2, 1);
-    assert_node(fg, 10, std::string("gistu"), 2, 2);
-    assert_node(fg, 11, std::string("i"), 1, 1);
-    assert_node(fg, 12, std::string("s"), 1, 1);
-    assert_node(fg, 13, std::string("t"), 2, 1);
-    assert_node(fg, 14, std::string("u"), 1, 2);
-    assert_node(fg, 15, std::string("m"), 2, 1);
-    assert_node(fg, 16, std::string("minen"), 2, 0);
-    assert_node(fg, 17, std::string("i"), 1, 1);
-    assert_node(fg, 18, std::string("n"), 1, 1);
-    assert_node(fg, 19, std::string("e"), 1, 1);
-    assert_node(fg, 20, std::string("n"), 1, 0);
 }
 
