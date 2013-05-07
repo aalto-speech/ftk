@@ -114,18 +114,15 @@ void forward_backward(const std::map<std::string, flt_type> &vocab,
                       std::map<std::string, flt_type> &stats);
 
 void viterbi(const std::map<std::pair<std::string,std::string>, flt_type> &transitions,
-             const std::string &start_end_symbol,
              FactorGraph &text,
              std::vector<std::string> &best_path,
              bool reverse=true);
 
 void viterbi(const std::map<std::pair<std::string,std::string>, flt_type> &transitions,
-             const std::string &start_end_symbol,
              FactorGraph &text,
              std::map<std::pair<std::string,std::string>, flt_type> &stats);
 
 void forward_backward(const std::map<std::pair<std::string,std::string>, flt_type> &transitions,
-                      const std::string &start_end_symbol,
                       FactorGraph &text,
                       std::map<std::pair<std::string,std::string>, flt_type> &stats);
 

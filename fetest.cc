@@ -416,7 +416,7 @@ void fetest :: TransitionViterbiTest1 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     vector<string> best_path;
-    viterbi(transitions, start_end, fg, best_path);
+    viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(4, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str1, best_path[1]);
@@ -444,7 +444,7 @@ void fetest :: TransitionViterbiTest2 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     vector<string> best_path;
-    viterbi(transitions, start_end, fg, best_path);
+    viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(4, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str3, best_path[1]);
@@ -465,7 +465,7 @@ void fetest :: TransitionViterbiTest3 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
-    viterbi(transitions, start_end, fg, best_path);
+    viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
@@ -482,7 +482,7 @@ void fetest :: TransitionViterbiTest4 (void)
     string sentence("");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
-    viterbi(transitions, start_end, fg, best_path);
+    viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
@@ -499,7 +499,7 @@ void fetest :: TransitionViterbiTest5 (void)
     string sentence("a");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
-    viterbi(transitions, start_end, fg, best_path);
+    viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(3, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str1, best_path[1]);
@@ -526,7 +526,7 @@ void fetest :: TransitionViterbiTest6 (void)
     string sentence("a-bcd");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
-    viterbi(transitions, start_end, fg, best_path);
+    viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
 }
 
@@ -569,7 +569,7 @@ void fetest :: TransitionViterbiTest7 (void)
     FactorGraph fg(sentence, start_end, vocab, maxlen);
     vector<string> best_path;
 
-    viterbi(transitions, start_end, fg, best_path);
+    viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(4, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str6, best_path[1]);
@@ -577,7 +577,7 @@ void fetest :: TransitionViterbiTest7 (void)
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[3]);
 
     transitions[make_pair(str6, str7)] = -10.0;
-    viterbi(transitions, start_end, fg, best_path);
+    viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(6, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str6, best_path[1]);
@@ -625,7 +625,7 @@ void fetest :: TransitionViterbiTest8 (void)
     vector<string> best_path;
 
     try {
-        viterbi(transitions, start_end, fg, best_path);
+        viterbi(transitions, fg, best_path);
     }
     catch (exception& e)
     {
@@ -649,7 +649,7 @@ void fetest :: TransitionForwardBackwardTest1 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     map<pair<string,string>, flt_type> stats;
-    forward_backward(transitions, start_end, fg, stats);
+    forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(3, (int)stats.size());
     CPPUNIT_ASSERT_EQUAL(1.0, transitions[make_pair(start_end, str1)]);
     CPPUNIT_ASSERT_EQUAL(1.0, transitions[make_pair(str1, str2)]);
@@ -676,7 +676,7 @@ void fetest :: TransitionForwardBackwardTest2 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     map<pair<string,string>, flt_type> stats;
-    forward_backward(transitions, start_end, fg, stats);
+    forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(7, (int)stats.size());
 }
 
@@ -694,7 +694,7 @@ void fetest :: TransitionForwardBackwardTest3 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 1);
     map<pair<string,string>, flt_type> stats;
-    forward_backward(transitions, start_end, fg, stats);
+    forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
 }
 
@@ -711,7 +711,7 @@ void fetest :: TransitionForwardBackwardTest4 (void)
     string sentence("");
     FactorGraph fg(sentence, start_end, vocab, 1);
     map<pair<string,string>, flt_type> stats;
-    forward_backward(transitions, start_end, fg, stats);
+    forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
 }
 
@@ -728,7 +728,7 @@ void fetest :: TransitionForwardBackwardTest5 (void)
     string sentence("a");
     FactorGraph fg(sentence, start_end, vocab, 1);
     map<pair<string,string>, flt_type> stats;
-    forward_backward(transitions, start_end, fg, stats);
+    forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(2, (int)stats.size());
 }
 
@@ -752,6 +752,6 @@ void fetest :: TransitionForwardBackwardTest6 (void)
     string sentence("a-bcd");
     FactorGraph fg(sentence, start_end, vocab, 1);
     map<pair<string,string>, flt_type> stats;
-    forward_backward(transitions, start_end, fg, stats);
+    forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
 }

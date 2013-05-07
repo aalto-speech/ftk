@@ -444,13 +444,10 @@ void forward_backward(const map<string, flt_type> &vocab,
 
 
 void viterbi(const map<pair<string,string>, flt_type> &transitions,
-             const string &start_end_symbol,
              FactorGraph &text,
              vector<string> &best_path,
              bool reverse)
 {
-    int len = text.text.length();
-    if (len == 0) return;
     if (text.nodes.size() == 0) return;
     best_path.clear();
 
@@ -499,13 +496,12 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
 
 
 void viterbi(const map<pair<string,string>, flt_type> &transitions,
-             const string &start_end_symbol,
              FactorGraph &text,
              map<pair<string,string>, flt_type> &stats)
 {
     stats.clear();
     vector<string> best_path;
-    viterbi(transitions, start_end_symbol, text, best_path, true);
+    viterbi(transitions, text, best_path, true);
     if (best_path.size() < 2) return;
     for (int i=1; i<best_path.size(); i++)
         stats[make_pair(best_path[i-1], best_path[i])] += 1.0;
@@ -513,7 +509,6 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
 
 
 void forward_backward(const map<pair<string,string>, flt_type> &transitions,
-                      const string &start_end_symbol,
                       FactorGraph &text,
                       map<pair<string,string>, flt_type> &stats)
 {
