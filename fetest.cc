@@ -302,11 +302,11 @@ void fetest :: FactorGraphTest1 (void)
     vocab.insert(make_pair("ojaa", 0.0));
     vocab.insert(make_pair("jaa", 0.0));
 
-    FactorGraph fg("halojaa", vocab, 7);
-    CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
+    FactorGraph fg("halojaa", start_end, vocab, 7);
+    CPPUNIT_ASSERT_EQUAL(5, (int)fg.nodes.size());
 
     StringSet<flt_type> ssvocab(vocab);
-    FactorGraph ssfg("halojaa", ssvocab);
+    FactorGraph ssfg("halojaa", start_end, ssvocab);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 }
 
@@ -320,11 +320,11 @@ void fetest :: FactorGraphTest2 (void)
     vocab.insert(make_pair("ojaa", 0.0));
     vocab.insert(make_pair("oj", 0.0));
 
-    FactorGraph fg("halojaa", vocab, 7);
-    CPPUNIT_ASSERT_EQUAL(3, (int)fg.nodes.size());
+    FactorGraph fg("halojaa", start_end, vocab, 7);
+    CPPUNIT_ASSERT_EQUAL(5, (int)fg.nodes.size());
 
     StringSet<flt_type> ssvocab(vocab);
-    FactorGraph ssfg("halojaa", ssvocab);
+    FactorGraph ssfg("halojaa", start_end, ssvocab);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 }
 
@@ -337,11 +337,11 @@ void fetest :: FactorGraphTest3 (void)
     vocab.insert(make_pair("oja", 0.0));
     vocab.insert(make_pair("oj", 0.0));
 
-    FactorGraph fg("halojaa", vocab, 3);
+    FactorGraph fg("halojaa", start_end, vocab, 3);
     CPPUNIT_ASSERT_EQUAL(0, (int)fg.nodes.size());
 
     StringSet<flt_type> ssvocab(vocab);
-    FactorGraph ssfg("halojaa", ssvocab);
+    FactorGraph ssfg("halojaa", start_end, ssvocab);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 }
 
@@ -368,14 +368,15 @@ void fetest :: FactorGraphTest4 (void)
     vocab.insert(make_pair("minen", 0.0));
     vocab.insert(make_pair("kau", 0.0));
 
-    FactorGraph fg("kaupungistuminen", vocab, 6);
-    CPPUNIT_ASSERT_EQUAL(21, (int)fg.nodes.size());
+    FactorGraph fg("kaupungistuminen", start_end, vocab, 6);
+    CPPUNIT_ASSERT_EQUAL(23, (int)fg.nodes.size());
 
     StringSet<flt_type> ssvocab(vocab);
-    FactorGraph ssfg("kaupungistuminen", ssvocab);
+    FactorGraph ssfg("kaupungistuminen", start_end, ssvocab);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 
     int node_idx = 0;
+    assert_node(fg, node_idx++, start_end, 0, 3);
     assert_node(fg, node_idx++, std::string("k"), 1, 1);
     assert_node(fg, node_idx++, std::string("kau"), 1, 1);
     assert_node(fg, node_idx++, std::string("kaupun"), 1, 3);
@@ -392,11 +393,12 @@ void fetest :: FactorGraphTest4 (void)
     assert_node(fg, node_idx++, std::string("t"), 2, 1);
     assert_node(fg, node_idx++, std::string("u"), 1, 2);
     assert_node(fg, node_idx++, std::string("m"), 2, 1);
-    assert_node(fg, node_idx++, std::string("minen"), 2, 0);
+    assert_node(fg, node_idx++, std::string("minen"), 2, 1);
     assert_node(fg, node_idx++, std::string("i"), 1, 1);
     assert_node(fg, node_idx++, std::string("n"), 1, 1);
     assert_node(fg, node_idx++, std::string("e"), 1, 1);
-    assert_node(fg, node_idx++, std::string("n"), 1, 0);
+    assert_node(fg, node_idx++, std::string("n"), 1, 1);
+    assert_node(fg, node_idx++, start_end, 2, 0);
 }
 
 
@@ -412,7 +414,7 @@ void fetest :: TransitionViterbiTest1 (void)
     transitions[make_pair(start_end, str2)] = -1.0;
     transitions[make_pair(str2, start_end)] = -1.0;
     string sentence("abc");
-    FactorGraph fg(sentence, vocab, 2);
+    FactorGraph fg(sentence, start_end, vocab, 2);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
@@ -438,7 +440,7 @@ void fetest :: TransitionViterbiTest2 (void)
     transitions[make_pair(str1, str2)] = -2.0;
     transitions[make_pair(str3, str4)] = -1.0;
     string sentence("abc");
-    FactorGraph fg(sentence, vocab, 2);
+    FactorGraph fg(sentence, start_end, vocab, 2);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
@@ -457,7 +459,7 @@ void fetest :: TransitionViterbiTest3 (void)
     transitions[make_pair(start_end, str1)] = -1.0;
     transitions[make_pair(str1, start_end)] = -1.0;
     string sentence("abc");
-    FactorGraph fg(sentence, vocab, 1);
+    FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
@@ -474,7 +476,7 @@ void fetest :: TransitionViterbiTest4 (void)
     transitions[make_pair(start_end, str1)] = -1.0;
     transitions[make_pair(str1, start_end)] = -1.0;
     string sentence("");
-    FactorGraph fg(sentence, vocab, 1);
+    FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
@@ -491,7 +493,7 @@ void fetest :: TransitionViterbiTest5 (void)
     transitions[make_pair(start_end, str1)] = -1.0;
     transitions[make_pair(str1, start_end)] = -1.0;
     string sentence("a");
-    FactorGraph fg(sentence, vocab, 1);
+    FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
@@ -516,7 +518,7 @@ void fetest :: TransitionViterbiTest6 (void)
     transitions[make_pair(str2, str3)] = -1.0;
     transitions[make_pair(str3, str4)] = -1.0;
     string sentence("a-bcd");
-    FactorGraph fg(sentence, vocab, 4);
+    FactorGraph fg(sentence, start_end, vocab, 4);
     vector<string> best_path;
     viterbi(transitions, start_end, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());

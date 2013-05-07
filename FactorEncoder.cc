@@ -11,9 +11,10 @@ using namespace std;
 
 
 void
-FactorGraph::create_nodes(const string &text, const map<std::string, flt_type> &vocab,
+FactorGraph::create_nodes(const string &text, const map<string, flt_type> &vocab,
                           int maxlen, vector<map<unsigned int, bool> > &incoming)
 {
+    nodes.push_back(Node(0,0));
     for (unsigned int i=0; i<text.length(); i++) {
         if (incoming[i].size() == 0) continue;
         for (unsigned int j=i+1; j<=text.size(); j++) {
@@ -32,7 +33,7 @@ void
 FactorGraph::create_nodes(const string &text, const StringSet<flt_type> &vocab,
                           vector<map<unsigned int, bool> > &incoming)
 {
-    // Iterate all factors starting from this position
+    nodes.push_back(Node(0,0));
     for (unsigned int i=0; i<text.length(); i++) {
         if (incoming[i].size() == 0) continue;
 
@@ -75,19 +76,16 @@ FactorGraph::prune_and_create_arcs(vector<map<unsigned int, bool> > &incoming)
             ++it;
     }
 
+    // Add end node
+    nodes.push_back(Node(text.size(),0));
+
     // Collect nodes by start position
     vector<vector<int> > nodes_by_start_pos(text.size()+1);
-    for (int i=0; i<nodes.size(); i++)
+    for (int i=1; i<nodes.size(); i++)
         nodes_by_start_pos[nodes[i].start_pos].push_back(i);
 
     // Set arcs
-    for (int i=0; i<nodes.size(); i++) {
-        if (nodes[i].start_pos == 0) {
-            Arc *arc = new Arc(-1, 0, 0.0);
-            arcs.push_back(arc);
-            nodes[i].incoming.push_back(arc);
-        }
-
+    for (int i=0; i<nodes.size()-1; i++) {
         int end_pos = nodes[i].start_pos + nodes[i].len;
         for (int j=0; j<nodes_by_start_pos[end_pos].size(); j++) {
             int nodei = nodes_by_start_pos[end_pos][j];
@@ -100,11 +98,13 @@ FactorGraph::prune_and_create_arcs(vector<map<unsigned int, bool> > &incoming)
 }
 
 
-FactorGraph::FactorGraph(const std::string &text,
-                         const std::map<std::string, flt_type> &vocab,
+FactorGraph::FactorGraph(const string &text,
+                         const string &start_end_symbol,
+                         const map<string, flt_type> &vocab,
                          int maxlen)
 {
     this->text.assign(text);
+    this->start_end_symbol.assign(start_end_symbol);
 
     vector<map<unsigned int, bool> > incoming(text.size()+1); // (pos in text, source pos)
 
@@ -122,10 +122,12 @@ FactorGraph::FactorGraph(const std::string &text,
 }
 
 
-FactorGraph::FactorGraph(const std::string &text,
+FactorGraph::FactorGraph(const string &text,
+                         const string &start_end_symbol,
                          const StringSet<flt_type> &vocab)
 {
     this->text.assign(text);
+    this->start_end_symbol.assign(start_end_symbol);
 
     vector<map<unsigned int, bool> > incoming(text.size()+1); // (pos in text, source pos)
 
@@ -478,7 +480,7 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
              const string &start_end_symbol,
              FactorGraph &text,
              vector<string> &best_path,
-             bool reverse)
+             bool reverse_result)
 {
     int len = text.text.length();
     if (len == 0) return;
@@ -501,7 +503,7 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
     }
 
     // Initialize node scores, FIXME
-    vector<flt_type> costs(text.nodes.size(), -std::numeric_limits<flt_type>::max());
+    vector<flt_type> costs(text.nodes.size(), -numeric_limits<flt_type>::max());
     vector<int> source_nodes(text.nodes.size());
     for (unsigned int i=0; i<text.nodes.size(); i++) {
         vector<FactorGraph::Arc*> &incoming = text.nodes[i].incoming;
@@ -513,7 +515,7 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
     }
 
     // Traverse paths, FIXME
-    flt_type best_end_score = -std::numeric_limits<flt_type>::max();
+    flt_type best_end_score = -numeric_limits<flt_type>::max();
     unsigned int best_end_node = 0;
     for (int i=0; i<text.nodes.size(); i++) {
         FactorGraph::Node &node = text.nodes[i];
@@ -542,5 +544,5 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
         node = source_nodes[node];
         if (node == -1) break;
     }
-    if (reverse) std::reverse(best_path.begin(), best_path.end());
+    if (reverse_result) std::reverse(best_path.begin(), best_path.end());
 }
