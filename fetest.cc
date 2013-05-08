@@ -730,6 +730,8 @@ void fetest :: TransitionForwardBackwardTest5 (void)
     map<pair<string,string>, flt_type> stats;
     forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(2, (int)stats.size());
+    CPPUNIT_ASSERT_EQUAL( 1.0, stats[make_pair(start_end, str1)] );
+    CPPUNIT_ASSERT_EQUAL( 1.0, stats[make_pair(str1, start_end)] );
 }
 
 // No segmentation

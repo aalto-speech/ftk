@@ -514,5 +514,43 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
                       FactorGraph &text,
                       map<pair<string,string>, flt_type> &stats)
 {
+    if (text.nodes.size() == 0) return;
     stats.clear();
+
+    // Rescore arcs
+    string source_node_str;
+    string target_node_str;
+    for (auto arc = text.arcs.begin(); arc != text.arcs.end(); ++arc) {
+        int src_node = (**arc).source_node;
+        int tgt_node = (**arc).target_node;
+        text.get_string(src_node, source_node_str);
+        text.get_string(tgt_node, target_node_str);
+        (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
+    }
+
+    // Initialize node scores
+    vector<flt_type> costs(text.nodes.size(), 0.0);
+
+    // Traverse paths
+    for (int i=0; i<text.nodes.size(); i++) {
+        FactorGraph::Node &node = text.nodes[i];
+        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+            flt_type cost = costs[i] + (*arc)->cost;
+            costs[(**arc).target_node] += cost;
+        }
+    }
+
+    // Backward
+    for (int i=text.nodes.size()-1; i>0; i--) {
+
+        FactorGraph::Node &node = text.nodes[i];
+        text.get_string(node, target_node_str);
+
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
+            costs[(**arc).source_node] -= costs[i];
+            int tgt_node = (**arc).source_node;
+            text.get_string(tgt_node, source_node_str);
+            stats[make_pair(source_node_str, target_node_str)] += 1.0;
+        }
+    }
 }
