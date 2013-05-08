@@ -48,7 +48,7 @@ public:
         std::vector<Arc*> outgoing;
     };
 
-    FactorGraph();
+    FactorGraph() {};
     FactorGraph(const std::string &text, const std::string &start_end_symbol,
                 const std::map<std::string, flt_type> &vocab, int maxlen);
     FactorGraph(const std::string &text, const std::string &start_end_symbol,
