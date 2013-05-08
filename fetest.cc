@@ -651,9 +651,9 @@ void fetest :: TransitionForwardBackwardTest1 (void)
     map<pair<string,string>, flt_type> stats;
     forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(3, (int)stats.size());
-    CPPUNIT_ASSERT_EQUAL(1.0, transitions[make_pair(start_end, str1)]);
-    CPPUNIT_ASSERT_EQUAL(1.0, transitions[make_pair(str1, str2)]);
-    CPPUNIT_ASSERT_EQUAL(1.0, transitions[make_pair(str2, start_end)]);
+    CPPUNIT_ASSERT_EQUAL(1.0, stats[make_pair(start_end, str1)]);
+    CPPUNIT_ASSERT_EQUAL(1.0, stats[make_pair(str1, str2)]);
+    CPPUNIT_ASSERT_EQUAL(1.0, stats[make_pair(str2, start_end)]);
 }
 
 void fetest :: TransitionForwardBackwardTest2 (void)
