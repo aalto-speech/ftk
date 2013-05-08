@@ -402,6 +402,51 @@ void fetest :: FactorGraphTest4 (void)
 }
 
 
+bool includes_path(vector<vector<string> > &all_paths, vector<string> &path) {
+    for (int i=0; i<all_paths.size(); i++) {
+        if (path.size() != all_paths[i].size()) continue;
+        int j=0;
+        for (; j<path.size(); j++)
+            if (all_paths[i][j] != path[j]) break;
+        if (j==path.size()) return true;
+    }
+    return false;
+}
+
+// Enumerating paths
+void fetest :: FactorGraphTestGetList (void)
+{
+    map<string, flt_type> vocab;
+    vocab["k"] = 0.0;
+    vocab["i"] = 0.0;
+    vocab["s"] = 0.0;
+    vocab["a"] = 0.0;
+    vocab["sa"] = 0.0;
+    vocab["ki"] = 0.0;
+    vocab["kis"] = 0.0;
+    vocab["kissa"] = 0.0;
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    vector<vector<string> > paths;
+    fg.get_paths(paths);
+    vector<string> seg = {"*", "kissa", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg) );
+    vector<string> seg2 = {"*", "kis", "sa", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg2) );
+    vector<string> seg3 = {"*", "kis", "s", "a", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg3) );
+    vector<string> seg4 = {"*", "ki", "s", "s", "a", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg4) );
+    vector<string> seg5 = {"*", "ki", "s", "sa", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg5) );
+    vector<string> seg6 = {"*", "ki", "s", "s", "a", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg6) );
+    vector<string> seg7 = {"*", "k", "i", "s", "s", "a", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg7) );
+}
+
+
 void fetest :: TransitionViterbiTest1 (void)
 {
     map<string, flt_type> vocab;
