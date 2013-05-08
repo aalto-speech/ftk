@@ -48,15 +48,21 @@ public:
         std::vector<Arc*> outgoing;
     };
 
+    FactorGraph();
     FactorGraph(const std::string &text, const std::string &start_end_symbol,
                 const std::map<std::string, flt_type> &vocab, int maxlen);
     FactorGraph(const std::string &text, const std::string &start_end_symbol,
                 const StringSet<flt_type> &vocab);
     ~FactorGraph();
-    void get_string(const Node &node, std::string &nstr) const
+
+    void set_text(const std::string &text, const std::string &start_end_symbol,
+                  const std::map<std::string, flt_type> &vocab, int maxlen);
+    void set_text(const std::string &text, const std::string &start_end_symbol,
+                  const StringSet<flt_type> &vocab);
+    void get_factor(const Node &node, std::string &nstr) const
     { if (node.len == 0) nstr.assign(start_end_symbol);
       else nstr.assign(this->text, node.start_pos, node.len); }
-    void get_string(int node, std::string &nstr) const
+    void get_factor(int node, std::string &nstr) const
     { if (nodes[node].len == 0) nstr.assign(start_end_symbol);
       else nstr.assign(this->text, nodes[node].start_pos, nodes[node].len); }
     bool assert_equal(const FactorGraph &other) const;

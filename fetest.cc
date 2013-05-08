@@ -283,7 +283,7 @@ void assert_node(const FactorGraph &fg,
                  unsigned int outgoing_sz)
 {
     std::string tst;
-    fg.get_string(fg.nodes[node], tst);
+    fg.get_factor(fg.nodes[node], tst);
     CPPUNIT_ASSERT_EQUAL( nstr, tst );
     CPPUNIT_ASSERT_EQUAL( incoming_sz, (unsigned int)fg.nodes[node].incoming.size() );
     CPPUNIT_ASSERT_EQUAL( outgoing_sz, (unsigned int)fg.nodes[node].outgoing.size() );

@@ -97,11 +97,11 @@ FactorGraph::prune_and_create_arcs(vector<map<unsigned int, bool> > &incoming)
     }
 }
 
-
-FactorGraph::FactorGraph(const string &text,
-                         const string &start_end_symbol,
-                         const map<string, flt_type> &vocab,
-                         int maxlen)
+void
+FactorGraph::set_text(const string &text,
+                      const string &start_end_symbol,
+                      const map<string, flt_type> &vocab,
+                      int maxlen)
 {
     this->text.assign(text);
     this->start_end_symbol.assign(start_end_symbol);
@@ -115,17 +115,18 @@ FactorGraph::FactorGraph(const string &text,
 
     // No possible segmentations
     if (incoming[text.size()].size() == 0) {
-        nodes.clear();
-        return;
+    nodes.clear();
+    return;
     }
 
     prune_and_create_arcs(incoming);
 }
 
 
-FactorGraph::FactorGraph(const string &text,
-                         const string &start_end_symbol,
-                         const StringSet<flt_type> &vocab)
+void
+FactorGraph::set_text(const string &text,
+                      const string &start_end_symbol,
+                      const StringSet<flt_type> &vocab)
 {
     this->text.assign(text);
     this->start_end_symbol.assign(start_end_symbol);
@@ -144,6 +145,23 @@ FactorGraph::FactorGraph(const string &text,
     }
 
     prune_and_create_arcs(incoming);
+}
+
+
+FactorGraph::FactorGraph(const string &text,
+                         const string &start_end_symbol,
+                         const map<string, flt_type> &vocab,
+                         int maxlen)
+{
+    set_text(text, start_end_symbol, vocab, maxlen);
+}
+
+
+FactorGraph::FactorGraph(const string &text,
+                         const string &start_end_symbol,
+                         const StringSet<flt_type> &vocab)
+{
+    set_text(text, start_end_symbol, vocab);
 }
 
 
@@ -188,7 +206,7 @@ FactorGraph::advance(vector<vector<string> > &paths,
     const FactorGraph::Node &node = nodes[node_idx];
 
     std::string tmp;
-    get_string(node, tmp);
+    get_factor(node, tmp);
     curr_string.push_back(tmp);
 
     if (node_idx == nodes.size()-1) {
@@ -491,8 +509,8 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
     for (auto arc = text.arcs.begin(); arc != text.arcs.end(); ++arc) {
         int src_node = (**arc).source_node;
         int tgt_node = (**arc).target_node;
-        text.get_string(src_node, source_node_str);
-        text.get_string(tgt_node, target_node_str);
+        text.get_factor(src_node, source_node_str);
+        text.get_factor(tgt_node, target_node_str);
         (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
     }
 
@@ -517,12 +535,12 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
     // Find best path
     string bpn;
     unsigned int node = text.nodes.size()-1;
-    text.get_string(node, bpn);
+    text.get_factor(node, bpn);
     best_path.push_back(bpn);
     while (true) {
         node = source_nodes[node];
         if (node == -1) break;
-        text.get_string(node, bpn);
+        text.get_factor(node, bpn);
         best_path.push_back(bpn);
     }
     if (reverse) std::reverse(best_path.begin(), best_path.end());
@@ -558,8 +576,8 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
     for (auto arc = text.arcs.begin(); arc != text.arcs.end(); ++arc) {
         int src_node = (**arc).source_node;
         int tgt_node = (**arc).target_node;
-        text.get_string(src_node, source_node_str);
-        text.get_string(tgt_node, target_node_str);
+        text.get_factor(src_node, source_node_str);
+        text.get_factor(tgt_node, target_node_str);
         (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
     }
 
@@ -577,12 +595,12 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
     for (int i=text.nodes.size()-1; i>0; i--) {
 
         FactorGraph::Node &node = text.nodes[i];
-        text.get_string(node, target_node_str);
+        text.get_factor(node, target_node_str);
 
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
             int src_node = (**arc).source_node;
             flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
-            text.get_string(src_node, source_node_str);
+            text.get_factor(src_node, source_node_str);
             stats[make_pair(source_node_str, target_node_str)] += exp(curr_cost);
             if (bw[src_node] == 0.0) bw[src_node] = curr_cost;
             else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
