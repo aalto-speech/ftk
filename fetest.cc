@@ -680,12 +680,12 @@ void fetest :: TransitionForwardBackwardTest2 (void)
     flt_type path_1_score = exp(-4)/(exp(-3) + exp(-4));
     flt_type path_2_score = exp(-3)/(exp(-3) + exp(-4));
     CPPUNIT_ASSERT_EQUAL(6, (int)stats.size());
-    CPPUNIT_ASSERT_EQUAL(path_1_score, stats[make_pair(start_end, str1)]);
-    CPPUNIT_ASSERT_EQUAL(path_2_score, stats[make_pair(start_end, str3)]);
-    CPPUNIT_ASSERT_EQUAL(path_1_score, stats[make_pair(str1, str2)]);
-    CPPUNIT_ASSERT_EQUAL(path_2_score, stats[make_pair(str3, str4)]);
-    CPPUNIT_ASSERT_EQUAL(path_1_score, stats[make_pair(str2, start_end)]);
-    CPPUNIT_ASSERT_EQUAL(path_2_score, stats[make_pair(str4, start_end)]);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_1_score, stats[make_pair(str2, start_end)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[make_pair(str4, start_end)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_1_score, stats[make_pair(start_end, str1)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[make_pair(start_end, str3)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_1_score, stats[make_pair(str1, str2)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[make_pair(str3, str4)], DBL_ACCURACY );
 }
 
 
