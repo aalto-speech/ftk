@@ -531,7 +531,7 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
         (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
     }
 
-    // Traverse paths
+    // Forward
     for (int i=0; i<text.nodes.size(); i++) {
         FactorGraph::Node &node = text.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
@@ -542,7 +542,6 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
     }
 
     // Backward
-    bw[text.nodes.size()-1] = 0.0;
     for (int i=text.nodes.size()-1; i>0; i--) {
 
         FactorGraph::Node &node = text.nodes[i];
