@@ -552,7 +552,8 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
             flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
             text.get_string(src_node, source_node_str);
             stats[make_pair(source_node_str, target_node_str)] += exp(curr_cost);
-            bw[src_node] = curr_cost;
+            if (bw[src_node] == 0.0) bw[src_node] = curr_cost;
+            else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
         }
     }
 }

@@ -802,5 +802,12 @@ void fetest :: TransitionForwardBackwardTest7 (void)
     CPPUNIT_ASSERT_EQUAL(15, (int)stats.size());
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3626295105394784, stats[make_pair("a", start_end)], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.05716327259735619, stats[make_pair("kissa", start_end)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.05716327259735619, stats[make_pair(start_end, "kissa")], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5802072168631653, stats[make_pair("sa", start_end)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3626295105394784, stats[make_pair("s", "a")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.21436227224008575, stats[make_pair("s", "sa")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3658449446230797, stats[make_pair("kis", "sa")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.22865309038942486, stats[make_pair("kis", "s")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5944980350125045, stats[make_pair(start_end, "kis")], DBL_ACCURACY );
 }
+
