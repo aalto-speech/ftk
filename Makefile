@@ -5,7 +5,7 @@ cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-sign-compare
 
 ##################################################
 
-progs = fe filefe g1g g1g2
+progs = fe filefe g1g g1g2 g2g
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
 srcs = io.cc FactorEncoder.cc GreedyUnigrams.cc
