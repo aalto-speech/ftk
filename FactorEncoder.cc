@@ -171,6 +171,38 @@ FactorGraph::assert_equal(const FactorGraph &other) const
 }
 
 
+void
+FactorGraph::get_paths(vector<vector<string> > &paths) const
+{
+
+    vector<string> curr_string;
+    advance(paths, curr_string, 0);
+}
+
+
+void
+FactorGraph::advance(vector<vector<string> > &paths,
+                     vector<string> &curr_string,
+                     unsigned int node_idx) const
+{
+    const FactorGraph::Node &node = nodes[node_idx];
+
+    std::string tmp;
+    get_string(node, tmp);
+    curr_string.push_back(tmp);
+
+    if (node_idx == nodes.size()-1) {
+        paths.push_back(curr_string);
+        return;
+    }
+
+    for (auto arc  = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+        vector<string> curr_copy(curr_string);
+        advance(paths, curr_copy, (**arc).target_node);
+    }
+}
+
+
 FactorGraph::~FactorGraph() {
     for (auto it = arcs.begin(); it != arcs.end(); ++it)
         delete *it;

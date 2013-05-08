@@ -60,6 +60,7 @@ public:
     { if (nodes[node].len == 0) nstr.assign(start_end_symbol);
       else nstr.assign(this->text, nodes[node].start_pos, nodes[node].len); }
     bool assert_equal(const FactorGraph &other) const;
+    void get_paths(std::vector<std::vector<std::string> > &paths) const;
 
     std::string text;
     std::string start_end_symbol;
@@ -73,6 +74,9 @@ private:
     void create_nodes(const std::string &text, const StringSet<flt_type> &vocab,
                       std::vector<std::map<unsigned int, bool> > &incoming);
     void prune_and_create_arcs(std::vector<std::map<unsigned int, bool> > &incoming);
+    // Helper for enumerating paths
+    void advance(std::vector<std::vector<std::string> > &paths,
+                 std::vector<std::string> &curr_string, unsigned int node) const;
 };
 
 
