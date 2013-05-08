@@ -136,4 +136,8 @@ void forward_backward(const std::map<std::pair<std::string,std::string>, flt_typ
                       FactorGraph &text,
                       std::map<std::pair<std::string,std::string>, flt_type> &stats);
 
+void forward_backward(const std::map<std::string, flt_type> &vocab,
+                      FactorGraph &text,
+                      std::map<std::pair<std::string,std::string>, flt_type> &stats);
+
 #endif /* FACTOR_ENCODER */
