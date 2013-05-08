@@ -105,6 +105,7 @@ FactorGraph::FactorGraph(const string &text,
 {
     this->text.assign(text);
     this->start_end_symbol.assign(start_end_symbol);
+    if (text.length() == 0) return;
 
     vector<map<unsigned int, bool> > incoming(text.size()+1); // (pos in text, source pos)
 
@@ -128,6 +129,7 @@ FactorGraph::FactorGraph(const string &text,
 {
     this->text.assign(text);
     this->start_end_symbol.assign(start_end_symbol);
+    if (text.length() == 0) return;
 
     vector<map<unsigned int, bool> > incoming(text.size()+1); // (pos in text, source pos)
 
