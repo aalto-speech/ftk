@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -137,16 +138,17 @@ int main(int argc, char* argv[]) {
     StringSet<flt_type> ss_vocab(vocab);
     map<string, FactorGraph*> fg_words;
     string start_end_symbol("*");
+    map<pair<string,string>, flt_type> total_stats;
+    vocab[start_end_symbol] = 0.0;
     for (auto it=words.cbegin(); it !=words.cend(); ++it) {
         FactorGraph *fg = new FactorGraph(it->first, start_end_symbol, ss_vocab);
-
-        if (it->first.length()<5) {
-            vector<vector<string> > all_segs;
-            fg->get_paths(all_segs);
-        }
-
+        map<pair<string,string>, flt_type> stats;
+        forward_backward(vocab, *fg, stats);
+        for (auto statit = stats.cbegin(); statit != stats.cend(); ++statit)
+            total_stats[statit->first] += statit->second;
         delete fg;
     }
+    cout << "amount of transitions: " << total_stats.size() << endl;
 
     exit(1);
 }
