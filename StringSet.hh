@@ -84,9 +84,8 @@ public:
       // Update the existing arc if morph was set
       else if (morph.length() > 0) {
           if (arc->morph.length() > 0) {
-              fprintf(stderr,
-                      "ERROR: StringSet::insert(): trying to redefine morph %s\n",
-                      morph.c_str());
+              std::cerr << "ERROR: StringSet::insert(): trying to redefine morph "
+                        << morph << std::endl;
               exit(1);
           }
           arc->morph = morph;
