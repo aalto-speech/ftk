@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -34,7 +35,7 @@ int main(int argc, char* argv[]) {
     float threshold_decrease = 25.0;
     int target_vocab_size = 50000;
     bool enable_forward_backward = false;
-    flt_type one_char_min_lp = -25.0;
+    flt_type one_char_min_lp = -25.0 / log2(10);
     string vocab_fname;
     string wordlist_fname;
 
@@ -137,16 +138,18 @@ int main(int argc, char* argv[]) {
     else
         gg.set_segmentation_method(viterbi);
 
-    cerr << "Initial cutoff" << endl;
     gg.resegment_words(words, vocab, freqs);
     flt_type densum = gg.get_sum(freqs);
     flt_type cost = gg.get_cost(freqs, densum);
-    cerr << "cost: " << cost << endl;
+    cerr << "cost: " << cost * log2(10.0) << endl;
 
+    cerr << "Initial cutoff" << endl;
     gg.cutoff(freqs, (flt_type)cutoff_value);
     cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
+    densum = gg.get_sum(freqs);
+    cost = gg.get_cost(freqs, densum);
+    cerr << "cost: " << cost * log2(10.0) << endl;
     vocab = freqs;
-    densum = gg.get_sum(vocab);
     gg.freqs_to_logprobs(vocab, densum);
     assert_single_chars(vocab, all_chars, one_char_min_lp);
 
@@ -165,7 +168,7 @@ int main(int argc, char* argv[]) {
         map<string, map<string, flt_type> > backpointers;
         gg.get_backpointers(words, vocab, backpointers);
 
-        cerr << "starting cost before removing subwords one by one: " << curr_cost << endl;
+        cerr << "starting cost before removing subwords one by one: " << curr_cost * log2(10.0) << endl;
 
         unsigned int n_removals = 0;
         unsigned int non_removals_in_row = 0;
@@ -190,8 +193,8 @@ int main(int argc, char* argv[]) {
             flt_type hypo_densum = gg.get_sum(freqs, freq_diffs);
             flt_type hypo_cost = gg.get_cost(freqs, freq_diffs, hypo_densum);
 
-            cout << sorted_vocab[i].first << "\t" << "change in likelihood: " << hypo_cost-curr_cost;
-            if (hypo_cost-curr_cost < threshold) {
+            cout << sorted_vocab[i].first << "\t" << "change in likelihood: " << (hypo_cost-curr_cost) * log2(10.0);
+            if ((hypo_cost-curr_cost) * log2(10.0) < threshold) {
                 cout << " was below threshold " << threshold << endl;
                 non_removals_in_row++;
                 if (non_removals_in_row > 1000) break;
@@ -234,7 +237,7 @@ int main(int argc, char* argv[]) {
         cerr << "subwords removed in this iteration: " << n_removals << endl;
         cerr << "subwords removed with cutoff this iteration: " << n_cutoff << endl;
         cerr << "current vocabulary size: " << vocab.size() << endl;
-        cerr << "likelihood after the removals: " << curr_cost << endl;
+        cerr << "likelihood after the removals: " << curr_cost * log2(10.0) << endl;
 
         ostringstream vocabfname;
         vocabfname << "iter" << itern << ".vocab";
