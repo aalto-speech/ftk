@@ -113,9 +113,9 @@ GreedyUnigrams::get_cost(const map<string, flt_type> &freqs,
 {
     flt_type total = 0.0;
     flt_type tmp = 0.0;
-    densum = log2(densum);
+    densum = log(densum);
     for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
-        tmp = iter->second * (log2(iter->second)-densum);
+        tmp = iter->second * (log(iter->second)-densum);
         if (!std::isnan(tmp)) total += tmp;
     }
     return total;
@@ -129,12 +129,12 @@ GreedyUnigrams::get_cost(const map<string, flt_type> &freqs,
 {
     flt_type total = 0.0;
     flt_type tmp = 0.0;
-    densum = log2(densum);
+    densum = log(densum);
     for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
         tmp = iter->second;
         if (freq_diffs.find(iter->first) != freq_diffs.end())
             tmp += freq_diffs.at(iter->first);
-        tmp = tmp * (log2(tmp)-densum);
+        tmp = tmp * (log(tmp)-densum);
         if (!std::isnan(tmp)) total += tmp;
     }
     return total;
@@ -175,9 +175,9 @@ void
 GreedyUnigrams::freqs_to_logprobs(map<string, flt_type> &vocab,
                                   flt_type densum)
 {
-    densum = log2(densum);
+    densum = log(densum);
     for (auto iter = vocab.begin(); iter != vocab.end(); ++iter)
-        iter->second = (log2(iter->second)-densum);
+        iter->second = (log(iter->second)-densum);
 }
 
 
