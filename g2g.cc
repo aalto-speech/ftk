@@ -1,3 +1,4 @@
+#include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -23,6 +24,68 @@ void assert_single_chars(map<string, flt_type> &vocab,
     for (auto it = chars.cbegin(); it != chars.cend(); ++it)
         if (vocab.find(it->first) == vocab.end())
             vocab[it->first] = val;
+}
+
+
+void collect_trans_stats(const map<pair<string,string>, flt_type> &transitions,
+                         const map<string, flt_type> &words,
+                         map<string, FactorGraph*> &fg_words,
+                         map<pair<string,string>, flt_type> &trans_stats,
+                         map<string, flt_type> &trans_normalizers)
+{
+    trans_stats.clear();
+    trans_normalizers.clear();
+    for (auto it = fg_words.begin(); it != fg_words.end(); ++it) {
+        map<pair<string,string>, flt_type> stats;
+        forward_backward(transitions, *it->second, stats);
+        for (auto statit = stats.cbegin(); statit != stats.cend(); ++statit) {
+            trans_stats[statit->first] += words.at(it->first) * statit->second;
+            trans_normalizers[statit->first.first] += words.at(it->first) * statit->second;
+        }
+    }
+
+}
+
+
+void normalize(map<pair<string,string>, flt_type> &trans_stats,
+               map<string, flt_type> &trans_normalizers)
+{
+    auto iter = trans_stats.begin();
+    while (iter != trans_stats.end()) {
+        iter->second /= trans_normalizers[iter->first.first];
+        if (iter->second <= 0.0 || std::isnan(iter->second)) trans_stats.erase(iter++);
+        else {
+            iter->second = log(iter->second);
+            ++iter;
+        }
+    }
+
+}
+
+
+void write_transitions(const map<pair<string,string>, flt_type> &transitions,
+                       const string &filename)
+{
+    ofstream transfile(filename);
+    if (!transfile) return;
+
+    for (auto it = transitions.begin(); it != transitions.end(); ++it)
+        transfile << it->first.first << " " << it->first.second << " " << it->second << endl;
+
+    transfile.close();
+}
+
+
+flt_type bigram_cost(const map<pair<string,string>, flt_type> &transitions,
+                     const map<pair<string,string>, flt_type> &trans_stats)
+{
+    flt_type total = 0.0;
+    flt_type tmp = 0.0;
+    for (auto iter = transitions.cbegin(); iter != transitions.cend(); ++iter) {
+        tmp = iter->second * trans_stats.at(iter->first);
+        if (!std::isnan(tmp)) total += tmp;
+    }
+    return total;
 }
 
 
@@ -138,17 +201,52 @@ int main(int argc, char* argv[]) {
     StringSet<flt_type> ss_vocab(vocab);
     map<string, FactorGraph*> fg_words;
     string start_end_symbol("*");
-    map<pair<string,string>, flt_type> total_stats;
+    map<pair<string,string>, flt_type> transitions;
+    map<pair<string,string>, flt_type> trans_stats;
+    map<string, flt_type> trans_normalizers;
     vocab[start_end_symbol] = 0.0;
-    for (auto it=words.cbegin(); it !=words.cend(); ++it) {
+
+    // Initial segmentation using unigram model
+    for (auto it=words.cbegin(); it != words.cend(); ++it) {
         FactorGraph *fg = new FactorGraph(it->first, start_end_symbol, ss_vocab);
+        fg_words[it->first] = fg;
         map<pair<string,string>, flt_type> stats;
         forward_backward(vocab, *fg, stats);
-        for (auto statit = stats.cbegin(); statit != stats.cend(); ++statit)
-            total_stats[statit->first] += statit->second;
-        delete fg;
+        for (auto statit = stats.cbegin(); statit != stats.cend(); ++statit) {
+            trans_stats[statit->first] += it->second * statit->second;
+            trans_normalizers[statit->first.first] += it->second * statit->second;
+        }
     }
-    cout << "amount of transitions: " << total_stats.size() << endl;
+    cerr << "amount of transitions: " << trans_stats.size() << endl;
+    transitions = trans_stats;
+    normalize(transitions, trans_normalizers);
+    cost = bigram_cost(transitions, trans_stats);
+    cerr << "cost: " << cost << endl;
+
+    // Re-estimate using bigram stats
+    for (int i=0; i<50; i++) {
+        collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers);
+        transitions = trans_stats;
+        normalize(transitions, trans_normalizers);
+        cost = bigram_cost(transitions, trans_stats);
+        cerr << "cost: " << cost << endl;
+    }
+
+    // Viterbi segmentations
+    for (auto it=fg_words.begin(); it != fg_words.cend(); ++it) {
+        std::vector<std::string> best_path;
+        viterbi(transitions, *it->second, best_path);
+        for (int i=0; i<best_path.size(); i++) {
+            cout << best_path[i];
+            if (i<best_path.size()-1) cout << " ";
+        }
+        cout << endl;
+    }
+    write_transitions(transitions, "transitions.out");
+
+    // Clean up
+    for (auto it = fg_words.begin(); it != fg_words.cend(); ++it)
+        delete it->second;
 
     exit(1);
 }
