@@ -865,3 +865,53 @@ void fetest :: TransitionForwardBackwardTest7 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11611289746337979, stats[make_pair(start_end, "ki")], DBL_ACCURACY );
 }
 
+// Multiple paths, some non-scored arcs
+void fetest :: TransitionForwardBackwardTest8 (void)
+{
+    map<string, flt_type> vocab;
+    map<pair<string,string>, flt_type> transitions;
+    vocab["k"] = 0.0;
+    vocab["i"] = 0.0;
+    vocab["a"] = 0.0;
+    vocab["sa"] = 0.0;
+    vocab["s"] = 0.0;
+    vocab["ki"] = 0.0;
+    vocab["kis"] = 0.0;
+    vocab["kissa"] = 0.0;
+    transitions[make_pair(start_end, "k")] = log(0.5);
+    transitions[make_pair(start_end, "ki")] = log(0.25);
+    transitions[make_pair(start_end, "kis")] = log(0.4);
+    transitions[make_pair(start_end, "kissa")] = log(0.1);
+    transitions[make_pair("a", start_end)] = log(0.5);
+    transitions[make_pair("kissa", start_end)] = log(0.10);
+    transitions[make_pair("sa", start_end)] = log(0.4);
+    transitions[make_pair("ki", "s")] = log(0.25);
+    //transitions[make_pair("k", "i")] = log(0.5);
+    transitions[make_pair("i", "s")] = log(0.5);
+    transitions[make_pair("s", "s")] = log(0.5);
+    transitions[make_pair("s", "sa")] = log(0.5);
+    //transitions[make_pair("s", "a")] = log(0.5);
+    transitions[make_pair("kis", "sa")] = log(0.4);
+    transitions[make_pair("kis", "s")] = log(0.4);
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    map<pair<string,string>, flt_type> stats;
+    forward_backward(transitions, fg, stats);
+    CPPUNIT_ASSERT_EQUAL(15, (int)stats.size());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("a", start_end)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[make_pair("kissa", start_end)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[make_pair(start_end, "kissa")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.8843930635838151, stats[make_pair("sa", start_end)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("s", "a")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair("s", "sa")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[make_pair("kis", "sa")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("kis", "s")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[make_pair(start_end, "kis")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("s", "s")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("i", "s")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("k", "i")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair(start_end, "k")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair("ki", "s")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair(start_end, "ki")], DBL_ACCURACY );
+}
