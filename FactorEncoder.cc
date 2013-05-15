@@ -642,7 +642,8 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
             (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
         }
         catch (std::out_of_range &oor) {
-            (**arc).cost = -std::numeric_limits<flt_type>::max();
+            (**arc).cost = -200.0;
+            //(**arc).cost = -std::numeric_limits<flt_type>::max();
         }
     }
 
