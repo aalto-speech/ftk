@@ -43,23 +43,20 @@ void collect_trans_stats(const map<pair<string,string>, flt_type> &transitions,
             trans_normalizers[statit->first.first] += words.at(it->first) * statit->second;
         }
     }
-
 }
 
 
 void normalize(map<pair<string,string>, flt_type> &trans_stats,
-               map<string, flt_type> &trans_normalizers)
+               map<string, flt_type> &trans_normalizers,
+               flt_type min_cost = -200.0)
 {
     auto iter = trans_stats.begin();
     while (iter != trans_stats.end()) {
         iter->second /= trans_normalizers[iter->first.first];
-        if (iter->second <= 0.0 || std::isnan(iter->second)) trans_stats.erase(iter++);
-        else {
-            iter->second = log(iter->second);
-            ++iter;
-        }
+        iter->second = log(iter->second);
+        if (iter->second < min_cost || std::isnan(iter->second)) iter->second = min_cost;
+        ++iter;
     }
-
 }
 
 
@@ -233,7 +230,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Viterbi segmentations
-    for (auto it=fg_words.begin(); it != fg_words.cend(); ++it) {
+    for (auto it = fg_words.begin(); it != fg_words.cend(); ++it) {
         std::vector<std::string> best_path;
         viterbi(transitions, *it->second, best_path);
         for (int i=0; i<best_path.size(); i++) {
