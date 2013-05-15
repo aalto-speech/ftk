@@ -447,6 +447,34 @@ void fetest :: FactorGraphTestGetList (void)
     CPPUNIT_ASSERT( includes_path(paths, seg7) );
 }
 
+// Enumerating paths after removing some arcs
+void fetest :: FactorGraphTestRemoveArcs (void)
+{
+    map<string, flt_type> vocab;
+    vocab["k"] = 0.0;
+    vocab["i"] = 0.0;
+    vocab["s"] = 0.0;
+    vocab["a"] = 0.0;
+    vocab["sa"] = 0.0;
+    vocab["ki"] = 0.0;
+    vocab["kis"] = 0.0;
+    vocab["kissa"] = 0.0;
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    vector<vector<string> > paths;
+    fg.remove_arcs(string("k"), string("i"));
+    fg.remove_arcs(string("s"), string("a"));
+    fg.get_paths(paths);
+    CPPUNIT_ASSERT_EQUAL( 3, (int)paths.size() );
+    vector<string> seg = {"*", "kissa", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg) );
+    vector<string> seg2 = {"*", "kis", "sa", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg2) );
+    vector<string> seg3 = {"*", "ki", "s", "sa", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg3) );
+}
+
 
 void fetest :: TransitionViterbiTest1 (void)
 {
@@ -915,3 +943,51 @@ void fetest :: TransitionForwardBackwardTest8 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair("ki", "s")], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair(start_end, "ki")], DBL_ACCURACY );
 }
+
+
+// Multiple paths, remove some arcs
+void fetest :: TransitionForwardBackwardRemoveArcs (void)
+{
+    map<string, flt_type> vocab;
+    map<pair<string,string>, flt_type> transitions;
+    vocab["k"] = 0.0;
+    vocab["i"] = 0.0;
+    vocab["a"] = 0.0;
+    vocab["sa"] = 0.0;
+    vocab["s"] = 0.0;
+    vocab["ki"] = 0.0;
+    vocab["kis"] = 0.0;
+    vocab["kissa"] = 0.0;
+    transitions[make_pair(start_end, "k")] = log(0.5);
+    transitions[make_pair(start_end, "ki")] = log(0.25);
+    transitions[make_pair(start_end, "kis")] = log(0.4);
+    transitions[make_pair(start_end, "kissa")] = log(0.1);
+    transitions[make_pair("a", start_end)] = log(0.5);
+    transitions[make_pair("kissa", start_end)] = log(0.10);
+    transitions[make_pair("sa", start_end)] = log(0.4);
+    transitions[make_pair("ki", "s")] = log(0.25);
+    transitions[make_pair("k", "i")] = log(0.5);
+    transitions[make_pair("i", "s")] = log(0.5);
+    transitions[make_pair("s", "s")] = log(0.5);
+    transitions[make_pair("s", "sa")] = log(0.5);
+    transitions[make_pair("s", "a")] = log(0.5);
+    transitions[make_pair("kis", "sa")] = log(0.4);
+    transitions[make_pair("kis", "s")] = log(0.4);
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    fg.remove_arcs(string("k"), string("i"));
+    fg.remove_arcs(string("s"), string("a"));
+    map<pair<string,string>, flt_type> stats;
+    forward_backward(transitions, fg, stats);
+    CPPUNIT_ASSERT_EQUAL(8, (int)stats.size());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[make_pair("kissa", start_end)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[make_pair(start_end, "kissa")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.8843930635838151, stats[make_pair("sa", start_end)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair("s", "sa")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[make_pair("kis", "sa")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[make_pair(start_end, "kis")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair("ki", "s")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair(start_end, "ki")], DBL_ACCURACY );
+}
+

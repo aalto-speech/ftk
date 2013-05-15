@@ -67,6 +67,7 @@ public:
       else nstr.assign(this->text, nodes[node].start_pos, nodes[node].len); }
     bool assert_equal(const FactorGraph &other) const;
     void get_paths(std::vector<std::vector<std::string> > &paths) const;
+    void remove_arcs(const std::string &source, const std::string &target);
 
     std::string text;
     std::string start_end_symbol;
@@ -83,6 +84,8 @@ private:
     // Helper for enumerating paths
     void advance(std::vector<std::vector<std::string> > &paths,
                  std::vector<std::string> &curr_string, unsigned int node) const;
+    // Helper for removing arcs
+    void remove_arc(Arc *arc);
 };
 
 

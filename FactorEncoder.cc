@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <queue>
 
 using namespace std;
@@ -115,8 +116,8 @@ FactorGraph::set_text(const string &text,
 
     // No possible segmentations
     if (incoming[text.size()].size() == 0) {
-    nodes.clear();
-    return;
+        nodes.clear();
+        return;
     }
 
     prune_and_create_arcs(incoming);
@@ -217,6 +218,60 @@ FactorGraph::advance(vector<vector<string> > &paths,
     for (auto arc  = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
         vector<string> curr_copy(curr_string);
         advance(paths, curr_copy, (**arc).target_node);
+    }
+}
+
+
+void
+FactorGraph::remove_arc(Arc *arc)
+{
+    auto ait = find(arcs.begin(), arcs.end(), arc);
+    arcs.erase(ait);
+
+    Node &src_node = nodes[(*arc).source_node];
+    auto sit = find(src_node.outgoing.begin(), src_node.outgoing.end(), arc);
+    src_node.outgoing.erase(sit);
+
+    Node &tgt_node = nodes[(*arc).target_node];
+    auto tit = find(tgt_node.incoming.begin(), tgt_node.incoming.end(), arc);
+    tgt_node.incoming.erase(tit);
+
+    delete arc;
+}
+
+
+void
+FactorGraph::remove_arcs(const std::string &source,
+                         const std::string &target)
+{
+
+    string tgt_node_str;
+    for (auto node = nodes.begin(); node != nodes.end(); ++node) {
+        string src_node_str;
+        this->get_factor(*node, src_node_str);
+        if (source != src_node_str) continue;
+        for (int i=0; i<node->outgoing.size(); i++) {
+            FactorGraph::Arc *arc = node->outgoing[i];
+            string tgt_node_str;
+            this->get_factor(arc->target_node, tgt_node_str);
+            if (target != tgt_node_str) continue;
+            this->remove_arc(arc);
+            break;
+        }
+    }
+
+    // Prune all transitions from non-reachable nodes
+    for (auto it = nodes.begin(); it != nodes.end(); it++) {
+        if (it->incoming.size() == 0 && it->len > 0) {
+            while (it->outgoing.size() > 0)
+                remove_arc(it->outgoing[0]);
+            continue;
+        }
+        if (it->outgoing.size() == 0 && it->len > 0) {
+            while (it->incoming.size() > 0)
+                remove_arc(it->incoming[0]);
+            continue;
+        }
     }
 }
 
@@ -511,7 +566,12 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
         int tgt_node = (**arc).target_node;
         text.get_factor(src_node, source_node_str);
         text.get_factor(tgt_node, target_node_str);
-        (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
+        try {
+            (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
+        }
+        catch (std::out_of_range &oor) {
+            (**arc).cost = -std::numeric_limits<flt_type>::max();
+        }
     }
 
     // Initialize node scores
@@ -578,7 +638,12 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
         int tgt_node = (**arc).target_node;
         text.get_factor(src_node, source_node_str);
         text.get_factor(tgt_node, target_node_str);
-        (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
+        try {
+            (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
+        }
+        catch (std::out_of_range &oor) {
+            (**arc).cost = -std::numeric_limits<flt_type>::max();
+        }
     }
 
     // Forward
