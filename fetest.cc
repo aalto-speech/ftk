@@ -430,6 +430,7 @@ void fetest :: FactorGraphTestGetList (void)
     FactorGraph fg(sentence, start_end, vocab, 5);
     vector<vector<string> > paths;
     fg.get_paths(paths);
+    CPPUNIT_ASSERT_EQUAL( 7, (int)paths.size() );
     vector<string> seg = {"*", "kissa", "*" };
     CPPUNIT_ASSERT( includes_path(paths, seg) );
     vector<string> seg2 = {"*", "kis", "sa", "*" };
