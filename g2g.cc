@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
     gg.resegment_words(words, vocab, freqs);
     flt_type densum = gg.get_sum(freqs);
     flt_type cost = gg.get_cost(freqs, densum);
-    cerr << "cost: " << cost << endl;
+    cerr << "unigram cost without word end symbols: " << cost << endl;
 
     gg.cutoff(freqs, (flt_type)cutoff_value);
     cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
@@ -201,10 +201,11 @@ int main(int argc, char* argv[]) {
     map<pair<string,string>, flt_type> transitions;
     map<pair<string,string>, flt_type> trans_stats;
     map<string, flt_type> trans_normalizers;
+    map<string, flt_type> unigram_stats;
     vocab[start_end_symbol] = 0.0;
 
     // Initial segmentation using unigram model
-    for (auto it=words.cbegin(); it != words.cend(); ++it) {
+    for (auto it = words.cbegin(); it != words.cend(); ++it) {
         FactorGraph *fg = new FactorGraph(it->first, start_end_symbol, ss_vocab);
         fg_words[it->first] = fg;
         map<pair<string,string>, flt_type> stats;
@@ -212,21 +213,29 @@ int main(int argc, char* argv[]) {
         for (auto statit = stats.cbegin(); statit != stats.cend(); ++statit) {
             trans_stats[statit->first] += it->second * statit->second;
             trans_normalizers[statit->first.first] += it->second * statit->second;
+            unigram_stats[statit->first.second] += it->second * statit->second;
         }
     }
+
+    // Unigram cost with word end markers
+    densum = gg.get_sum(unigram_stats);
+    cost = gg.get_cost(unigram_stats, densum);
+    cerr << "unigram cost with word end symbols: " << cost << endl;
+
+    // Initial bigram cost
     cerr << "amount of transitions: " << trans_stats.size() << endl;
     transitions = trans_stats;
     normalize(transitions, trans_normalizers);
     cost = bigram_cost(transitions, trans_stats);
-    cerr << "cost: " << cost << endl;
+    cerr << "bigram cost: " << cost << endl;
 
     // Re-estimate using bigram stats
-    for (int i=0; i<50; i++) {
+    for (int i=0; i<10; i++) {
         collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers);
         transitions = trans_stats;
         normalize(transitions, trans_normalizers);
         cost = bigram_cost(transitions, trans_stats);
-        cerr << "cost: " << cost << endl;
+        cerr << "bigram cost: " << cost << endl;
     }
 
     // Viterbi segmentations
