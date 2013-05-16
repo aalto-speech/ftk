@@ -266,21 +266,40 @@ FactorGraph::remove_arcs(const std::string &source,
         if (it->incoming.size() == 0 && it->len > 0) {
             while (it->outgoing.size() > 0)
                 remove_arc(it->outgoing[0]);
-            continue;
         }
         if (it->outgoing.size() == 0 && it->len > 0) {
             while (it->incoming.size() > 0)
                 remove_arc(it->incoming[0]);
-            continue;
         }
     }
 }
 
 
 void
-FactorGraph::remove_arcs(const std::string &arcstr)
+FactorGraph::remove_arcs(const std::string &remstr)
 {
-    return;
+    string node_str;
+    for (auto node = nodes.begin(); node != nodes.end(); ++node) {
+        string node_str;
+        this->get_factor(*node, node_str);
+        if (remstr != node_str) continue;
+        while (node->incoming.size() > 0)
+            remove_arc(node->incoming[0]);
+        while (node->outgoing.size() > 0)
+            remove_arc(node->outgoing[0]);
+    }
+
+    // Prune all transitions from non-reachable nodes
+    for (auto it = nodes.begin(); it != nodes.end(); it++) {
+        if (it->incoming.size() == 0 && it->len > 0) {
+            while (it->outgoing.size() > 0)
+                remove_arc(it->outgoing[0]);
+        }
+        if (it->outgoing.size() == 0 && it->len > 0) {
+            while (it->incoming.size() > 0)
+                remove_arc(it->incoming[0]);
+        }
+    }
 }
 
 
