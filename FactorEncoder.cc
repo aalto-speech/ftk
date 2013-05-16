@@ -6,9 +6,10 @@
 #include <stdexcept>
 #include <queue>
 
-using namespace std;
-
 #include "FactorEncoder.hh"
+
+using namespace std;
+flt_type SMALL_LP = -200.0;
 
 
 void
@@ -273,6 +274,13 @@ FactorGraph::remove_arcs(const std::string &source,
             continue;
         }
     }
+}
+
+
+void
+FactorGraph::remove_arcs(const std::string &arcstr)
+{
+    return;
 }
 
 
@@ -570,7 +578,7 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
             (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
         }
         catch (std::out_of_range &oor) {
-            (**arc).cost = -std::numeric_limits<flt_type>::max();
+            (**arc).cost = SMALL_LP;
         }
     }
 
@@ -642,8 +650,7 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
             (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
         }
         catch (std::out_of_range &oor) {
-            (**arc).cost = -200.0;
-            //(**arc).cost = -std::numeric_limits<flt_type>::max();
+            (**arc).cost = SMALL_LP;
         }
     }
 

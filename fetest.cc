@@ -476,6 +476,35 @@ void fetest :: FactorGraphTestRemoveArcs (void)
 }
 
 
+// Enumerating paths after removing some arcs
+void fetest :: FactorGraphTestRemoveArcs2 (void)
+{
+    map<string, flt_type> vocab;
+    vocab["k"] = 0.0;
+    vocab["i"] = 0.0;
+    vocab["s"] = 0.0;
+    vocab["a"] = 0.0;
+    vocab["sa"] = 0.0;
+    vocab["ki"] = 0.0;
+    vocab["kis"] = 0.0;
+    vocab["kissa"] = 0.0;
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    vector<vector<string> > paths;
+    fg.remove_arcs(string("k"));
+    fg.remove_arcs(string("a"));
+    fg.get_paths(paths);
+    CPPUNIT_ASSERT_EQUAL( 3, (int)paths.size() );
+    vector<string> seg = {"*", "kissa", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg) );
+    vector<string> seg2 = {"*", "kis", "sa", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg2) );
+    vector<string> seg3 = {"*", "ki", "s", "sa", "*" };
+    CPPUNIT_ASSERT( includes_path(paths, seg3) );
+}
+
+
 void fetest :: TransitionViterbiTest1 (void)
 {
     map<string, flt_type> vocab;
