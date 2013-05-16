@@ -33,16 +33,20 @@ collect_trans_stats(const map<pair<string,string>, flt_type> &transitions,
                     const map<string, flt_type> &words,
                     map<string, FactorGraph*> &fg_words,
                     map<pair<string,string>, flt_type> &trans_stats,
-                    map<string, flt_type> &trans_normalizers)
+                    map<string, flt_type> &trans_normalizers,
+                    map<string, flt_type> &unigram_stats)
 {
     trans_stats.clear();
     trans_normalizers.clear();
+    unigram_stats.clear();
+
     for (auto it = fg_words.begin(); it != fg_words.end(); ++it) {
         map<pair<string,string>, flt_type> stats;
         forward_backward(transitions, *it->second, stats);
         for (auto statit = stats.cbegin(); statit != stats.cend(); ++statit) {
             trans_stats[statit->first] += words.at(it->first) * statit->second;
             trans_normalizers[statit->first.first] += words.at(it->first) * statit->second;
+            unigram_stats[statit->first.second] += words.at(it->first) * statit->second;
         }
     }
 }
@@ -100,6 +104,34 @@ vocab_size(const map<pair<string,string>, flt_type> &transitions)
     for (auto iter = transitions.cbegin(); iter != transitions.cend(); ++iter)
         vocab[iter->first.first] = 0.0;
     return vocab.size();
+}
+
+
+int
+cutoff(const map<string, flt_type> unigram_stats,
+       flt_type cutoff,
+       map<pair<string,string>, flt_type> &transitions,
+       map<string, FactorGraph*> fg_words)
+{
+    map<string, flt_type> to_remove;
+    for (auto it = unigram_stats.begin(); it != unigram_stats.end(); ++it)
+        if (it->second < cutoff) to_remove[it->first] = it->second;
+
+    for (auto it = to_remove.begin(); it != to_remove.end(); ++it) {
+        for (auto trans_it = transitions.begin(); trans_it != transitions.end();) {
+            if (trans_it->first.first == it->first || trans_it->first.second == it->first)
+                transitions.erase(trans_it++);
+            else
+                ++trans_it;
+        }
+
+        for (auto fgit = fg_words.begin(); fgit != fg_words.end(); ++fgit) {
+            size_t found = fgit->first.find(it->first);
+            if (found != std::string::npos) fgit->second->remove_arcs(it->first);
+        }
+    }
+
+    return to_remove.size();
 }
 
 
@@ -262,20 +294,26 @@ int main(int argc, char* argv[]) {
     normalize(transitions, trans_normalizers);
     cerr << "bigram cost: " << bigram_cost(transitions, trans_stats) << endl;
     cerr << "\tamount of transitions: " << transitions.size() << endl;
-    cerr << "\tvocab size: " << vocab_size(transitions) << endl;
+    cerr << "\tvocab size: " << unigram_stats.size() << endl;
+    int co_removed = cutoff(unigram_stats, cutoff_value, transitions, fg_words);
+    cerr << "\tremoved by cutoff: " << co_removed << endl;
 
     // Re-estimate using bigram stats
     for (int i=0; i<iter_amount; i++) {
-        collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers);
+        collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats);
         transitions = trans_stats;
         normalize(transitions, trans_normalizers);
         cerr << "bigram cost: " << bigram_cost(transitions, trans_stats) << endl;
         cerr << "\tamount of transitions: " << transitions.size() << endl;
-        cerr << "\tvocab size: " << vocab_size(transitions) << endl;
+        cerr << "\tvocab size: " << unigram_stats.size() << endl;
+        co_removed = cutoff(unigram_stats, cutoff_value, transitions, fg_words);
+        cerr << "\tremoved by cutoff: " << co_removed << endl;
     }
 
     // Write transitions
     write_transitions(transitions, transition_fname);
+    write_transitions(trans_stats, "trans_stats.out");
+    write_vocab("unigram.out", unigram_stats);
 
     // Viterbi segmentations
     ofstream wsegfile(wordseg_fname);
