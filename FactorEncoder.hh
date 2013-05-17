@@ -9,6 +9,8 @@
 #include "defs.hh"
 #include "StringSet.hh"
 
+typedef std::map<std::string, std::map<std::string, flt_type> > transitions_t;
+
 
 class FactorGraph {
 public:
@@ -31,8 +33,8 @@ public:
             if (cost != rhs.cost) return true;
             return false;
         }
-        unsigned int source_node;
-        unsigned int target_node;
+        fg_node_idx_t source_node;
+        fg_node_idx_t target_node;
         flt_type cost;
     };
 
@@ -42,8 +44,8 @@ public:
         Node(int start_pos, int len)
         : start_pos(start_pos), len(len) { }
         ~Node() { incoming.clear(); outgoing.clear(); }
-        size_t start_pos; // text indices
-        size_t len;
+        factor_pos_t start_pos; // text indices
+        factor_len_t len;
         std::vector<Arc*> incoming;
         std::vector<Arc*> outgoing;
     };
@@ -133,21 +135,21 @@ void forward_backward(const std::map<std::string, flt_type> &vocab,
                       const std::string &text,
                       std::map<std::string, flt_type> &stats);
 
-void viterbi(const std::map<std::pair<std::string,std::string>, flt_type> &transitions,
+void viterbi(const transitions_t &transitions,
              FactorGraph &text,
              std::vector<std::string> &best_path,
              bool reverse=true);
 
-void viterbi(const std::map<std::pair<std::string,std::string>, flt_type> &transitions,
+void viterbi(const transitions_t &transitions,
              FactorGraph &text,
-             std::map<std::pair<std::string,std::string>, flt_type> &stats);
+             transitions_t &stats);
 
-void forward_backward(const std::map<std::pair<std::string,std::string>, flt_type> &transitions,
+void forward_backward(const transitions_t &transitions,
                       FactorGraph &text,
-                      std::map<std::pair<std::string,std::string>, flt_type> &stats);
+                      transitions_t &stats);
 
 void forward_backward(const std::map<std::string, flt_type> &vocab,
                       FactorGraph &text,
-                      std::map<std::pair<std::string,std::string>, flt_type> &stats);
+                      transitions_t &stats);
 
 #endif /* FACTOR_ENCODER */

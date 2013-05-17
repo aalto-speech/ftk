@@ -505,17 +505,26 @@ void fetest :: FactorGraphTestRemoveArcs2 (void)
 }
 
 
+int transition_count(const transitions_t &transitions) {
+    int count = 0;
+    for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
+        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
+            count++;
+    return count;
+}
+
+
 void fetest :: TransitionViterbiTest1 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a"); string str2("bc");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
     vocab[str2] = -1.0;
-    transitions[make_pair(str1, str2)] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(str2, start_end)] = -1.0;
+    transitions[str1][str2] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[str2][start_end] = -1.0;
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     vector<string> best_path;
@@ -530,7 +539,7 @@ void fetest :: TransitionViterbiTest1 (void)
 void fetest :: TransitionViterbiTest2 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a"); string str2("bc");
     string str3("ab"); string str4("c");
     vocab[start_end] = -1.0;
@@ -538,12 +547,12 @@ void fetest :: TransitionViterbiTest2 (void)
     vocab[str2] = -1.0;
     vocab[str3] = -1.0;
     vocab[str4] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(start_end, str3)] = -1.0;
-    transitions[make_pair(str2, start_end)] = -1.0;
-    transitions[make_pair(str4, start_end)] = -1.0;
-    transitions[make_pair(str1, str2)] = -2.0;
-    transitions[make_pair(str3, str4)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[start_end][str3] = -1.0;
+    transitions[str2][start_end] = -1.0;
+    transitions[str4][start_end] = -1.0;
+    transitions[str1][str2] = -2.0;
+    transitions[str3][str4] = -1.0;
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     vector<string> best_path;
@@ -559,12 +568,12 @@ void fetest :: TransitionViterbiTest2 (void)
 void fetest :: TransitionViterbiTest3 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(str1, start_end)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[str1][start_end] = -1.0;
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
@@ -576,12 +585,12 @@ void fetest :: TransitionViterbiTest3 (void)
 void fetest :: TransitionViterbiTest4 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(str1, start_end)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[str1][start_end] = -1.0;
     string sentence("");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
@@ -593,12 +602,12 @@ void fetest :: TransitionViterbiTest4 (void)
 void fetest :: TransitionViterbiTest5 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(str1, start_end)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[str1][start_end] = -1.0;
     string sentence("a");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
@@ -613,7 +622,7 @@ void fetest :: TransitionViterbiTest5 (void)
 void fetest :: TransitionViterbiTest6 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a"); string str2("b");
     string str3("c"); string str4("d");
     vocab[start_end] = -1.0;
@@ -621,11 +630,11 @@ void fetest :: TransitionViterbiTest6 (void)
     vocab[str2] = -1.0;
     vocab[str3] = -1.0;
     vocab[str4] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(str4, start_end)] = -1.0;
-    transitions[make_pair(str1, str2)] = -1.0;
-    transitions[make_pair(str2, str3)] = -1.0;
-    transitions[make_pair(str3, str4)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[str4][start_end] = -1.0;
+    transitions[str1][str2] = -1.0;
+    transitions[str2][str3] = -1.0;
+    transitions[str3][str4] = -1.0;
     string sentence("a-bcd");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
@@ -637,7 +646,7 @@ void fetest :: TransitionViterbiTest6 (void)
 void fetest :: TransitionViterbiTest7 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("k"); string str2("i");
     string str3("s"); string str4("a");
     string str5("l"); string str6("kissa");
@@ -651,22 +660,22 @@ void fetest :: TransitionViterbiTest7 (void)
     vocab[str6] = 0.0;
     vocab[str7] = 0.0;
     vocab[str8] = 0.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(start_end, str6)] = -1.0;
-    transitions[make_pair(start_end, str8)] = -6.0;
-    transitions[make_pair(str4, start_end)] = -1.0;
-    transitions[make_pair(str7, start_end)] = -1.0;
-    transitions[make_pair(str8, start_end)] = -6.0;
-    transitions[make_pair(str1, str2)] = -1.0;
-    transitions[make_pair(str2, str3)] = -1.0;
-    transitions[make_pair(str3, str3)] = -1.0;
-    transitions[make_pair(str3, str4)] = -1.0;
-    transitions[make_pair(str4, str5)] = -1.0;
-    transitions[make_pair(str4, str7)] = -1.0;
-    transitions[make_pair(str5, str4)] = -1.0;
-    transitions[make_pair(str5, str5)] = -1.0;
-    transitions[make_pair(str6, str7)] = -1.0;
-    transitions[make_pair(str6, str5)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[start_end][str6] = -1.0;
+    transitions[start_end][str8] = -6.0;
+    transitions[str4][start_end] = -1.0;
+    transitions[str7][start_end] = -1.0;
+    transitions[str8][start_end] = -6.0;
+    transitions[str1][str2] = -1.0;
+    transitions[str2][str3] = -1.0;
+    transitions[str3][str3] = -1.0;
+    transitions[str3][str4] = -1.0;
+    transitions[str4][str5] = -1.0;
+    transitions[str4][str7] = -1.0;
+    transitions[str5][str4] = -1.0;
+    transitions[str5][str5] = -1.0;
+    transitions[str6][str7] = -1.0;
+    transitions[str6][str5] = -1.0;
     string sentence("kissalla");
     int maxlen = 8;
     FactorGraph fg(sentence, start_end, vocab, maxlen);
@@ -679,7 +688,7 @@ void fetest :: TransitionViterbiTest7 (void)
     CPPUNIT_ASSERT_EQUAL(str7, best_path[2]);
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[3]);
 
-    transitions[make_pair(str6, str7)] = -10.0;
+    transitions[str6][str7] = -10.0;
     viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(6, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
@@ -694,7 +703,7 @@ void fetest :: TransitionViterbiTest7 (void)
 void fetest :: TransitionViterbiTest8 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("k"); string str2("i");
     string str3("s"); string str4("a");
     string str5("l"); string str6("kissa");
@@ -708,22 +717,22 @@ void fetest :: TransitionViterbiTest8 (void)
     vocab[str6] = 0.0;
     vocab[str7] = 0.0;
     vocab[str8] = 0.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(start_end, str6)] = -1.0;
-    transitions[make_pair(start_end, str8)] = -6.0;
-    transitions[make_pair(str4, start_end)] = -1.0;
-    transitions[make_pair(str7, start_end)] = -1.0;
-    transitions[make_pair(str8, start_end)] = -6.0;
-    transitions[make_pair(str1, str2)] = -1.0;
-    transitions[make_pair(str2, str3)] = -1.0;
-    transitions[make_pair(str3, str3)] = -1.0;
-    transitions[make_pair(str3, str4)] = -1.0;
-    transitions[make_pair(str4, str5)] = -1.0;
-    transitions[make_pair(str4, str7)] = -1.0;
-    transitions[make_pair(str5, str4)] = -1.0;
-    transitions[make_pair(str5, str5)] = -1.0;
-    //transitions[make_pair(str6, str7)] = -1.0;
-    transitions[make_pair(str6, str5)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[start_end][str6] = -1.0;
+    transitions[start_end][str8] = -6.0;
+    transitions[str4][start_end] = -1.0;
+    transitions[str7][start_end] = -1.0;
+    transitions[str8][start_end] = -6.0;
+    transitions[str1][str2] = -1.0;
+    transitions[str2][str3] = -1.0;
+    transitions[str3][str3] = -1.0;
+    transitions[str3][str4] = -1.0;
+    transitions[str4][str5] = -1.0;
+    transitions[str4][str7] = -1.0;
+    transitions[str5][str4] = -1.0;
+    transitions[str5][str5] = -1.0;
+    //transitions[str6][str7] = -1.0;
+    transitions[str6][str5] = -1.0;
     string sentence("kissalla");
     int maxlen = 8;
     FactorGraph fg(sentence, start_end, vocab, maxlen);
@@ -743,28 +752,28 @@ void fetest :: TransitionViterbiTest8 (void)
 void fetest :: TransitionForwardBackwardTest1 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a"); string str2("bc");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
     vocab[str2] = -1.0;
-    transitions[make_pair(str1, str2)] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(str2, start_end)] = -1.0;
+    transitions[str1][str2] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[str2][start_end] = -1.0;
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
-    map<pair<string,string>, flt_type> stats;
+    transitions_t stats;
     forward_backward(transitions, fg, stats);
-    CPPUNIT_ASSERT_EQUAL(3, (int)stats.size());
-    CPPUNIT_ASSERT_EQUAL(1.0, stats[make_pair(start_end, str1)]);
-    CPPUNIT_ASSERT_EQUAL(1.0, stats[make_pair(str1, str2)]);
-    CPPUNIT_ASSERT_EQUAL(1.0, stats[make_pair(str2, start_end)]);
+    CPPUNIT_ASSERT_EQUAL(3, transition_count(stats));
+    CPPUNIT_ASSERT_EQUAL(1.0, stats[start_end][str1]);
+    CPPUNIT_ASSERT_EQUAL(1.0, stats[str1][str2]);
+    CPPUNIT_ASSERT_EQUAL(1.0, stats[str2][start_end]);
 }
 
 void fetest :: TransitionForwardBackwardTest2 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a"); string str2("bc");
     string str3("ab"); string str4("c");
     vocab[start_end] = -1.0;
@@ -772,25 +781,25 @@ void fetest :: TransitionForwardBackwardTest2 (void)
     vocab[str2] = -1.0;
     vocab[str3] = -1.0;
     vocab[str4] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(start_end, str3)] = -1.0;
-    transitions[make_pair(str2, start_end)] = -1.0;
-    transitions[make_pair(str4, start_end)] = -1.0;
-    transitions[make_pair(str1, str2)] = -2.0;
-    transitions[make_pair(str3, str4)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[start_end][str3] = -1.0;
+    transitions[str2][start_end] = -1.0;
+    transitions[str4][start_end] = -1.0;
+    transitions[str1][str2] = -2.0;
+    transitions[str3][str4] = -1.0;
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
-    map<pair<string,string>, flt_type> stats;
+    transitions_t stats;
     forward_backward(transitions, fg, stats);
     flt_type path_1_score = exp(-4)/(exp(-3) + exp(-4));
     flt_type path_2_score = exp(-3)/(exp(-3) + exp(-4));
-    CPPUNIT_ASSERT_EQUAL(6, (int)stats.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_1_score, stats[make_pair(str2, start_end)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[make_pair(str4, start_end)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_1_score, stats[make_pair(start_end, str1)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[make_pair(start_end, str3)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_1_score, stats[make_pair(str1, str2)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[make_pair(str3, str4)], DBL_ACCURACY );
+    CPPUNIT_ASSERT_EQUAL(6, transition_count(stats));
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_1_score, stats[str2][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[str4][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_1_score, stats[start_end][str1], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[start_end][str3], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_1_score, stats[str1][str2], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[str3][str4], DBL_ACCURACY );
 }
 
 
@@ -798,15 +807,15 @@ void fetest :: TransitionForwardBackwardTest2 (void)
 void fetest :: TransitionForwardBackwardTest3 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(str1, start_end)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[str1][start_end] = -1.0;
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 1);
-    map<pair<string,string>, flt_type> stats;
+    transitions_t stats;
     forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
 }
@@ -815,15 +824,15 @@ void fetest :: TransitionForwardBackwardTest3 (void)
 void fetest :: TransitionForwardBackwardTest4 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(str1, start_end)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[str1][start_end] = -1.0;
     string sentence("");
     FactorGraph fg(sentence, start_end, vocab, 1);
-    map<pair<string,string>, flt_type> stats;
+    transitions_t stats;
     forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
 }
@@ -832,26 +841,26 @@ void fetest :: TransitionForwardBackwardTest4 (void)
 void fetest :: TransitionForwardBackwardTest5 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a");
     vocab[start_end] = -1.0;
     vocab[str1] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(str1, start_end)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[str1][start_end] = -1.0;
     string sentence("a");
     FactorGraph fg(sentence, start_end, vocab, 1);
-    map<pair<string,string>, flt_type> stats;
+    transitions_t stats;
     forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(2, (int)stats.size());
-    CPPUNIT_ASSERT_EQUAL( 1.0, stats[make_pair(start_end, str1)] );
-    CPPUNIT_ASSERT_EQUAL( 1.0, stats[make_pair(str1, start_end)] );
+    CPPUNIT_ASSERT_EQUAL( 1.0, stats[start_end][str1] );
+    CPPUNIT_ASSERT_EQUAL( 1.0, stats[str1][start_end] );
 }
 
 // No segmentation
 void fetest :: TransitionForwardBackwardTest6 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     string str1("a"); string str2("b");
     string str3("c"); string str4("d");
     vocab[start_end] = -1.0;
@@ -859,14 +868,14 @@ void fetest :: TransitionForwardBackwardTest6 (void)
     vocab[str2] = -1.0;
     vocab[str3] = -1.0;
     vocab[str4] = -1.0;
-    transitions[make_pair(start_end, str1)] = -1.0;
-    transitions[make_pair(str4, start_end)] = -1.0;
-    transitions[make_pair(str1, str2)] = -1.0;
-    transitions[make_pair(str2, str3)] = -1.0;
-    transitions[make_pair(str3, str4)] = -1.0;
+    transitions[start_end][str1] = -1.0;
+    transitions[str4][start_end] = -1.0;
+    transitions[str1][str2] = -1.0;
+    transitions[str2][str3] = -1.0;
+    transitions[str3][str4] = -1.0;
     string sentence("a-bcd");
     FactorGraph fg(sentence, start_end, vocab, 1);
-    map<pair<string,string>, flt_type> stats;
+    transitions_t stats;
     forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
 }
@@ -875,7 +884,7 @@ void fetest :: TransitionForwardBackwardTest6 (void)
 void fetest :: TransitionForwardBackwardTest7 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     vocab["k"] = 0.0;
     vocab["i"] = 0.0;
     vocab["a"] = 0.0;
@@ -884,49 +893,49 @@ void fetest :: TransitionForwardBackwardTest7 (void)
     vocab["ki"] = 0.0;
     vocab["kis"] = 0.0;
     vocab["kissa"] = 0.0;
-    transitions[make_pair(start_end, "k")] = log(0.5);
-    transitions[make_pair(start_end, "ki")] = log(0.25);
-    transitions[make_pair(start_end, "kis")] = log(0.4);
-    transitions[make_pair(start_end, "kissa")] = log(0.1);
-    transitions[make_pair("a", start_end)] = log(0.5);
-    transitions[make_pair("kissa", start_end)] = log(0.10);
-    transitions[make_pair("sa", start_end)] = log(0.4);
-    transitions[make_pair("ki", "s")] = log(0.25);
-    transitions[make_pair("k", "i")] = log(0.5);
-    transitions[make_pair("i", "s")] = log(0.5);
-    transitions[make_pair("s", "s")] = log(0.5);
-    transitions[make_pair("s", "sa")] = log(0.5);
-    transitions[make_pair("s", "a")] = log(0.5);
-    transitions[make_pair("kis", "sa")] = log(0.4);
-    transitions[make_pair("kis", "s")] = log(0.4);
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
 
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
-    map<pair<string,string>, flt_type> stats;
+    transitions_t stats;
     forward_backward(transitions, fg, stats);
-    CPPUNIT_ASSERT_EQUAL(15, (int)stats.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3626295105394784, stats[make_pair("a", start_end)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.05716327259735619, stats[make_pair("kissa", start_end)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.05716327259735619, stats[make_pair(start_end, "kissa")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5802072168631653, stats[make_pair("sa", start_end)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3626295105394784, stats[make_pair("s", "a")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.21436227224008575, stats[make_pair("s", "sa")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3658449446230797, stats[make_pair("kis", "sa")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.22865309038942486, stats[make_pair("kis", "s")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5944980350125045, stats[make_pair(start_end, "kis")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.13397642015005362, stats[make_pair("s", "s")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.23222579492675957, stats[make_pair("i", "s")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.23222579492675957, stats[make_pair("k", "i")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.23222579492675957, stats[make_pair(start_end, "k")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11611289746337979, stats[make_pair("ki", "s")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11611289746337979, stats[make_pair(start_end, "ki")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_EQUAL(15, transition_count(stats));
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3626295105394784, stats["a"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.05716327259735619, stats["kissa"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.05716327259735619, stats[start_end]["kissa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5802072168631653, stats["sa"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3626295105394784, stats["s"]["a"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.21436227224008575, stats["s"]["sa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3658449446230797, stats["kis"]["sa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.22865309038942486, stats["kis"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5944980350125045, stats[start_end]["kis"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.13397642015005362, stats["s"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.23222579492675957, stats["i"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.23222579492675957, stats["k"]["i"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.23222579492675957, stats[start_end]["k"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11611289746337979, stats["ki"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11611289746337979, stats[start_end]["ki"], DBL_ACCURACY );
 }
 
 // Multiple paths, some non-scored arcs
 void fetest :: TransitionForwardBackwardTest8 (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     vocab["k"] = 0.0;
     vocab["i"] = 0.0;
     vocab["a"] = 0.0;
@@ -935,42 +944,42 @@ void fetest :: TransitionForwardBackwardTest8 (void)
     vocab["ki"] = 0.0;
     vocab["kis"] = 0.0;
     vocab["kissa"] = 0.0;
-    transitions[make_pair(start_end, "k")] = log(0.5);
-    transitions[make_pair(start_end, "ki")] = log(0.25);
-    transitions[make_pair(start_end, "kis")] = log(0.4);
-    transitions[make_pair(start_end, "kissa")] = log(0.1);
-    transitions[make_pair("a", start_end)] = log(0.5);
-    transitions[make_pair("kissa", start_end)] = log(0.10);
-    transitions[make_pair("sa", start_end)] = log(0.4);
-    transitions[make_pair("ki", "s")] = log(0.25);
-    //transitions[make_pair("k", "i")] = log(0.5);
-    transitions[make_pair("i", "s")] = log(0.5);
-    transitions[make_pair("s", "s")] = log(0.5);
-    transitions[make_pair("s", "sa")] = log(0.5);
-    //transitions[make_pair("s", "a")] = log(0.5);
-    transitions[make_pair("kis", "sa")] = log(0.4);
-    transitions[make_pair("kis", "s")] = log(0.4);
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    //transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    //transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
 
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
-    map<pair<string,string>, flt_type> stats;
+    transitions_t stats;
     forward_backward(transitions, fg, stats);
-    CPPUNIT_ASSERT_EQUAL(15, (int)stats.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("a", start_end)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[make_pair("kissa", start_end)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[make_pair(start_end, "kissa")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.8843930635838151, stats[make_pair("sa", start_end)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("s", "a")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair("s", "sa")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[make_pair("kis", "sa")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("kis", "s")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[make_pair(start_end, "kis")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("s", "s")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("i", "s")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair("k", "i")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[make_pair(start_end, "k")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair("ki", "s")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair(start_end, "ki")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_EQUAL(15, transition_count(stats));
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats["a"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats["kissa"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[start_end]["kissa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.8843930635838151, stats["sa"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats["s"]["a"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats["s"]["sa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats["kis"]["sa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats["kis"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[start_end]["kis"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats["s"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats["i"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats["k"]["i"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[start_end]["k"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats["ki"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[start_end]["ki"], DBL_ACCURACY );
 }
 
 
@@ -978,7 +987,7 @@ void fetest :: TransitionForwardBackwardTest8 (void)
 void fetest :: TransitionForwardBackwardRemoveArcs (void)
 {
     map<string, flt_type> vocab;
-    map<pair<string,string>, flt_type> transitions;
+    transitions_t transitions;
     vocab["k"] = 0.0;
     vocab["i"] = 0.0;
     vocab["a"] = 0.0;
@@ -987,36 +996,36 @@ void fetest :: TransitionForwardBackwardRemoveArcs (void)
     vocab["ki"] = 0.0;
     vocab["kis"] = 0.0;
     vocab["kissa"] = 0.0;
-    transitions[make_pair(start_end, "k")] = log(0.5);
-    transitions[make_pair(start_end, "ki")] = log(0.25);
-    transitions[make_pair(start_end, "kis")] = log(0.4);
-    transitions[make_pair(start_end, "kissa")] = log(0.1);
-    transitions[make_pair("a", start_end)] = log(0.5);
-    transitions[make_pair("kissa", start_end)] = log(0.10);
-    transitions[make_pair("sa", start_end)] = log(0.4);
-    transitions[make_pair("ki", "s")] = log(0.25);
-    transitions[make_pair("k", "i")] = log(0.5);
-    transitions[make_pair("i", "s")] = log(0.5);
-    transitions[make_pair("s", "s")] = log(0.5);
-    transitions[make_pair("s", "sa")] = log(0.5);
-    transitions[make_pair("s", "a")] = log(0.5);
-    transitions[make_pair("kis", "sa")] = log(0.4);
-    transitions[make_pair("kis", "s")] = log(0.4);
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
 
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     fg.remove_arcs(string("k"), string("i"));
     fg.remove_arcs(string("s"), string("a"));
-    map<pair<string,string>, flt_type> stats;
+    transitions_t stats;
     forward_backward(transitions, fg, stats);
-    CPPUNIT_ASSERT_EQUAL(8, (int)stats.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[make_pair("kissa", start_end)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[make_pair(start_end, "kissa")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.8843930635838151, stats[make_pair("sa", start_end)], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair("s", "sa")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[make_pair("kis", "sa")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[make_pair(start_end, "kis")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair("ki", "s")], DBL_ACCURACY );
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[make_pair(start_end, "ki")], DBL_ACCURACY );
+    CPPUNIT_ASSERT_EQUAL(8, transition_count(stats));
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats["kissa"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[start_end]["kissa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.8843930635838151, stats["sa"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats["s"]["sa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats["kis"]["sa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[start_end]["kis"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats["ki"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[start_end]["ki"], DBL_ACCURACY );
 }
 

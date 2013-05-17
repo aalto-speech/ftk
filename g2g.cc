@@ -30,10 +30,27 @@ assert_single_chars(map<string, flt_type> &vocab,
 
 
 void
-collect_trans_stats(const map<pair<string,string>, flt_type> &transitions,
+update_trans_stats(const transitions_t &collected_stats,
+                   flt_type weight,
+                   transitions_t &trans_stats,
+                   map<string, flt_type> &trans_normalizers,
+                   map<string, flt_type> &unigram_stats)
+{
+    for (auto srcit = collected_stats.cbegin(); srcit != collected_stats.cend(); ++srcit) {
+        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit) {
+            trans_stats[srcit->first][tgtit->first] += weight * tgtit->second;
+            trans_normalizers[srcit->first] += weight * tgtit->second;
+            unigram_stats[tgtit->first] += weight * tgtit->second;
+        }
+    }
+}
+
+
+void
+collect_trans_stats(const transitions_t &transitions,
                     const map<string, flt_type> &words,
                     map<string, FactorGraph*> &fg_words,
-                    map<pair<string,string>, flt_type> &trans_stats,
+                    transitions_t &trans_stats,
                     map<string, flt_type> &trans_normalizers,
                     map<string, flt_type> &unigram_stats)
 {
@@ -42,93 +59,85 @@ collect_trans_stats(const map<pair<string,string>, flt_type> &transitions,
     unigram_stats.clear();
 
     for (auto it = fg_words.begin(); it != fg_words.end(); ++it) {
-        map<pair<string,string>, flt_type> stats;
-        forward_backward(transitions, *it->second, stats);
-        for (auto statit = stats.cbegin(); statit != stats.cend(); ++statit) {
-            trans_stats[statit->first] += words.at(it->first) * statit->second;
-            trans_normalizers[statit->first.first] += words.at(it->first) * statit->second;
-            unigram_stats[statit->first.second] += words.at(it->first) * statit->second;
+        transitions_t word_stats;
+        forward_backward(transitions, *it->second, word_stats);
+        update_trans_stats(word_stats, words.at(it->first), trans_stats, trans_normalizers, unigram_stats);
+    }
+}
+
+
+void
+normalize(transitions_t &trans_stats,
+          map<string, flt_type> &trans_normalizers,
+          flt_type min_cost = -200.0)
+{
+    for (auto srcit = trans_stats.begin(); srcit != trans_stats.end(); ++srcit) {
+        auto tgtit = srcit->second.begin();
+        while (tgtit != srcit->second.end()) {
+            tgtit->second /= trans_normalizers[srcit->first];
+            tgtit->second = log(tgtit->second);
+            if (tgtit->second < min_cost || std::isnan(tgtit->second))
+                srcit->second.erase(tgtit++);
+            else
+                ++tgtit;
         }
     }
 }
 
 
 void
-normalize(map<pair<string,string>, flt_type> &trans_stats,
-          map<string, flt_type> &trans_normalizers,
-          flt_type min_cost = -200.0)
-{
-    auto iter = trans_stats.begin();
-    while (iter != trans_stats.end()) {
-        iter->second /= trans_normalizers[iter->first.first];
-        iter->second = log(iter->second);
-        if (iter->second < min_cost || std::isnan(iter->second))
-            trans_stats.erase(iter++);
-        else
-            ++iter;
-    }
-}
-
-
-void
-write_transitions(const map<pair<string,string>, flt_type> &transitions,
+write_transitions(const transitions_t &transitions,
                   const string &filename)
 {
     ofstream transfile(filename);
     if (!transfile) return;
 
-    for (auto it = transitions.begin(); it != transitions.end(); ++it)
-        transfile << it->first.first << " " << it->first.second << " " << it->second << endl;
+    for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
+        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
+            transfile << srcit->first << " " << tgtit->first << " " << tgtit->second << endl;
 
     transfile.close();
 }
 
 
 flt_type
-bigram_cost(const map<pair<string,string>, flt_type> &transitions,
-            const map<pair<string,string>, flt_type> &trans_stats)
+bigram_cost(const transitions_t &transitions,
+            const transitions_t &trans_stats)
 {
     flt_type total = 0.0;
     flt_type tmp = 0.0;
-    for (auto iter = transitions.cbegin(); iter != transitions.cend(); ++iter) {
-        tmp = iter->second * trans_stats.at(iter->first);
-        if (!std::isnan(tmp)) total += tmp;
-    }
+
+    for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
+        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit) {
+            tmp = tgtit->second * trans_stats.at(srcit->first).at(tgtit->first);
+            if (!std::isnan(tmp)) total += tmp;
+        }
+
     return total;
-}
-
-
-int
-vocab_size(const map<pair<string,string>, flt_type> &transitions)
-{
-    map<string, flt_type> vocab;
-    for (auto iter = transitions.cbegin(); iter != transitions.cend(); ++iter)
-        vocab[iter->first.first] = 0.0;
-    return vocab.size();
 }
 
 
 int
 cutoff(const map<string, flt_type> &unigram_stats,
        flt_type cutoff,
-       map<pair<string,string>, flt_type> &transitions,
+       transitions_t &transitions,
        map<string, FactorGraph*> &fg_words)
 {
-    map<string, flt_type> to_remove;
+    vector<string> to_remove;
     for (auto it = unigram_stats.begin(); it != unigram_stats.end(); ++it)
-        if (it->second < cutoff) to_remove[it->first] = it->second;
+        if (it->second < cutoff) to_remove.push_back(it->first);
 
-    for (auto it = to_remove.begin(); it != to_remove.end(); ++it) {
-        for (auto trans_it = transitions.begin(); trans_it != transitions.end();) {
-            if (trans_it->first.first == it->first || trans_it->first.second == it->first)
-                transitions.erase(trans_it++);
-            else
-                ++trans_it;
-        }
+    for (int i=0; i<to_remove.size(); i++)
+        transitions.erase(to_remove[i]);
 
-        for (auto fgit = fg_words.begin(); fgit != fg_words.end(); ++fgit) {
-            size_t found = fgit->first.find(it->first);
-            if (found != std::string::npos) fgit->second->remove_arcs(it->first);
+    for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit)
+        for (int i=0; i<to_remove.size(); i++)
+            srcit->second.erase(to_remove[i]);
+
+    for (auto fgit = fg_words.begin(); fgit != fg_words.end(); ++fgit) {
+        for (int i=0; i<to_remove.size(); i++) {
+            size_t found = fgit->first.find(to_remove[i]);
+            if (found != std::string::npos) fgit->second->remove_arcs(to_remove[i]);
         }
     }
 
@@ -139,24 +148,18 @@ cutoff(const map<string, flt_type> &unigram_stats,
 void
 remove_least_common(const map<string, flt_type> &unigram_stats,
                     int num_removals,
-                    map<pair<string,string>, flt_type> &transitions,
+                    transitions_t &transitions,
                     map<string, FactorGraph*> &fg_words)
 {
     vector<pair<string, flt_type> > sorted_stats;
     sort_vocab(unigram_stats, sorted_stats, false);
 
-    map<string, flt_type> to_remove;
     for (int i=0; i<num_removals; i++)
-        to_remove[sorted_stats[i].first] = 0.0;
+        transitions.erase(sorted_stats[i].first);
 
-    for (auto trans_it = transitions.begin(); trans_it != transitions.end(); )
-    {
-        if (to_remove.find(trans_it->first.first) != to_remove.end()
-            || to_remove.find(trans_it->first.second) != to_remove.end())
-            transitions.erase(trans_it++);
-        else
-            ++trans_it;
-    }
+    for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit)
+        for (int i=0; i<num_removals; i++)
+            srcit->second.erase(sorted_stats[i].first);
 
     for (auto fgit = fg_words.begin(); fgit != fg_words.end(); ++fgit) {
         for (int i=0; i<num_removals; i++) {
@@ -302,8 +305,8 @@ int main(int argc, char* argv[]) {
     StringSet<flt_type> ss_vocab(vocab);
     map<string, FactorGraph*> fg_words;
     string start_end_symbol("*");
-    map<pair<string,string>, flt_type> transitions;
-    map<pair<string,string>, flt_type> trans_stats;
+    transitions_t transitions;
+    transitions_t trans_stats;
     map<string, flt_type> trans_normalizers;
     map<string, flt_type> unigram_stats;
     vocab[start_end_symbol] = 0.0;
@@ -312,13 +315,9 @@ int main(int argc, char* argv[]) {
     for (auto it = words.cbegin(); it != words.cend(); ++it) {
         FactorGraph *fg = new FactorGraph(it->first, start_end_symbol, ss_vocab);
         fg_words[it->first] = fg;
-        map<pair<string,string>, flt_type> stats;
-        forward_backward(vocab, *fg, stats);
-        for (auto statit = stats.cbegin(); statit != stats.cend(); ++statit) {
-            trans_stats[statit->first] += it->second * statit->second;
-            trans_normalizers[statit->first.first] += it->second * statit->second;
-            unigram_stats[statit->first.second] += it->second * statit->second;
-        }
+        transitions_t word_stats;
+        forward_backward(vocab, *fg, word_stats);
+        update_trans_stats(word_stats, it->second, trans_stats, trans_normalizers, unigram_stats);
     }
 
     // Unigram cost with word end markers

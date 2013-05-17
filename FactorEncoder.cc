@@ -571,7 +571,7 @@ void forward_backward(const map<string, flt_type> &vocab,
 }
 
 
-void viterbi(const map<pair<string,string>, flt_type> &transitions,
+void viterbi(const transitions_t &transitions,
              FactorGraph &text,
              vector<string> &best_path,
              bool reverse)
@@ -597,7 +597,7 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
             source_node_str = text.get_factor(src_node);
             target_node_str = text.get_factor(tgt_node);
             try {
-                (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
+                (**arc).cost = transitions.at(source_node_str).at(target_node_str);
             }
             catch (std::out_of_range &oor) {
                 (**arc).cost = SMALL_LP;
@@ -613,36 +613,33 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
     }
 
     // Find best path
-    string bpn;
     unsigned int node = text.nodes.size()-1;
-    text.get_factor(node, bpn);
-    best_path.push_back(bpn);
+    best_path.push_back(text.get_factor(node));
     while (true) {
         node = source_nodes[node];
         if (node == -1) break;
-        text.get_factor(node, bpn);
-        best_path.push_back(bpn);
+        best_path.push_back(text.get_factor(node));
     }
     if (reverse) std::reverse(best_path.begin(), best_path.end());
 }
 
 
-void viterbi(const map<pair<string,string>, flt_type> &transitions,
+void viterbi(const transitions_t &transitions,
              FactorGraph &text,
-             map<pair<string,string>, flt_type> &stats)
+             transitions_t &stats)
 {
     stats.clear();
     vector<string> best_path;
     viterbi(transitions, text, best_path, true);
     if (best_path.size() < 2) return;
     for (int i=1; i<best_path.size(); i++)
-        stats[make_pair(best_path[i-1], best_path[i])] += 1.0;
+        stats[best_path[i-1]][best_path[i]] += 1.0;
 }
 
 
-void forward_backward(const map<pair<string,string>, flt_type> &transitions,
+void forward_backward(const transitions_t &transitions,
                       FactorGraph &text,
-                      map<pair<string,string>, flt_type> &stats)
+                      transitions_t &stats)
 {
     if (text.nodes.size() == 0) return;
     stats.clear();
@@ -663,7 +660,7 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
             source_node_str = text.get_factor(src_node);
             target_node_str = text.get_factor(tgt_node);
             try {
-                (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
+                (**arc).cost = transitions.at(source_node_str).at(target_node_str);
             }
             catch (std::out_of_range &oor) {
                 (**arc).cost = SMALL_LP;
@@ -685,7 +682,7 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
             src_node = (**arc).source_node;
             flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
             source_node_str  = text.get_factor(src_node);
-            stats[make_pair(source_node_str, target_node_str)] += exp(curr_cost);
+            stats[source_node_str][target_node_str] += exp(curr_cost);
             if (bw[src_node] == 0.0) bw[src_node] = curr_cost;
             else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
         }
@@ -695,7 +692,7 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
 
 void forward_backward(const map<string, flt_type> &vocab,
                       FactorGraph &text,
-                      map<pair<string,string>, flt_type> &stats)
+                      transitions_t &stats)
 {
     if (text.nodes.size() == 0) return;
     stats.clear();
@@ -710,11 +707,10 @@ void forward_backward(const map<string, flt_type> &vocab,
         FactorGraph::Node &node = text.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
             tgt_node = (**arc).target_node;
-            target_node_str = text.get_factor(tgt_node);
-            (**arc).cost = vocab.at(target_node_str);
+            (**arc).cost = vocab.at(text.get_factor(tgt_node));
             flt_type cost = fw[i] + (**arc).cost;
-            if (fw[(**arc).target_node] == 0) fw[(**arc).target_node] = cost;
-            else fw[(**arc).target_node] = add_log_domain_probs(fw[(**arc).target_node], cost);
+            if (fw[tgt_node] == 0) fw[tgt_node] = cost;
+            else fw[tgt_node] = add_log_domain_probs(fw[tgt_node], cost);
         }
     }
 
@@ -728,7 +724,7 @@ void forward_backward(const map<string, flt_type> &vocab,
             src_node = (**arc).source_node;
             flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
             source_node_str = text.get_factor(src_node);
-            stats[make_pair(source_node_str, target_node_str)] += exp(curr_cost);
+            stats[source_node_str][target_node_str] += exp(curr_cost);
             if (bw[src_node] == 0.0) bw[src_node] = curr_cost;
             else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
         }
