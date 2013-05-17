@@ -170,6 +170,17 @@ remove_least_common(const map<string, flt_type> &unigram_stats,
 }
 
 
+int
+transition_count(const transitions_t &transitions)
+{
+    int count = 0;
+    for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
+        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
+            count++;
+    return count;
+}
+
+
 int main(int argc, char* argv[]) {
 
     int iter_amount = 10;
@@ -329,7 +340,7 @@ int main(int argc, char* argv[]) {
     transitions = trans_stats;
     normalize(transitions, trans_normalizers);
     cerr << "bigram cost: " << bigram_cost(transitions, trans_stats) << endl;
-    cerr << "\tamount of transitions: " << transitions.size() << endl;
+    cerr << "\tamount of transitions: " << transition_count(transitions) << endl;
     cerr << "\tvocab size: " << unigram_stats.size() << endl;
     int co_removed = cutoff(unigram_stats, cutoff_value, transitions, fg_words);
     cerr << "\tremoved by cutoff: " << co_removed << endl;
@@ -340,7 +351,7 @@ int main(int argc, char* argv[]) {
         transitions = trans_stats;
         normalize(transitions, trans_normalizers);
         cerr << "bigram cost: " << bigram_cost(transitions, trans_stats) << endl;
-        cerr << "\tamount of transitions: " << transitions.size() << endl;
+        cerr << "\tamount of transitions: " << transition_count(transitions) << endl;
         cerr << "\tvocab size: " << unigram_stats.size() << endl;
 
         // Write temp transitions
