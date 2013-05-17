@@ -586,36 +586,35 @@ void viterbi(const map<pair<string,string>, flt_type> &transitions,
     if (text.nodes.size() == 0) return;
     best_path.clear();
 
-    // Rescore arcs
-    string source_node_str;
-    string target_node_str;
-    for (auto arc = text.arcs.begin(); arc != text.arcs.end(); ++arc) {
-        int src_node = (**arc).source_node;
-        int tgt_node = (**arc).target_node;
-        text.get_factor(src_node, source_node_str);
-        text.get_factor(tgt_node, target_node_str);
-        try {
-            (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
-        }
-        catch (std::out_of_range &oor) {
-            (**arc).cost = SMALL_LP;
-        }
-    }
-
     // Initialize node scores
     vector<flt_type> costs(text.nodes.size(), -numeric_limits<flt_type>::max());
     vector<int> source_nodes(text.nodes.size());
     costs[0] = 0.0; source_nodes[0] = -1;
 
     // Traverse paths
+    int src_node, tgt_node;
+    string source_node_str, target_node_str;
+
     for (int i=0; i<text.nodes.size(); i++) {
         FactorGraph::Node &node = text.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+
+            src_node = (**arc).source_node;
+            tgt_node = (**arc).target_node;
+            text.get_factor(src_node, source_node_str);
+            text.get_factor(tgt_node, target_node_str);
+            try {
+                (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
+            }
+            catch (std::out_of_range &oor) {
+                (**arc).cost = SMALL_LP;
+            }
+
             flt_type curr_cost = costs[(**arc).target_node];
-            flt_type new_cost = costs[i] + (*arc)->cost;
+            flt_type new_cost = costs[i] + (**arc).cost;
             if (new_cost > curr_cost) {
-                costs[(**arc).target_node] = new_cost;
-                source_nodes[(**arc).target_node] = i;
+                costs[tgt_node] = new_cost;
+                source_nodes[tgt_node] = i;
             }
         }
     }
@@ -655,32 +654,32 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
     if (text.nodes.size() == 0) return;
     stats.clear();
 
+    int src_node, tgt_node;
     string source_node_str;
     string target_node_str;
     vector<flt_type> fw(text.nodes.size(), 0.0);
     vector<flt_type> bw(text.nodes.size(), 0.0);
 
-    // Rescore arcs
-    for (auto arc = text.arcs.begin(); arc != text.arcs.end(); ++arc) {
-        int src_node = (**arc).source_node;
-        int tgt_node = (**arc).target_node;
-        text.get_factor(src_node, source_node_str);
-        text.get_factor(tgt_node, target_node_str);
-        try {
-            (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
-        }
-        catch (std::out_of_range &oor) {
-            (**arc).cost = SMALL_LP;
-        }
-    }
-
     // Forward
     for (int i=0; i<text.nodes.size(); i++) {
         FactorGraph::Node &node = text.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
-            flt_type cost = fw[i] + (*arc)->cost;
-            if (fw[(**arc).target_node] == 0) fw[(**arc).target_node] = cost;
-            else fw[(**arc).target_node] = add_log_domain_probs(fw[(**arc).target_node], cost);
+
+            src_node = (**arc).source_node;
+            tgt_node = (**arc).target_node;
+            text.get_factor(src_node, source_node_str);
+            text.get_factor(tgt_node, target_node_str);
+
+            try {
+                (**arc).cost = transitions.at(make_pair(source_node_str, target_node_str));
+            }
+            catch (std::out_of_range &oor) {
+                (**arc).cost = SMALL_LP;
+            }
+
+            flt_type cost = fw[i] + (**arc).cost;
+            if (fw[tgt_node] == 0) fw[tgt_node] = cost;
+            else fw[tgt_node] = add_log_domain_probs(fw[tgt_node], cost);
         }
     }
 
