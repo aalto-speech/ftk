@@ -246,17 +246,11 @@ void
 FactorGraph::remove_arcs(const std::string &source,
                          const std::string &target)
 {
-
-    string tgt_node_str;
     for (auto node = nodes.begin(); node != nodes.end(); ++node) {
-        string src_node_str;
-        this->get_factor(*node, src_node_str);
-        if (source != src_node_str) continue;
+        if (source != this->get_factor(*node)) continue;
         for (int i=0; i<node->outgoing.size(); i++) {
             FactorGraph::Arc *arc = node->outgoing[i];
-            string tgt_node_str;
-            this->get_factor(arc->target_node, tgt_node_str);
-            if (target != tgt_node_str) continue;
+            if (target != this->get_factor(arc->target_node)) continue;
             this->remove_arc(arc);
             break;
         }
@@ -267,6 +261,7 @@ FactorGraph::remove_arcs(const std::string &source,
         if (it->incoming.size() == 0 && it->len > 0) {
             while (it->outgoing.size() > 0)
                 remove_arc(it->outgoing[0]);
+            continue;
         }
         if (it->outgoing.size() == 0 && it->len > 0) {
             while (it->incoming.size() > 0)
@@ -279,11 +274,8 @@ FactorGraph::remove_arcs(const std::string &source,
 void
 FactorGraph::remove_arcs(const std::string &remstr)
 {
-    string node_str;
     for (auto node = nodes.begin(); node != nodes.end(); ++node) {
-        string node_str;
-        this->get_factor(*node, node_str);
-        if (remstr != node_str) continue;
+        if (this->get_factor(*node) != remstr) continue;
         while (node->incoming.size() > 0)
             remove_arc(node->incoming[0]);
         while (node->outgoing.size() > 0)
@@ -295,6 +287,7 @@ FactorGraph::remove_arcs(const std::string &remstr)
         if (it->incoming.size() == 0 && it->len > 0) {
             while (it->outgoing.size() > 0)
                 remove_arc(it->outgoing[0]);
+            continue;
         }
         if (it->outgoing.size() == 0 && it->len > 0) {
             while (it->incoming.size() > 0)

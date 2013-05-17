@@ -65,6 +65,12 @@ public:
     void get_factor(int node, std::string &nstr) const
     { if (nodes[node].len == 0) nstr.assign(start_end_symbol);
       else nstr.assign(this->text, nodes[node].start_pos, nodes[node].len); }
+    std::string get_factor(const Node &node) const
+    { if (node.len == 0) return start_end_symbol;
+      else return this->text.substr(node.start_pos, node.len); }
+    std::string get_factor(int node) const
+    { if (nodes[node].len == 0) return start_end_symbol;
+      else return this->text.substr(nodes[node].start_pos, nodes[node].len); }
     bool assert_equal(const FactorGraph &other) const;
     void get_paths(std::vector<std::vector<std::string> > &paths) const;
     void remove_arcs(const std::string &source, const std::string &target);
