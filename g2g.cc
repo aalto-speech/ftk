@@ -3,7 +3,6 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -108,10 +107,10 @@ vocab_size(const map<pair<string,string>, flt_type> &transitions)
 
 
 int
-cutoff(const map<string, flt_type> unigram_stats,
+cutoff(const map<string, flt_type> &unigram_stats,
        flt_type cutoff,
        map<pair<string,string>, flt_type> &transitions,
-       map<string, FactorGraph*> fg_words)
+       map<string, FactorGraph*> &fg_words)
 {
     map<string, flt_type> to_remove;
     for (auto it = unigram_stats.begin(); it != unigram_stats.end(); ++it)
