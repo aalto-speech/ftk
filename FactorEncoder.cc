@@ -654,13 +654,13 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
     if (text.nodes.size() == 0) return;
     stats.clear();
 
-    int src_node, tgt_node;
-    string source_node_str;
-    string target_node_str;
     vector<flt_type> fw(text.nodes.size(), 0.0);
     vector<flt_type> bw(text.nodes.size(), 0.0);
 
     // Forward
+    int src_node, tgt_node;
+    string source_node_str, target_node_str;
+
     for (int i=0; i<text.nodes.size(); i++) {
         FactorGraph::Node &node = text.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
@@ -690,7 +690,7 @@ void forward_backward(const map<pair<string,string>, flt_type> &transitions,
         text.get_factor(node, target_node_str);
 
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
-            int src_node = (**arc).source_node;
+            src_node = (**arc).source_node;
             flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
             text.get_factor(src_node, source_node_str);
             stats[make_pair(source_node_str, target_node_str)] += exp(curr_cost);
