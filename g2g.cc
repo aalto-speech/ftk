@@ -1,8 +1,10 @@
+#include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -134,9 +136,42 @@ cutoff(const map<string, flt_type> &unigram_stats,
 }
 
 
+void
+remove_least_common(const map<string, flt_type> &unigram_stats,
+                    int num_removals,
+                    map<pair<string,string>, flt_type> &transitions,
+                    map<string, FactorGraph*> &fg_words)
+{
+    vector<pair<string, flt_type> > sorted_stats;
+    sort_vocab(unigram_stats, sorted_stats, false);
+
+    map<string, flt_type> to_remove;
+    for (int i=0; i<num_removals; i++)
+        to_remove[sorted_stats[i].first] = 0.0;
+
+    for (auto trans_it = transitions.begin(); trans_it != transitions.end(); )
+    {
+        if (to_remove.find(trans_it->first.first) != to_remove.end()
+            || to_remove.find(trans_it->first.second) != to_remove.end())
+            transitions.erase(trans_it++);
+        else
+            ++trans_it;
+    }
+
+    for (auto fgit = fg_words.begin(); fgit != fg_words.end(); ++fgit) {
+        for (int i=0; i<num_removals; i++) {
+            size_t found = fgit->first.find(sorted_stats[i].first);
+            if (found != std::string::npos) fgit->second->remove_arcs(sorted_stats[i].first);
+        }
+    }
+}
+
+
 int main(int argc, char* argv[]) {
 
     int iter_amount = 10;
+    int least_common = 0;
+    int target_vocab_size = 30000;
     float cutoff_value = 0.0;
     flt_type one_char_min_lp = -25.0;
     string vocab_fname;
@@ -150,6 +185,8 @@ int main(int argc, char* argv[]) {
     poptContext pc;
     struct poptOption po[] = {
         {"iter", 'i', POPT_ARG_INT, &iter_amount, 11001, NULL, "How many iterations"},
+        {"least-common", 'l', POPT_ARG_INT, &least_common, 11001, NULL, "Remove least common strings"},
+        {"vocab_size", 'g', POPT_ARG_INT, &target_vocab_size, 11007, NULL, "Target vocabulary size (stopping criterion)"},
         {"cutoff", 'u', POPT_ARG_FLOAT, &cutoff_value, 11001, NULL, "Cutoff value for each iteration"},
         POPT_AUTOHELP
         {NULL}
@@ -217,6 +254,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, word segmentations: " << wordseg_fname << endl;
     cerr << "parameters, cutoff: " << setprecision(15) << cutoff_value << endl;
     cerr << "parameters, iterations: " << iter_amount << endl;
+    cerr << "parameters, target vocab size: " << target_vocab_size << endl;
 
     int maxlen, word_maxlen;
     map<string, flt_type> all_chars;
@@ -305,8 +343,18 @@ int main(int argc, char* argv[]) {
         cerr << "bigram cost: " << bigram_cost(transitions, trans_stats) << endl;
         cerr << "\tamount of transitions: " << transitions.size() << endl;
         cerr << "\tvocab size: " << unigram_stats.size() << endl;
-        co_removed = cutoff(unigram_stats, cutoff_value, transitions, fg_words);
-        cerr << "\tremoved by cutoff: " << co_removed << endl;
+
+        // Write temp transitions
+        ostringstream transitions_temp;
+        transitions_temp << "transitions.iter" << i+1;
+        write_transitions(transitions, transitions_temp.str());
+
+        remove_least_common(unigram_stats, least_common, transitions, fg_words);
+        cerr << "\tremoved " << least_common << " least common subwords" << endl;
+
+        if  (unigram_stats.size() - least_common < target_vocab_size) break;
+        //co_removed = cutoff(unigram_stats, cutoff_value, transitions, fg_words);
+        //cerr << "\tremoved by cutoff: " << co_removed << endl;
     }
 
     // Write transitions
@@ -334,4 +382,3 @@ int main(int argc, char* argv[]) {
 
     exit(1);
 }
-
