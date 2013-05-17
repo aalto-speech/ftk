@@ -648,19 +648,14 @@ void forward_backward(const transitions_t &transitions,
     vector<flt_type> bw(text.nodes.size(), 0.0);
 
     // Forward
-    int src_node, tgt_node;
-    string source_node_str, target_node_str;
-
     for (int i=0; i<text.nodes.size(); i++) {
+
         FactorGraph::Node &node = text.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
 
-            src_node = (**arc).source_node;
-            tgt_node = (**arc).target_node;
-            source_node_str = text.get_factor(src_node);
-            target_node_str = text.get_factor(tgt_node);
+            int tgt_node = (**arc).target_node;
             try {
-                (**arc).cost = transitions.at(source_node_str).at(target_node_str);
+                (**arc).cost = transitions.at(text.get_factor(node)).at(text.get_factor(tgt_node));
             }
             catch (std::out_of_range &oor) {
                 (**arc).cost = SMALL_LP;
@@ -676,13 +671,12 @@ void forward_backward(const transitions_t &transitions,
     for (int i=text.nodes.size()-1; i>0; i--) {
 
         FactorGraph::Node &node = text.nodes[i];
-        target_node_str = text.get_factor(node);
+        string target_node_str = text.get_factor(node);
 
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
-            src_node = (**arc).source_node;
+            int src_node = (**arc).source_node;
             flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
-            source_node_str  = text.get_factor(src_node);
-            stats[source_node_str][target_node_str] += exp(curr_cost);
+            stats[text.get_factor(src_node)][target_node_str] += exp(curr_cost);
             if (bw[src_node] == 0.0) bw[src_node] = curr_cost;
             else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
         }
