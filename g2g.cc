@@ -52,7 +52,8 @@ collect_trans_stats(const transitions_t &transitions,
                     map<string, FactorGraph*> &fg_words,
                     transitions_t &trans_stats,
                     map<string, flt_type> &trans_normalizers,
-                    map<string, flt_type> &unigram_stats)
+                    map<string, flt_type> &unigram_stats,
+                    bool fb=true)
 {
     trans_stats.clear();
     trans_normalizers.clear();
@@ -60,7 +61,10 @@ collect_trans_stats(const transitions_t &transitions,
 
     for (auto it = fg_words.begin(); it != fg_words.end(); ++it) {
         transitions_t word_stats;
-        forward_backward(transitions, *it->second, word_stats);
+        if (fb)
+            forward_backward(transitions, *it->second, word_stats);
+        else
+            viterbi(transitions, *it->second, word_stats);
         update_trans_stats(word_stats, words.at(it->first), trans_stats, trans_normalizers, unigram_stats);
     }
 }
@@ -353,23 +357,30 @@ int main(int argc, char* argv[]) {
     cerr << "\tremoved by cutoff: " << co_removed << endl;
 
     // Re-estimate using bigram stats
+    int vocab_size = unigram_stats.size();
     for (int i=0; i<iter_amount; i++) {
-        collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats);
+        if (vocab_size < 100000)
+            collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats, false);
+        else
+            collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats, true);
         transitions = trans_stats;
         normalize(transitions, trans_normalizers);
+        vocab_size = unigram_stats.size();
         cerr << "bigram cost: " << bigram_cost(transitions, trans_stats) << endl;
         cerr << "\tamount of transitions: " << transition_count(transitions) << endl;
-        cerr << "\tvocab size: " << unigram_stats.size() << endl;
+        cerr << "\tvocab size: " << vocab_size << endl;
 
         // Write temp transitions
         ostringstream transitions_temp;
         transitions_temp << "transitions.iter" << i+1;
         write_transitions(transitions, transitions_temp.str());
 
-        int lc_removed = remove_least_common(unigram_stats, least_common, transitions, fg_words);
+        int curr_least_common = least_common + (vocab_size % 1000);
+        int lc_removed = remove_least_common(unigram_stats, curr_least_common, transitions, fg_words);
         cerr << "\tremoved " << lc_removed << " least common subwords" << endl;
+        vocab_size = transitions.size();
 
-        if  (unigram_stats.size() - least_common < target_vocab_size) break;
+        if  (vocab_size < target_vocab_size) break;
     }
 
     // Write transitions
