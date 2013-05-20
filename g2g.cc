@@ -145,12 +145,13 @@ cutoff(const map<string, flt_type> &unigram_stats,
 }
 
 
-void
+int
 remove_least_common(const map<string, flt_type> &unigram_stats,
                     int num_removals,
                     transitions_t &transitions,
                     map<string, FactorGraph*> &fg_words)
 {
+    int start_size = transitions.size();
     vector<pair<string, flt_type> > sorted_stats;
     sort_vocab(unigram_stats, sorted_stats, false);
 
@@ -161,12 +162,18 @@ remove_least_common(const map<string, flt_type> &unigram_stats,
         for (int i=0; i<num_removals; i++)
             srcit->second.erase(sorted_stats[i].first);
 
+    for (auto srcit = transitions.begin(); srcit != transitions.end();)
+        if (srcit->second.size() == 0) transitions.erase(srcit++);
+        else ++srcit;
+
     for (auto fgit = fg_words.begin(); fgit != fg_words.end(); ++fgit) {
         for (int i=0; i<num_removals; i++) {
             size_t found = fgit->first.find(sorted_stats[i].first);
             if (found != std::string::npos) fgit->second->remove_arcs(sorted_stats[i].first);
         }
     }
+
+    return start_size-transitions.size();
 }
 
 
@@ -359,12 +366,10 @@ int main(int argc, char* argv[]) {
         transitions_temp << "transitions.iter" << i+1;
         write_transitions(transitions, transitions_temp.str());
 
-        remove_least_common(unigram_stats, least_common, transitions, fg_words);
-        cerr << "\tremoved " << least_common << " least common subwords" << endl;
+        int lc_removed = remove_least_common(unigram_stats, least_common, transitions, fg_words);
+        cerr << "\tremoved " << lc_removed << " least common subwords" << endl;
 
         if  (unigram_stats.size() - least_common < target_vocab_size) break;
-        //co_removed = cutoff(unigram_stats, cutoff_value, transitions, fg_words);
-        //cerr << "\tremoved by cutoff: " << co_removed << endl;
     }
 
     // Write transitions
