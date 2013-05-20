@@ -15,7 +15,7 @@ flt_type SMALL_LP = -200.0;
 
 void
 FactorGraph::create_nodes(const string &text, const map<string, flt_type> &vocab,
-                          int maxlen, vector<map<unsigned int, bool> > &incoming)
+                          int maxlen, vector<unordered_set<unsigned int> > &incoming)
 {
     nodes.push_back(Node(0,0));
     for (unsigned int i=0; i<text.length(); i++) {
@@ -25,7 +25,7 @@ FactorGraph::create_nodes(const string &text, const map<string, flt_type> &vocab
             if (len>maxlen) break;
             if (vocab.find(text.substr(i, len)) != vocab.end()) {
                 nodes.push_back(Node(i, len));
-                incoming[j][i] = true;
+                incoming[j].insert(i);
             }
         }
     }
@@ -34,7 +34,7 @@ FactorGraph::create_nodes(const string &text, const map<string, flt_type> &vocab
 
 void
 FactorGraph::create_nodes(const string &text, const StringSet<flt_type> &vocab,
-                          vector<map<unsigned int, bool> > &incoming)
+                          vector<unordered_set<unsigned int> > &incoming)
 {
     nodes.push_back(Node(0,0));
     for (unsigned int i=0; i<text.length(); i++) {
@@ -51,7 +51,7 @@ FactorGraph::create_nodes(const string &text, const StringSet<flt_type> &vocab,
             // String associated with this node
             if (arc->morph.length() > 0) {
                 nodes.push_back(Node(i, j+1-i));
-                incoming[j+1][i] = true;
+                incoming[j+1].insert(i);
             }
         }
     }
@@ -59,15 +59,15 @@ FactorGraph::create_nodes(const string &text, const StringSet<flt_type> &vocab,
 
 
 void
-FactorGraph::prune_and_create_arcs(vector<map<unsigned int, bool> > &incoming)
+FactorGraph::prune_and_create_arcs(vector<unordered_set<unsigned int> > &incoming)
 {
     // Find all possible node start positions
-    map<int, bool> possible_node_starts;
-    possible_node_starts[text.size()] = true;
+    unordered_set<int> possible_node_starts;
+    possible_node_starts.insert(text.size());
     for (int i=incoming.size()-1; i>= 0; i--) {
         if (possible_node_starts.find(i) == possible_node_starts.end()) continue;
         for (auto it = incoming[i].cbegin(); it != incoming[i].cend(); ++it)
-            possible_node_starts[it->first] = true;
+            possible_node_starts.insert(*it);
     }
 
     // Prune non-reachable nodes
@@ -110,10 +110,10 @@ FactorGraph::set_text(const string &text,
     this->start_end_symbol.assign(start_end_symbol);
     if (text.length() == 0) return;
 
-    vector<map<unsigned int, bool> > incoming(text.size()+1); // (pos in text, source pos)
+    vector<unordered_set<unsigned int> > incoming(text.size()+1); // (pos in text, source pos)
 
     // Create all nodes
-    incoming[0][0] = true;
+    incoming[0].insert(0);
     create_nodes(text, vocab, maxlen, incoming);
 
     // No possible segmentations
@@ -135,10 +135,10 @@ FactorGraph::set_text(const string &text,
     this->start_end_symbol.assign(start_end_symbol);
     if (text.length() == 0) return;
 
-    vector<map<unsigned int, bool> > incoming(text.size()+1); // (pos in text, source pos)
+    vector<unordered_set<unsigned int> > incoming(text.size()+1); // (pos in text, source pos)
 
     // Create all nodes
-    incoming[0][0] = true;
+    incoming[0].insert(0);
     create_nodes(text, vocab, incoming);
 
     // No possible segmentations

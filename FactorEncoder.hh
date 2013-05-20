@@ -4,6 +4,7 @@
 #include <limits>
 #include <map>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "defs.hh"
@@ -86,10 +87,10 @@ public:
 private:
     // Constructor helpers
     void create_nodes(const std::string &text, const std::map<std::string, flt_type> &vocab,
-                      int maxlen, std::vector<std::map<unsigned int, bool> > &incoming);
+                      int maxlen, std::vector<std::unordered_set<unsigned int> > &incoming);
     void create_nodes(const std::string &text, const StringSet<flt_type> &vocab,
-                      std::vector<std::map<unsigned int, bool> > &incoming);
-    void prune_and_create_arcs(std::vector<std::map<unsigned int, bool> > &incoming);
+                      std::vector<std::unordered_set<unsigned int> > &incoming);
+    void prune_and_create_arcs(std::vector<std::unordered_set<unsigned int> > &incoming);
     // Helper for enumerating paths
     void advance(std::vector<std::vector<std::string> > &paths,
                  std::vector<std::string> &curr_string, unsigned int node) const;
