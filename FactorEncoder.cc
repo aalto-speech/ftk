@@ -654,6 +654,30 @@ void viterbi(const transitions_t &transitions,
 }
 
 
+void backward(const FactorGraph &text,
+              vector<flt_type> &fw,
+              vector<flt_type> &bw,
+              transitions_t &stats)
+{
+    for (int i=text.nodes.size()-1; i>0; i--) {
+
+        if (bw[i] == MIN_FLOAT) continue;
+
+        const FactorGraph::Node &node = text.nodes[i];
+        string target_node_str = text.get_factor(node);
+
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
+            int src_node = (**arc).source_node;
+            if (fw[src_node] == MIN_FLOAT) continue;
+            flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
+            stats[text.get_factor(src_node)][target_node_str] += exp(curr_cost);
+            if (bw[src_node] == MIN_FLOAT) bw[src_node] = curr_cost;
+            else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
+        }
+    }
+}
+
+
 void forward_backward(const transitions_t &transitions,
                       FactorGraph &text,
                       transitions_t &stats)
@@ -687,23 +711,7 @@ void forward_backward(const transitions_t &transitions,
         }
     }
 
-    // Backward
-    for (int i=text.nodes.size()-1; i>0; i--) {
-
-        if (bw[i] == MIN_FLOAT) continue;
-
-        FactorGraph::Node &node = text.nodes[i];
-        string target_node_str = text.get_factor(node);
-
-        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
-            int src_node = (**arc).source_node;
-            if (fw[src_node] == MIN_FLOAT) continue;
-            flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
-            stats[text.get_factor(src_node)][target_node_str] += exp(curr_cost);
-            if (bw[src_node] == MIN_FLOAT) bw[src_node] = curr_cost;
-            else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
-        }
-    }
+    backward(text, fw, bw, stats);
 }
 
 
@@ -748,26 +756,7 @@ void forward_backward(const transitions_t &transitions,
         }
     }
 
-    // Backward
-    for (int i=text.nodes.size()-1; i>0; i--) {
-
-        if (bw[i] == MIN_FLOAT) continue;
-
-        FactorGraph::Node &node = text.nodes[i];
-        target_node_str = text.get_factor(node);
-        if (target_node_str == block) continue;
-
-        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
-            int src_node = (**arc).source_node;
-            if (fw[src_node] == MIN_FLOAT) continue;
-            source_node_str = text.get_factor(src_node);
-            if (source_node_str == block) continue;
-            flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
-            stats[source_node_str][target_node_str] += exp(curr_cost);
-            if (bw[src_node] == MIN_FLOAT) bw[src_node] = curr_cost;
-            else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
-        }
-    }
+    backward(text, fw, bw, stats);
 }
 
 
@@ -778,35 +767,25 @@ void forward_backward(const map<string, flt_type> &vocab,
     if (text.nodes.size() == 0) return;
     stats.clear();
 
-    vector<flt_type> fw(text.nodes.size(), 0.0);
-    vector<flt_type> bw(text.nodes.size(), 0.0);
+    vector<flt_type> fw(text.nodes.size(), MIN_FLOAT);
+    vector<flt_type> bw(text.nodes.size(), MIN_FLOAT);
+    fw[0] = 0.0; bw[text.nodes.size()-1] = 0.0;
 
     // Forward
     for (int i=0; i<text.nodes.size(); i++) {
+
+        if (fw[i] == MIN_FLOAT) continue;
 
         FactorGraph::Node &node = text.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
             int tgt_node = (**arc).target_node;
             (**arc).cost = vocab.at(text.get_factor(tgt_node));
             flt_type cost = fw[i] + (**arc).cost;
-            if (fw[tgt_node] == 0) fw[tgt_node] = cost;
+            if (fw[tgt_node] == MIN_FLOAT) fw[tgt_node] = cost;
             else fw[tgt_node] = add_log_domain_probs(fw[tgt_node], cost);
         }
     }
 
-    // Backward
-    for (int i=text.nodes.size()-1; i>0; i--) {
-
-        FactorGraph::Node &node = text.nodes[i];
-        string target_node_str = text.get_factor(node);
-
-        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
-            int src_node = (**arc).source_node;
-            flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
-            stats[text.get_factor(src_node)][target_node_str] += exp(curr_cost);
-            if (bw[src_node] == 0.0) bw[src_node] = curr_cost;
-            else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
-        }
-    }
+    backward(text, fw, bw, stats);
 }
 

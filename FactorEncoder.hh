@@ -159,4 +159,9 @@ void forward_backward(const std::map<std::string, flt_type> &vocab,
                       FactorGraph &text,
                       transitions_t &stats);
 
+void backward(const FactorGraph &text,
+              std::vector<flt_type> &fw,
+              std::vector<flt_type> &bw,
+              transitions_t &stats);
+
 #endif /* FACTOR_ENCODER */
