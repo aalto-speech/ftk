@@ -75,6 +75,7 @@ public:
     { if (nodes[node].len == 0) return start_end_symbol;
       else return this->text.substr(nodes[node].start_pos, nodes[node].len); }
     bool assert_equal(const FactorGraph &other) const;
+    int num_paths() const;
     void get_paths(std::vector<std::vector<std::string> > &paths) const;
     void remove_arcs(const std::string &source, const std::string &target);
     void remove_arcs(const std::string &remstr);

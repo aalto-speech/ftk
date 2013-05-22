@@ -192,6 +192,23 @@ FactorGraph::assert_equal(const FactorGraph &other) const
 }
 
 
+int
+FactorGraph::num_paths() const
+{
+
+    vector<int> path_counts(nodes.size());
+    path_counts[0] = 1;
+
+    for (int i=0; i<nodes.size(); i++) {
+        const FactorGraph::Node &node = nodes[i];
+        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc)
+            path_counts[(**arc).target_node] += path_counts[i];
+    }
+
+    return path_counts.back();
+}
+
+
 void
 FactorGraph::get_paths(vector<vector<string> > &paths) const
 {

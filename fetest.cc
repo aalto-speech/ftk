@@ -413,6 +413,26 @@ bool includes_path(vector<vector<string> > &all_paths, vector<string> &path) {
     return false;
 }
 
+// Test number of paths
+void fetest :: FactorGraphTestNumPaths (void)
+{
+    map<string, flt_type> vocab;
+    vocab["k"] = 0.0;
+    vocab["i"] = 0.0;
+    vocab["s"] = 0.0;
+    vocab["a"] = 0.0;
+    vocab["sa"] = 0.0;
+    vocab["ki"] = 0.0;
+    vocab["kis"] = 0.0;
+    vocab["kissa"] = 0.0;
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    CPPUNIT_ASSERT_EQUAL( 7, fg.num_paths() );
+    fg.remove_arcs(string("kissa"));
+    CPPUNIT_ASSERT_EQUAL( 6, fg.num_paths() );
+}
+
 // Enumerating paths
 void fetest :: FactorGraphTestGetList (void)
 {

@@ -28,6 +28,7 @@ class fetest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (FactorGraphTest2);
     CPPUNIT_TEST (FactorGraphTest3);
     CPPUNIT_TEST (FactorGraphTest4);
+    CPPUNIT_TEST (FactorGraphTestNumPaths);
     CPPUNIT_TEST (FactorGraphTestGetList);
     CPPUNIT_TEST (FactorGraphTestRemoveArcs);
     CPPUNIT_TEST (FactorGraphTestRemoveArcs2);
@@ -74,6 +75,7 @@ class fetest : public CPPUNIT_NS :: TestFixture
         void FactorGraphTest2(void);
         void FactorGraphTest3(void);
         void FactorGraphTest4(void);
+        void FactorGraphTestNumPaths(void);
         void FactorGraphTestGetList(void);
         void FactorGraphTestRemoveArcs(void);
         void FactorGraphTestRemoveArcs2(void);
