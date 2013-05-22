@@ -196,6 +196,7 @@ int
 FactorGraph::num_paths() const
 {
 
+    if (nodes.size() == 0) return 0;
     vector<int> path_counts(nodes.size());
     path_counts[0] = 1;
 
