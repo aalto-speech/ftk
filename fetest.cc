@@ -1049,3 +1049,51 @@ void fetest :: TransitionForwardBackwardRemoveArcs (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[start_end]["ki"], DBL_ACCURACY );
 }
 
+
+// Multiple paths, block a factor
+void fetest :: TransitionForwardBackwardBlockFactor (void)
+{
+    map<string, flt_type> vocab;
+    transitions_t transitions;
+    vocab["k"] = 0.0;
+    vocab["i"] = 0.0;
+    vocab["a"] = 0.0;
+    vocab["sa"] = 0.0;
+    vocab["s"] = 0.0;
+    vocab["ki"] = 0.0;
+    vocab["kis"] = 0.0;
+    vocab["kissa"] = 0.0;
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    transitions_t stats;
+    forward_backward(transitions, fg, stats, string("k"));
+    CPPUNIT_ASSERT_EQUAL(12, transition_count(stats));
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.07445323406235459, stats["kissa"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.07445323406235459, stats[start_end]["kissa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5695672405770126, stats["sa"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3559795253606329, stats["a"][start_end], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.09306654257794324, stats["s"]["sa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3559795253606329, stats["s"]["a"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.05816658911121452, stats["s"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.47650069799906936, stats["kis"]["sa"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.29781293624941835, stats["kis"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7743136342484878, stats[start_end]["kis"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.15123313168915775, stats["ki"]["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.15123313168915775, stats[start_end]["ki"], DBL_ACCURACY );
+}

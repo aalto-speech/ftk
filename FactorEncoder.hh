@@ -150,6 +150,11 @@ void forward_backward(const transitions_t &transitions,
                       FactorGraph &text,
                       transitions_t &stats);
 
+void forward_backward(const transitions_t &transitions,
+                      FactorGraph &text,
+                      transitions_t &stats,
+                      const std::string &block);
+
 void forward_backward(const std::map<std::string, flt_type> &vocab,
                       FactorGraph &text,
                       transitions_t &stats);

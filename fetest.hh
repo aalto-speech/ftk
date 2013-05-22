@@ -49,6 +49,7 @@ class fetest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (TransitionForwardBackwardTest7);
     CPPUNIT_TEST (TransitionForwardBackwardTest8);
     CPPUNIT_TEST (TransitionForwardBackwardRemoveArcs);
+    CPPUNIT_TEST (TransitionForwardBackwardBlockFactor);
     CPPUNIT_TEST_SUITE_END ();
 
     public:
@@ -96,6 +97,7 @@ class fetest : public CPPUNIT_NS :: TestFixture
         void TransitionForwardBackwardTest7(void);
         void TransitionForwardBackwardTest8(void);
         void TransitionForwardBackwardRemoveArcs(void);
+        void TransitionForwardBackwardBlockFactor(void);
 };
 
 #endif
