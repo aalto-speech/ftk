@@ -359,10 +359,8 @@ int main(int argc, char* argv[]) {
     // Re-estimate using bigram stats
     int vocab_size = unigram_stats.size();
     for (int i=0; i<iter_amount; i++) {
-        if (vocab_size < 100000)
-            collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats, false);
-        else
-            collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats, true);
+
+        collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats);
         transitions = trans_stats;
         normalize(transitions, trans_normalizers);
         vocab_size = unigram_stats.size();
