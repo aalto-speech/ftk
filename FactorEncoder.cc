@@ -565,7 +565,7 @@ flt_type forward_backward(const StringSet<flt_type> &vocab,
         }
     }
 
-    if (search[len-1].size() == 0) return SMALL_LP;
+    if (search[len-1].size() == 0) return MIN_FLOAT;
 
     normalizers[len-1] = search[len-1][0].cost;
     for (int j=1; j<search[len-1].size(); j++)
@@ -583,7 +583,7 @@ flt_type forward_backward(const StringSet<flt_type> &vocab,
         }
     }
 
-    return MIN_FLOAT;
+    return normalizers[len-1];
 }
 
 
