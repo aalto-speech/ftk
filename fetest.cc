@@ -565,12 +565,13 @@ void fetest :: TransitionViterbiTest1 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     vector<string> best_path;
-    viterbi(transitions, fg, best_path);
+    flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(4, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str1, best_path[1]);
     CPPUNIT_ASSERT_EQUAL(str2, best_path[2]);
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[3]);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -3.0, lp, DBL_ACCURACY );
 }
 
 void fetest :: TransitionViterbiTest2 (void)
@@ -593,12 +594,13 @@ void fetest :: TransitionViterbiTest2 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     vector<string> best_path;
-    viterbi(transitions, fg, best_path);
+    flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(4, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str3, best_path[1]);
     CPPUNIT_ASSERT_EQUAL(str4, best_path[2]);
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[3]);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -3.0, lp, DBL_ACCURACY );
 }
 
 // No possible segmentation
@@ -614,8 +616,9 @@ void fetest :: TransitionViterbiTest3 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
-    viterbi(transitions, fg, best_path);
+    flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
 }
 
 // Empty string
@@ -631,8 +634,9 @@ void fetest :: TransitionViterbiTest4 (void)
     string sentence("");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
-    viterbi(transitions, fg, best_path);
+    flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
 }
 
 // One character sentence
@@ -648,11 +652,12 @@ void fetest :: TransitionViterbiTest5 (void)
     string sentence("a");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
-    viterbi(transitions, fg, best_path);
+    flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(3, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str1, best_path[1]);
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[2]);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -2.0, lp, DBL_ACCURACY );
 }
 
 // No segmentation
@@ -675,8 +680,9 @@ void fetest :: TransitionViterbiTest6 (void)
     string sentence("a-bcd");
     FactorGraph fg(sentence, start_end, vocab, 1);
     vector<string> best_path;
-    viterbi(transitions, fg, best_path);
+    flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
 }
 
 // Normal scenario with few variations
@@ -718,15 +724,16 @@ void fetest :: TransitionViterbiTest7 (void)
     FactorGraph fg(sentence, start_end, vocab, maxlen);
     vector<string> best_path;
 
-    viterbi(transitions, fg, best_path);
+    flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(4, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str6, best_path[1]);
     CPPUNIT_ASSERT_EQUAL(str7, best_path[2]);
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[3]);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -3.0, lp, DBL_ACCURACY );
 
     transitions[str6][str7] = -10.0;
-    viterbi(transitions, fg, best_path);
+    lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(6, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str6, best_path[1]);
@@ -734,6 +741,7 @@ void fetest :: TransitionViterbiTest7 (void)
     CPPUNIT_ASSERT_EQUAL(str5, best_path[3]);
     CPPUNIT_ASSERT_EQUAL(str4, best_path[4]);
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[5]);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -5.0, lp, DBL_ACCURACY );
 }
 
 // Check that non-existing transitions are ok
@@ -775,7 +783,7 @@ void fetest :: TransitionViterbiTest8 (void)
     FactorGraph fg(sentence, start_end, vocab, maxlen);
     vector<string> best_path;
 
-    viterbi(transitions, fg, best_path);
+    flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(6, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str6, best_path[1]);
@@ -783,6 +791,7 @@ void fetest :: TransitionViterbiTest8 (void)
     CPPUNIT_ASSERT_EQUAL(str5, best_path[3]);
     CPPUNIT_ASSERT_EQUAL(str4, best_path[4]);
     CPPUNIT_ASSERT_EQUAL(start_end, best_path[5]);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -5.0, lp, DBL_ACCURACY );
 }
 
 

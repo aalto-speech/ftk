@@ -596,12 +596,12 @@ flt_type forward_backward(const map<string, flt_type> &vocab,
 }
 
 
-void viterbi(const transitions_t &transitions,
-             FactorGraph &text,
-             vector<string> &best_path,
-             bool reverse)
+flt_type viterbi(const transitions_t &transitions,
+                 FactorGraph &text,
+                 vector<string> &best_path,
+                 bool reverse)
 {
-    if (text.nodes.size() == 0) return;
+    if (text.nodes.size() == 0) return MIN_FLOAT;
     best_path.clear();
 
     // Initialize node scores
@@ -643,26 +643,29 @@ void viterbi(const transitions_t &transitions,
         best_path.push_back(text.get_factor(node));
     }
     if (reverse) std::reverse(best_path.begin(), best_path.end());
+
+    return costs.back();
 }
 
 
-void viterbi(const transitions_t &transitions,
-             FactorGraph &text,
-             transitions_t &stats)
+flt_type viterbi(const transitions_t &transitions,
+                 FactorGraph &text,
+                 transitions_t &stats)
 {
     stats.clear();
     vector<string> best_path;
-    viterbi(transitions, text, best_path, true);
-    if (best_path.size() < 2) return;
+    flt_type lp = viterbi(transitions, text, best_path, true);
+    if (best_path.size() < 2) return MIN_FLOAT;
     for (int i=1; i<best_path.size(); i++)
         stats[best_path[i-1]][best_path[i]] += 1.0;
+    return lp;
 }
 
 
 void backward(const FactorGraph &text,
-              vector<flt_type> &fw,
-              vector<flt_type> &bw,
-              transitions_t &stats)
+                  vector<flt_type> &fw,
+                  vector<flt_type> &bw,
+                  transitions_t &stats)
 {
     for (int i=text.nodes.size()-1; i>0; i--) {
 
@@ -683,11 +686,11 @@ void backward(const FactorGraph &text,
 }
 
 
-void forward_backward(const transitions_t &transitions,
-                      FactorGraph &text,
-                      transitions_t &stats)
+flt_type forward_backward(const transitions_t &transitions,
+                          FactorGraph &text,
+                          transitions_t &stats)
 {
-    if (text.nodes.size() == 0) return;
+    if (text.nodes.size() == 0) return MIN_FLOAT;
     stats.clear();
 
     vector<flt_type> fw(text.nodes.size(), MIN_FLOAT);
@@ -717,15 +720,17 @@ void forward_backward(const transitions_t &transitions,
     }
 
     backward(text, fw, bw, stats);
+
+    return MIN_FLOAT;
 }
 
 
-void forward_backward(const transitions_t &transitions,
-                      FactorGraph &text,
-                      transitions_t &stats,
-                      const string &block)
+flt_type forward_backward(const transitions_t &transitions,
+                          FactorGraph &text,
+                          transitions_t &stats,
+                          const string &block)
 {
-    if (text.nodes.size() == 0) return;
+    if (text.nodes.size() == 0) return MIN_FLOAT;
     stats.clear();
 
     vector<flt_type> fw(text.nodes.size(), MIN_FLOAT);
@@ -762,14 +767,16 @@ void forward_backward(const transitions_t &transitions,
     }
 
     backward(text, fw, bw, stats);
+
+    return MIN_FLOAT;
 }
 
 
-void forward_backward(const map<string, flt_type> &vocab,
-                      FactorGraph &text,
-                      transitions_t &stats)
+flt_type forward_backward(const map<string, flt_type> &vocab,
+                          FactorGraph &text,
+                          transitions_t &stats)
 {
-    if (text.nodes.size() == 0) return;
+    if (text.nodes.size() == 0) return MIN_FLOAT;
     stats.clear();
 
     vector<flt_type> fw(text.nodes.size(), MIN_FLOAT);
@@ -792,5 +799,7 @@ void forward_backward(const map<string, flt_type> &vocab,
     }
 
     backward(text, fw, bw, stats);
+
+    return MIN_FLOAT;
 }
 

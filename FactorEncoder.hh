@@ -138,27 +138,27 @@ flt_type forward_backward(const std::map<std::string, flt_type> &vocab,
                           std::map<std::string, flt_type> &stats);
 
 // 2-GRAM
-void viterbi(const transitions_t &transitions,
-             FactorGraph &text,
-             std::vector<std::string> &best_path,
-             bool reverse=true);
+flt_type viterbi(const transitions_t &transitions,
+                 FactorGraph &text,
+                 std::vector<std::string> &best_path,
+                 bool reverse=true);
 
-void viterbi(const transitions_t &transitions,
-             FactorGraph &text,
-             transitions_t &stats);
+flt_type viterbi(const transitions_t &transitions,
+                 FactorGraph &text,
+                 transitions_t &stats);
 
-void forward_backward(const transitions_t &transitions,
-                      FactorGraph &text,
-                      transitions_t &stats);
+flt_type forward_backward(const transitions_t &transitions,
+                          FactorGraph &text,
+                          transitions_t &stats);
 
-void forward_backward(const transitions_t &transitions,
-                      FactorGraph &text,
-                      transitions_t &stats,
-                      const std::string &block);
+flt_type forward_backward(const transitions_t &transitions,
+                          FactorGraph &text,
+                          transitions_t &stats,
+                          const std::string &block);
 
-void forward_backward(const std::map<std::string, flt_type> &vocab,
-                      FactorGraph &text,
-                      transitions_t &stats);
+flt_type forward_backward(const std::map<std::string, flt_type> &vocab,
+                          FactorGraph &text,
+                          transitions_t &stats);
 
 void backward(const FactorGraph &text,
               std::vector<flt_type> &fw,
