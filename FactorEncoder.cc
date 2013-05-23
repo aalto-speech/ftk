@@ -327,7 +327,7 @@ class Token {
     public:
         int source;
         flt_type cost;
-        Token(): source(-1), cost(-numeric_limits<flt_type>::max()) {};
+        Token(): source(-1), cost(MIN_FLOAT) {};
         Token(int src, flt_type cst): source(src), cost(cst) {};
         Token(const Token& orig) { this->source=orig.source; this->cost=orig.cost; };
 };
@@ -417,7 +417,7 @@ void viterbi(const map<string, flt_type> &vocab,
             if (vocab.find(text.substr(start_pos, len)) != vocab.end()) {
                 flt_type cost = vocab.at(text.substr(start_pos, len));
                 if (j-1 >= 0) {
-                    if (search[j-1].cost == -numeric_limits<flt_type>::max()) break;
+                    if (search[j-1].cost == MIN_FLOAT) break;
                     cost += search[j-1].cost;
                 }
                 if (cost > search[i].cost) {
@@ -430,7 +430,7 @@ void viterbi(const map<string, flt_type> &vocab,
 
     // Look up the best path
     int target = search.size()-1;
-    if (search[target].cost == -numeric_limits<flt_type>::max()) return;
+    if (search[target].cost == MIN_FLOAT) return;
 
     int source = search[target].source;
     while (true) {
@@ -479,7 +479,7 @@ void viterbi(const StringSet<flt_type> &vocab,
 
     // Look up the best path
     int target = search.size()-1;
-    if (search[target].cost == -numeric_limits<flt_type>::max()) return;
+    if (search[target].cost == MIN_FLOAT) return;
 
     int source = search[target].source;
     while (true) {
@@ -600,7 +600,7 @@ void viterbi(const transitions_t &transitions,
     best_path.clear();
 
     // Initialize node scores
-    vector<flt_type> costs(text.nodes.size(), -numeric_limits<flt_type>::max());
+    vector<flt_type> costs(text.nodes.size(), MIN_FLOAT);
     vector<int> source_nodes(text.nodes.size());
     costs[0] = 0.0; source_nodes[0] = -1;
 
