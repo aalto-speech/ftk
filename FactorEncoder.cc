@@ -11,6 +11,9 @@
 
 using namespace std;
 
+flt_type SMALL_LP = -200.0;
+flt_type MIN_FLOAT = -std::numeric_limits<flt_type>::max();
+
 
 void
 FactorGraph::create_nodes(const string &text, const map<string, flt_type> &vocab,
@@ -692,10 +695,37 @@ flt_type viterbi(const transitions_t &transitions,
 }
 
 
+void forward(const transitions_t &transitions,
+             FactorGraph &text,
+             std::vector<flt_type> &fw)
+{
+    for (int i=0; i<text.nodes.size(); i++) {
+
+        if (fw[i] == MIN_FLOAT) continue;
+
+        FactorGraph::Node &node = text.nodes[i];
+        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+
+            int tgt_node = (**arc).target_node;
+            try {
+                (**arc).cost = transitions.at(text.get_factor(node)).at(text.get_factor(tgt_node));
+            }
+            catch (std::out_of_range &oor) {
+                (**arc).cost = SMALL_LP;
+            }
+
+            flt_type cost = fw[i] + (**arc).cost;
+            if (fw[tgt_node] == MIN_FLOAT) fw[tgt_node] = cost;
+            else fw[tgt_node] = add_log_domain_probs(fw[tgt_node], cost);
+        }
+    }
+}
+
+
 void backward(const FactorGraph &text,
-                  vector<flt_type> &fw,
-                  vector<flt_type> &bw,
-                  transitions_t &stats)
+              vector<flt_type> &fw,
+              vector<flt_type> &bw,
+              transitions_t &stats)
 {
     for (int i=text.nodes.size()-1; i>0; i--) {
 
@@ -727,29 +757,31 @@ flt_type forward_backward(const transitions_t &transitions,
     vector<flt_type> bw(text.nodes.size(), MIN_FLOAT);
     fw[0] = 0.0; bw[text.nodes.size()-1] = 0.0;
 
-    // Forward
-    for (int i=0; i<text.nodes.size(); i++) {
-
-        if (fw[i] == MIN_FLOAT) continue;
-
-        FactorGraph::Node &node = text.nodes[i];
-        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
-
-            int tgt_node = (**arc).target_node;
-            try {
-                (**arc).cost = transitions.at(text.get_factor(node)).at(text.get_factor(tgt_node));
-            }
-            catch (std::out_of_range &oor) {
-                (**arc).cost = SMALL_LP;
-            }
-
-            flt_type cost = fw[i] + (**arc).cost;
-            if (fw[tgt_node] == MIN_FLOAT) fw[tgt_node] = cost;
-            else fw[tgt_node] = add_log_domain_probs(fw[tgt_node], cost);
-        }
-    }
-
+    forward(transitions, text, fw);
     backward(text, fw, bw, stats);
+
+    return fw.back();
+}
+
+
+flt_type forward_backward(const transitions_t &transitions,
+                          FactorGraph &text,
+                          transitions_t &stats,
+                          vector<flt_type> &post_scores)
+{
+    if (text.nodes.size() == 0) return MIN_FLOAT;
+    stats.clear();
+
+    vector<flt_type> fw(text.nodes.size(), MIN_FLOAT);
+    vector<flt_type> bw(text.nodes.size(), MIN_FLOAT);
+    fw[0] = 0.0; bw[text.nodes.size()-1] = 0.0;
+
+    forward(transitions, text, fw);
+    backward(text, fw, bw, stats);
+
+    post_scores.resize(text.text.size());
+    for (int i=0; i<text.nodes.size(); i++)
+        post_scores[text.nodes[i].start_pos] += bw[i];
 
     return fw.back();
 }

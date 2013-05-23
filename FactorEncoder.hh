@@ -11,8 +11,6 @@
 #include "StringSet.hh"
 
 typedef std::map<std::string, std::map<std::string, flt_type> > transitions_t;
-flt_type SMALL_LP = -200.0;
-flt_type MIN_FLOAT = -std::numeric_limits<flt_type>::max();
 
 
 class FactorGraph {
@@ -136,7 +134,7 @@ class Token {
     public:
         int source;
         flt_type cost;
-        Token(): source(-1), cost(MIN_FLOAT) {};
+        Token(): source(-1), cost(-std::numeric_limits<flt_type>::max()) {};
         Token(int src, flt_type cst): source(src), cost(cst) {};
         Token(const Token& orig) { this->source=orig.source; this->cost=orig.cost; };
 };
@@ -160,7 +158,7 @@ flt_type forward_backward(const StringSet<flt_type> &vocab,
 flt_type forward_backward(const StringSet<flt_type> &vocab,
                           const std::string &text,
                           std::map<std::string, flt_type> &stats,
-                          std::vector<flt_type> &bw);
+                          std::vector<flt_type> &post_scores);
 
 flt_type forward_backward(const std::map<std::string, flt_type> &vocab,
                           const std::string &text,
@@ -176,22 +174,35 @@ flt_type viterbi(const transitions_t &transitions,
                  FactorGraph &text,
                  transitions_t &stats);
 
-flt_type forward_backward(const transitions_t &transitions,
-                          FactorGraph &text,
-                          transitions_t &stats);
-
-flt_type forward_backward(const transitions_t &transitions,
-                          FactorGraph &text,
-                          transitions_t &stats,
-                          const std::string &block);
-
-flt_type forward_backward(const std::map<std::string, flt_type> &vocab,
-                          FactorGraph &text,
-                          transitions_t &stats);
+void forward(const transitions_t &transitions,
+             FactorGraph &text,
+             const std::vector<flt_type> &fw);
 
 void backward(const FactorGraph &text,
               std::vector<flt_type> &fw,
               std::vector<flt_type> &bw,
               transitions_t &stats);
+
+// Normal case
+flt_type forward_backward(const transitions_t &transitions,
+                          FactorGraph &text,
+                          transitions_t &stats);
+
+// Get out the final posterior scores for each character position
+flt_type forward_backward(const transitions_t &transitions,
+                          FactorGraph &text,
+                          transitions_t &stats,
+                          std::vector<flt_type> &post_scores);
+
+// Allows blocking one factor
+flt_type forward_backward(const transitions_t &transitions,
+                          FactorGraph &text,
+                          transitions_t &stats,
+                          const std::string &block);
+
+// Initialization with unigram scores, bigram stats out
+flt_type forward_backward(const std::map<std::string, flt_type> &vocab,
+                          FactorGraph &text,
+                          transitions_t &stats);
 
 #endif /* FACTOR_ENCODER */
