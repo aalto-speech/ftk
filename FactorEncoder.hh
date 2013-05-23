@@ -11,6 +11,8 @@
 #include "StringSet.hh"
 
 typedef std::map<std::string, std::map<std::string, flt_type> > transitions_t;
+flt_type SMALL_LP = -200.0;
+flt_type MIN_FLOAT = -std::numeric_limits<flt_type>::max();
 
 
 class FactorGraph {
@@ -129,9 +131,36 @@ flt_type viterbi(const StringSet<flt_type> &vocab,
 flt_type add_log_domain_probs(flt_type a,
                               flt_type b);
 
+
+class Token {
+    public:
+        int source;
+        flt_type cost;
+        Token(): source(-1), cost(MIN_FLOAT) {};
+        Token(int src, flt_type cst): source(src), cost(cst) {};
+        Token(const Token& orig) { this->source=orig.source; this->cost=orig.cost; };
+};
+
+void forward(const StringSet<flt_type> &vocab,
+             const std::string &text,
+             std::vector<std::vector<Token> > &search,
+             std::vector<flt_type> &fw);
+
+void backward(const StringSet<flt_type> &vocab,
+              const std::string &text,
+              const std::vector<std::vector<Token> > &search,
+              const std::vector<flt_type> &fw,
+              std::vector<flt_type> &bw,
+              std::map<std::string, flt_type> &stats);
+
 flt_type forward_backward(const StringSet<flt_type> &vocab,
                           const std::string &text,
                           std::map<std::string, flt_type> &stats);
+
+flt_type forward_backward(const StringSet<flt_type> &vocab,
+                          const std::string &text,
+                          std::map<std::string, flt_type> &stats,
+                          std::vector<flt_type> &bw);
 
 flt_type forward_backward(const std::map<std::string, flt_type> &vocab,
                           const std::string &text,

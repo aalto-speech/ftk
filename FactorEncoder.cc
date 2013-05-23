@@ -11,9 +11,6 @@
 
 using namespace std;
 
-flt_type SMALL_LP = -200.0;
-flt_type MIN_FLOAT = -std::numeric_limits<flt_type>::max();
-
 
 void
 FactorGraph::create_nodes(const string &text, const map<string, flt_type> &vocab,
@@ -323,16 +320,6 @@ FactorGraph::~FactorGraph() {
 }
 
 
-class Token {
-    public:
-        int source;
-        flt_type cost;
-        Token(): source(-1), cost(MIN_FLOAT) {};
-        Token(int src, flt_type cst): source(src), cost(cst) {};
-        Token(const Token& orig) { this->source=orig.source; this->cost=orig.cost; };
-};
-
-
 int read_vocab(string fname,
                map<string, flt_type> &vocab,
                int &maxlen)
@@ -520,27 +507,20 @@ flt_type add_log_domain_probs(flt_type a, flt_type b) {
 }
 
 
-flt_type forward_backward(const StringSet<flt_type> &vocab,
-                          const string &text,
-                          map<string, flt_type> &stats)
+void forward(const StringSet<flt_type> &vocab,
+             const string &text,
+             vector<vector<Token> > &search,
+             vector<flt_type> &fw)
 {
     int len = text.length();
-    if (len == 0) return MIN_FLOAT;
-
-    stats.clear();
-    vector<vector<Token> > search(len);
-    vector<flt_type> normalizers(len); // Normalizers (total forward score) for each position
-    vector<flt_type> bw(len); // Backward propagated scores
-
-    // Forward pass
     for (int i=0; i<len; i++) {
 
         if (i>0 && search[i-1].size() == 0) continue;
 
         if (i>0) {
-            normalizers[i-1] = search[i-1][0].cost;
+            fw[i-1] = search[i-1][0].cost;
             for (unsigned int t=1; t<search[i-1].size(); t++)
-                normalizers[i-1] = add_log_domain_probs(normalizers[i-1], search[i-1][t].cost);
+                fw[i-1] = add_log_domain_probs(fw[i-1], search[i-1][t].cost);
         }
 
         // Iterate all factors starting from this position
@@ -555,7 +535,7 @@ flt_type forward_backward(const StringSet<flt_type> &vocab,
             // Morph associated with this node
             if (arc->morph.length() > 0) {
                 flt_type cost = arc->cost;
-                if (i>0) cost += normalizers[i-1];
+                if (i>0) cost += fw[i-1];
 
                 Token tok;
                 tok.cost = cost;
@@ -565,25 +545,75 @@ flt_type forward_backward(const StringSet<flt_type> &vocab,
         }
     }
 
-    if (search[len-1].size() == 0) return MIN_FLOAT;
+    if (search[len-1].size() == 0) return;
 
-    normalizers[len-1] = search[len-1][0].cost;
+    fw[len-1] = search[len-1][0].cost;
     for (int j=1; j<search[len-1].size(); j++)
-        normalizers[len-1] = add_log_domain_probs(normalizers[len-1], search[len-1][j].cost);
+        fw[len-1] = add_log_domain_probs(fw[len-1], search[len-1][j].cost);
+}
+
+void backward(const StringSet<flt_type> &vocab,
+              const string &text,
+              const vector<vector<Token> > &search,
+              const vector<flt_type> &fw,
+              vector<flt_type> &bw,
+              map<string, flt_type> &stats)
+{
+    int len = text.length();
+    if (search[len-1].size() == 0) return;
 
     // Backward
     for (int i=len-1; i>=0; i--) {
         for (int toki=0; toki<search[i].size(); toki++) {
             Token tok = search[i][toki];
-            flt_type normalized = tok.cost - normalizers[i] + bw[i];
+            flt_type normalized = tok.cost - fw[i] + bw[i];
             stats[text.substr(tok.source+1, i-tok.source)] += exp(normalized);
             if (tok.source == -1) continue;
             if (bw[tok.source] != 0.0) bw[tok.source] = add_log_domain_probs(bw[tok.source], normalized);
             else bw[tok.source] = normalized;
         }
     }
+}
 
-    return normalizers[len-1];
+
+flt_type forward_backward(const StringSet<flt_type> &vocab,
+                          const string &text,
+                          map<string, flt_type> &stats)
+{
+    int len = text.length();
+    if (len == 0) return MIN_FLOAT;
+
+    stats.clear();
+    vector<vector<Token> > search(len);
+    vector<flt_type> fw(len);
+    vector<flt_type> bw(len);
+
+    forward(vocab, text, search, fw);
+    backward(vocab, text, search, fw, bw, stats);
+
+    if (search[len-1].size() == 0) return MIN_FLOAT;
+    return fw.back();
+}
+
+
+flt_type forward_backward(const StringSet<flt_type> &vocab,
+                          const string &text,
+                          map<string, flt_type> &stats,
+                          vector<flt_type> &bw)
+{
+    int len = text.length();
+    if (len == 0) return MIN_FLOAT;
+
+    stats.clear();
+    vector<vector<Token> > search(len);
+    vector<flt_type> fw(len);
+    bw.resize(len);
+
+    forward(vocab, text, search, fw);
+    backward(vocab, text, search, fw, bw, stats);
+
+    if (search[len-1].size() == 0) return MIN_FLOAT;
+    return fw.back();
 }
 
 
