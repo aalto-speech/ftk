@@ -32,10 +32,11 @@ void fetest :: viterbiTest1 (void)
     string sentence("abc");
     vector<string> best_path;
     int maxlen = 2;
-    viterbi(vocab, maxlen, sentence, best_path);
+    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str2, best_path[1]);
+    CPPUNIT_ASSERT_EQUAL(-3.0, lp);
 }
 
 void fetest :: viterbiTest2 (void)
@@ -50,10 +51,11 @@ void fetest :: viterbiTest2 (void)
     string sentence("abc");
     vector<string> best_path;
     int maxlen = 2;
-    viterbi(vocab, maxlen, sentence, best_path);
+    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str3, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str4, best_path[1]);
+    CPPUNIT_ASSERT_EQUAL(0.0, lp);
 }
 
 // No possible segmentation
@@ -65,8 +67,9 @@ void fetest :: viterbiTest3 (void)
     string sentence("abc");
     vector<string> best_path;
     int maxlen = 1;
-    viterbi(vocab, maxlen, sentence, best_path);
+    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(-std::numeric_limits<flt_type>::max(), lp);
 }
 
 // Empty string
@@ -78,8 +81,9 @@ void fetest :: viterbiTest4 (void)
     string sentence("");
     vector<string> best_path;
     int maxlen = 1;
-    viterbi(vocab, maxlen, sentence, best_path);
+    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(-std::numeric_limits<flt_type>::max(), lp);
 }
 
 // One character sentence
@@ -91,9 +95,10 @@ void fetest :: viterbiTest5 (void)
     string sentence("a");
     vector<string> best_path;
     int maxlen = 1;
-    viterbi(vocab, maxlen, sentence, best_path);
+    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
+    CPPUNIT_ASSERT_EQUAL(-1.0, lp);
 }
 
 // No segmentation
@@ -109,8 +114,9 @@ void fetest :: viterbiTest6 (void)
     string sentence("a-bcd");
     vector<string> best_path;
     int maxlen = 1;
-    viterbi(vocab, maxlen, sentence, best_path);
+    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
+    CPPUNIT_ASSERT_EQUAL(-std::numeric_limits<flt_type>::max(), lp);
 }
 
 void fetest :: viterbiTest7 (void)
@@ -135,10 +141,11 @@ void fetest :: viterbiTest7 (void)
     CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str8, best_path[0]);
     vocab[str8] = -6.0;
-    viterbi(vocab, maxlen, sentence, best_path);
+    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
     CPPUNIT_ASSERT_EQUAL(str6, best_path[0]);
     CPPUNIT_ASSERT_EQUAL(str7, best_path[1]);
+    CPPUNIT_ASSERT_EQUAL(-5.0, lp);
 }
 
 

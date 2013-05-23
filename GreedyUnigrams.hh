@@ -11,9 +11,9 @@ class GreedyUnigrams {
 public:
 
     GreedyUnigrams() {}
-    GreedyUnigrams(void (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) : segf(segf) {}
+    GreedyUnigrams(flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) : segf(segf) {}
 
-    void set_segmentation_method(void (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) {
+    void set_segmentation_method(flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) {
         this->segf = segf;
     }
 
@@ -74,7 +74,7 @@ public:
                       std::map<std::string, flt_type> &freq_diffs);
 
 private:
-    void (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);
+    flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);
 };
 
 #endif /* GREEDY_UNIGRAMS */

@@ -392,14 +392,14 @@ void sort_vocab(const map<string, flt_type> &vocab,
 }
 
 
-void viterbi(const map<string, flt_type> &vocab,
-             int maxlen,
-             const string &text,
-             vector<string> &best_path,
-             bool reverse)
+flt_type viterbi(const map<string, flt_type> &vocab,
+                 int maxlen,
+                 const string &text,
+                 vector<string> &best_path,
+                 bool reverse)
 {
     best_path.clear();
-    if (text.length() == 0) return;
+    if (text.length() == 0) return MIN_FLOAT;
     vector<Token> search(text.length());
     int start_pos = 0;
     int end_pos = 0;
@@ -430,7 +430,7 @@ void viterbi(const map<string, flt_type> &vocab,
 
     // Look up the best path
     int target = search.size()-1;
-    if (search[target].cost == MIN_FLOAT) return;
+    if (search[target].cost == MIN_FLOAT) return MIN_FLOAT;
 
     int source = search[target].source;
     while (true) {
@@ -441,16 +441,17 @@ void viterbi(const map<string, flt_type> &vocab,
     }
 
     if (reverse) std::reverse(best_path.begin(), best_path.end());
+    return search.back().cost;
 }
 
 
-void viterbi(const StringSet<flt_type> &vocab,
-             const string &text,
-             vector<string> &best_path,
-             bool reverse)
+flt_type viterbi(const StringSet<flt_type> &vocab,
+                 const string &text,
+                 vector<string> &best_path,
+                 bool reverse)
 {
     best_path.clear();
-    if (text.length() == 0) return;
+    if (text.length() == 0) return MIN_FLOAT;
     vector<Token> search(text.length());
 
     for (int i=0; i<text.length(); i++) {
@@ -479,7 +480,7 @@ void viterbi(const StringSet<flt_type> &vocab,
 
     // Look up the best path
     int target = search.size()-1;
-    if (search[target].cost == MIN_FLOAT) return;
+    if (search[target].cost == MIN_FLOAT) return MIN_FLOAT;
 
     int source = search[target].source;
     while (true) {
@@ -490,18 +491,20 @@ void viterbi(const StringSet<flt_type> &vocab,
     }
 
     if (reverse) std::reverse(best_path.begin(), best_path.end());
+    return MIN_FLOAT;
 }
 
 
-void viterbi(const StringSet<flt_type> &vocab,
-             const string &text,
-             map<string, flt_type> &stats)
+flt_type viterbi(const StringSet<flt_type> &vocab,
+                 const string &text,
+                 map<string, flt_type> &stats)
 {
     stats.clear();
     vector<string> best_path;
-    viterbi(vocab, text, best_path, false);
+    flt_type lp = viterbi(vocab, text, best_path, false);
     for (auto it = best_path.begin(); it != best_path.end(); ++it)
         stats[*it] += 1.0;
+    return lp;
 }
 
 
@@ -517,12 +520,12 @@ flt_type add_log_domain_probs(flt_type a, flt_type b) {
 }
 
 
-void forward_backward(const StringSet<flt_type> &vocab,
-                      const string &text,
-                      map<string, flt_type> &stats)
+flt_type forward_backward(const StringSet<flt_type> &vocab,
+                          const string &text,
+                          map<string, flt_type> &stats)
 {
     int len = text.length();
-    if (len == 0) return;
+    if (len == 0) return MIN_FLOAT;
 
     stats.clear();
     vector<vector<Token> > search(len);
@@ -562,7 +565,7 @@ void forward_backward(const StringSet<flt_type> &vocab,
         }
     }
 
-    if (search[len-1].size() == 0) return;
+    if (search[len-1].size() == 0) return SMALL_LP;
 
     normalizers[len-1] = search[len-1][0].cost;
     for (int j=1; j<search[len-1].size(); j++)
@@ -579,15 +582,17 @@ void forward_backward(const StringSet<flt_type> &vocab,
             else bw[tok.source] = normalized;
         }
     }
+
+    return MIN_FLOAT;
 }
 
 
-void forward_backward(const map<string, flt_type> &vocab,
-                      const string &text,
-                      map<string, flt_type> &stats)
+flt_type forward_backward(const map<string, flt_type> &vocab,
+                          const string &text,
+                          map<string, flt_type> &stats)
 {
     StringSet<flt_type> stringset_vocab(vocab);
-    forward_backward(stringset_vocab, text, stats);
+    return forward_backward(stringset_vocab, text, stats);
 }
 
 
