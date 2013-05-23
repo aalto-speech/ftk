@@ -809,11 +809,12 @@ void fetest :: TransitionForwardBackwardTest1 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     transitions_t stats;
-    forward_backward(transitions, fg, stats);
+    flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(3, transition_count(stats));
     CPPUNIT_ASSERT_EQUAL(1.0, stats[start_end][str1]);
     CPPUNIT_ASSERT_EQUAL(1.0, stats[str1][str2]);
     CPPUNIT_ASSERT_EQUAL(1.0, stats[str2][start_end]);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -3.0, lp, DBL_ACCURACY );
 }
 
 void fetest :: TransitionForwardBackwardTest2 (void)
@@ -836,7 +837,7 @@ void fetest :: TransitionForwardBackwardTest2 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 2);
     transitions_t stats;
-    forward_backward(transitions, fg, stats);
+    flt_type lp = forward_backward(transitions, fg, stats);
     flt_type path_1_score = exp(-4)/(exp(-3) + exp(-4));
     flt_type path_2_score = exp(-3)/(exp(-3) + exp(-4));
     CPPUNIT_ASSERT_EQUAL(6, transition_count(stats));
@@ -846,6 +847,7 @@ void fetest :: TransitionForwardBackwardTest2 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[start_end][str3], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( path_1_score, stats[str1][str2], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( path_2_score, stats[str3][str4], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -2.68673831248, lp, DBL_ACCURACY );
 }
 
 
@@ -862,8 +864,9 @@ void fetest :: TransitionForwardBackwardTest3 (void)
     string sentence("abc");
     FactorGraph fg(sentence, start_end, vocab, 1);
     transitions_t stats;
-    forward_backward(transitions, fg, stats);
+    flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
 }
 
 // Empty string
@@ -879,8 +882,9 @@ void fetest :: TransitionForwardBackwardTest4 (void)
     string sentence("");
     FactorGraph fg(sentence, start_end, vocab, 1);
     transitions_t stats;
-    forward_backward(transitions, fg, stats);
+    flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
 }
 
 // One character sentence
@@ -896,10 +900,11 @@ void fetest :: TransitionForwardBackwardTest5 (void)
     string sentence("a");
     FactorGraph fg(sentence, start_end, vocab, 1);
     transitions_t stats;
-    forward_backward(transitions, fg, stats);
+    flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(2, (int)stats.size());
     CPPUNIT_ASSERT_EQUAL( 1.0, stats[start_end][str1] );
     CPPUNIT_ASSERT_EQUAL( 1.0, stats[str1][start_end] );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -2.0, lp, DBL_ACCURACY );
 }
 
 // No segmentation
@@ -922,8 +927,9 @@ void fetest :: TransitionForwardBackwardTest6 (void)
     string sentence("a-bcd");
     FactorGraph fg(sentence, start_end, vocab, 1);
     transitions_t stats;
-    forward_backward(transitions, fg, stats);
+    flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
 }
 
 // Multiple paths
@@ -958,7 +964,7 @@ void fetest :: TransitionForwardBackwardTest7 (void)
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     transitions_t stats;
-    forward_backward(transitions, fg, stats);
+    flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(15, transition_count(stats));
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.3626295105394784, stats["a"][start_end], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.05716327259735619, stats["kissa"][start_end], DBL_ACCURACY );
@@ -975,6 +981,7 @@ void fetest :: TransitionForwardBackwardTest7 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.23222579492675957, stats[start_end]["k"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11611289746337979, stats["ki"]["s"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11611289746337979, stats[start_end]["ki"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -1.74332651171, lp, DBL_ACCURACY );
 }
 
 // Multiple paths, some non-scored arcs
@@ -1009,7 +1016,7 @@ void fetest :: TransitionForwardBackwardTest8 (void)
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     transitions_t stats;
-    forward_backward(transitions, fg, stats);
+    flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(15, transition_count(stats));
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats["a"][start_end], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats["kissa"][start_end], DBL_ACCURACY );
@@ -1026,6 +1033,7 @@ void fetest :: TransitionForwardBackwardTest8 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0, stats[start_end]["k"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats["ki"]["s"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[start_end]["ki"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -2.44761086504, lp, DBL_ACCURACY );
 }
 
 
@@ -1063,7 +1071,7 @@ void fetest :: TransitionForwardBackwardRemoveArcs (void)
     fg.remove_arcs(string("k"), string("i"));
     fg.remove_arcs(string("s"), string("a"));
     transitions_t stats;
-    forward_backward(transitions, fg, stats);
+    flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(8, transition_count(stats));
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats["kissa"][start_end], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.11560693641618498, stats[start_end]["kissa"], DBL_ACCURACY );
@@ -1073,6 +1081,7 @@ void fetest :: TransitionForwardBackwardRemoveArcs (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7398843930635839, stats[start_end]["kis"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats["ki"]["s"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.14450867052023122, stats[start_end]["ki"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -2.44761086504, lp, DBL_ACCURACY );
 }
 
 
@@ -1108,7 +1117,7 @@ void fetest :: TransitionForwardBackwardBlockFactor (void)
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     transitions_t stats;
-    forward_backward(transitions, fg, stats, string("k"));
+    flt_type lp = forward_backward(transitions, fg, stats, string("k"));
     CPPUNIT_ASSERT_EQUAL(12, transition_count(stats));
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.07445323406235459, stats["kissa"][start_end], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.07445323406235459, stats[start_end]["kissa"], DBL_ACCURACY );
@@ -1122,4 +1131,5 @@ void fetest :: TransitionForwardBackwardBlockFactor (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.7743136342484878, stats[start_end]["kis"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.15123313168915775, stats["ki"]["s"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.15123313168915775, stats[start_end]["ki"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( -2.00758610458, lp, DBL_ACCURACY );
 }

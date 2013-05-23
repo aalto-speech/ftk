@@ -721,7 +721,7 @@ flt_type forward_backward(const transitions_t &transitions,
 
     backward(text, fw, bw, stats);
 
-    return MIN_FLOAT;
+    return fw.back();
 }
 
 
@@ -768,7 +768,7 @@ flt_type forward_backward(const transitions_t &transitions,
 
     backward(text, fw, bw, stats);
 
-    return MIN_FLOAT;
+    return fw.back();
 }
 
 
@@ -800,6 +800,6 @@ flt_type forward_backward(const map<string, flt_type> &vocab,
 
     backward(text, fw, bw, stats);
 
-    return MIN_FLOAT;
+    return fw.back();
 }
 
