@@ -8,7 +8,7 @@ cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-sign-compare
 progs = fe filefe substrings init g1g g1g2 g2g segposts
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
-srcs = io.cc FactorEncoder.cc Unigrams.cc
+srcs = io.cc FactorEncoder.cc Unigrams.cc Bigrams.cc
 objs = $(srcs:.cc=.o)
 
 test_progs = test_fe
