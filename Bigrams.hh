@@ -33,6 +33,9 @@ static void normalize(transitions_t &trans_stats,
 static void write_transitions(const transitions_t &transitions,
                               const std::string &filename);
 
+static int read_transitions(transitions_t &transitions,
+                            const std::string &filename);
+
 static flt_type bigram_cost(const transitions_t &transitions,
                             const transitions_t &trans_stats);
 

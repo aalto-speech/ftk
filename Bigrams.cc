@@ -1,5 +1,6 @@
 #include <cmath>
 #include <fstream>
+#include <sstream>
 
 #include "Bigrams.hh"
 
@@ -78,6 +79,31 @@ Bigrams::write_transitions(const transitions_t &transitions,
             transfile << srcit->first << " " << tgtit->first << " " << tgtit->second << endl;
 
     transfile.close();
+}
+
+
+int
+Bigrams::read_transitions(transitions_t &transitions,
+                          const string &filename)
+{
+    ifstream transfile(filename);
+    if (!transfile) return -1;
+
+    string line;
+    flt_type count;
+    int num_trans = 0;
+    while (getline(transfile, line)) {
+        stringstream ss(line);
+        string src, tgt;
+        ss >> src;
+        ss >> tgt;
+        ss >> count;
+        transitions[src][tgt] = count;
+        num_trans++;
+    }
+    transfile.close();
+
+    return num_trans;
 }
 
 
