@@ -3,15 +3,15 @@
 #include <iostream>
 
 #include "FactorEncoder.hh"
-#include "GreedyUnigrams.hh"
+#include "Unigrams.hh"
 
 using namespace std;
 
 
 void
-GreedyUnigrams::resegment_words(const map<string, flt_type> &words,
-                                const map<string, flt_type> &vocab,
-                                map<string, flt_type> &new_freqs)
+Unigrams::resegment_words(const map<string, flt_type> &words,
+                          const map<string, flt_type> &vocab,
+                          map<string, flt_type> &new_freqs)
 {
     new_freqs.clear();
     StringSet<flt_type> stringset_vocab(vocab);
@@ -34,10 +34,10 @@ GreedyUnigrams::resegment_words(const map<string, flt_type> &words,
 
 
 void
-GreedyUnigrams::resegment_words_w_diff(const map<string, flt_type> &words,
-                                       const map<string, flt_type> &vocab,
-                                       map<string, flt_type> &new_freqs,
-                                       map<string, map<string, flt_type> > &diffs)
+Unigrams::resegment_words_w_diff(const map<string, flt_type> &words,
+                                 const map<string, flt_type> &vocab,
+                                 map<string, flt_type> &new_freqs,
+                                 map<string, map<string, flt_type> > &diffs)
 {
     new_freqs.clear();
     StringSet<flt_type> morphset_vocab(vocab);
@@ -86,7 +86,7 @@ GreedyUnigrams::resegment_words_w_diff(const map<string, flt_type> &words,
 
 
 flt_type
-GreedyUnigrams::get_sum(const map<string, flt_type> &freqs)
+Unigrams::get_sum(const map<string, flt_type> &freqs)
 {
     flt_type total = 0.0;
     for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter)
@@ -96,8 +96,8 @@ GreedyUnigrams::get_sum(const map<string, flt_type> &freqs)
 
 
 flt_type
-GreedyUnigrams::get_sum(const map<string, flt_type> &freqs,
-                        const map<string, flt_type> &freq_diffs)
+Unigrams::get_sum(const map<string, flt_type> &freqs,
+                  const map<string, flt_type> &freq_diffs)
 {
     flt_type total = 0.0;
     for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter)
@@ -109,8 +109,8 @@ GreedyUnigrams::get_sum(const map<string, flt_type> &freqs,
 
 
 flt_type
-GreedyUnigrams::get_cost(const map<string, flt_type> &freqs,
-                         flt_type densum)
+Unigrams::get_cost(const map<string, flt_type> &freqs,
+                   flt_type densum)
 {
     flt_type total = 0.0;
     flt_type tmp = 0.0;
@@ -124,9 +124,9 @@ GreedyUnigrams::get_cost(const map<string, flt_type> &freqs,
 
 
 flt_type
-GreedyUnigrams::get_cost(const map<string, flt_type> &freqs,
-                         const map<string, flt_type> &freq_diffs,
-                         flt_type densum)
+Unigrams::get_cost(const map<string, flt_type> &freqs,
+                   const map<string, flt_type> &freq_diffs,
+                   flt_type densum)
 {
     flt_type total = 0.0;
     flt_type tmp = 0.0;
@@ -143,8 +143,8 @@ GreedyUnigrams::get_cost(const map<string, flt_type> &freqs,
 
 
 void
-GreedyUnigrams::apply_freq_diffs(map<string, flt_type> &freqs,
-                                 const map<string, flt_type> &freq_diffs)
+Unigrams::apply_freq_diffs(map<string, flt_type> &freqs,
+                           const map<string, flt_type> &freq_diffs)
 {
     for (auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
         freqs[iter->first] += iter->second;
@@ -159,9 +159,9 @@ GreedyUnigrams::apply_freq_diffs(map<string, flt_type> &freqs,
 
 
 void
-GreedyUnigrams::apply_backpointer_changes(map<string, map<string, flt_type> > &backpointers,
-                                          const map<string, map<string, flt_type> > &bps_to_remove,
-                                          const map<string, map<string, flt_type> > &bps_to_add)
+Unigrams::apply_backpointer_changes(map<string, map<string, flt_type> > &backpointers,
+                                    const map<string, map<string, flt_type> > &bps_to_remove,
+                                    const map<string, map<string, flt_type> > &bps_to_add)
 {
     for (auto switer = bps_to_remove.cbegin(); switer != bps_to_remove.cend(); ++switer)
         for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
@@ -173,8 +173,8 @@ GreedyUnigrams::apply_backpointer_changes(map<string, map<string, flt_type> > &b
 
 
 void
-GreedyUnigrams::freqs_to_logprobs(map<string, flt_type> &vocab,
-                                  flt_type densum)
+Unigrams::freqs_to_logprobs(map<string, flt_type> &vocab,
+                            flt_type densum)
 {
     densum = log(densum);
     for (auto iter = vocab.begin(); iter != vocab.end(); ++iter)
@@ -183,8 +183,8 @@ GreedyUnigrams::freqs_to_logprobs(map<string, flt_type> &vocab,
 
 
 int
-GreedyUnigrams::cutoff(map<string, flt_type> &vocab,
-                       flt_type limit)
+Unigrams::cutoff(map<string, flt_type> &vocab,
+                 flt_type limit)
 {
     // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
     int nremovals = 0;
@@ -203,10 +203,10 @@ GreedyUnigrams::cutoff(map<string, flt_type> &vocab,
 // Select n_candidates number of subwords in the vocabulary as removal candidates
 // running from the least common subword
 void
-GreedyUnigrams::init_removal_candidates(int n_candidates,
-                                        const map<string, flt_type> &words,
-                                        const map<string, flt_type> &vocab,
-                                        map<string, map<string, flt_type> > &diffs)
+Unigrams::init_removal_candidates(int n_candidates,
+                                  const map<string, flt_type> &words,
+                                  const map<string, flt_type> &vocab,
+                                  map<string, map<string, flt_type> > &diffs)
 {
     map<string, flt_type> new_morph_freqs;
     resegment_words(words, vocab, new_morph_freqs);
@@ -228,11 +228,11 @@ bool rank_desc_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return 
 // Perform each of the removals (independent of others in the list) to get
 // initial order for the removals
 void
-GreedyUnigrams::rank_removal_candidates(const map<string, flt_type> &words,
-                                        const map<string, flt_type> &vocab,
-                                        map<string, map<string, flt_type> > &diffs,
-                                        map<string, flt_type> &new_morph_freqs,
-                                        vector<pair<string, flt_type> > &removal_scores)
+Unigrams::rank_removal_candidates(const map<string, flt_type> &words,
+                                  const map<string, flt_type> &vocab,
+                                  map<string, map<string, flt_type> > &diffs,
+                                  map<string, flt_type> &new_morph_freqs,
+                                  vector<pair<string, flt_type> > &removal_scores)
 {
     new_morph_freqs.clear();
     removal_scores.clear();
@@ -253,9 +253,9 @@ GreedyUnigrams::rank_removal_candidates(const map<string, flt_type> &words,
 
 
 void
-GreedyUnigrams::get_backpointers(const map<string, flt_type> &words,
-                                 const map<string, flt_type> &vocab,
-                                 map<string, map<string, flt_type> > &backpointers)
+Unigrams::get_backpointers(const map<string, flt_type> &words,
+                           const map<string, flt_type> &vocab,
+                           map<string, map<string, flt_type> > &backpointers)
 {
     backpointers.clear();
     StringSet<flt_type> stringset_vocab(vocab);
@@ -279,12 +279,12 @@ GreedyUnigrams::get_backpointers(const map<string, flt_type> &words,
 
 // Hypothesizes removal and gives out updated freqs
 void
-GreedyUnigrams::hypo_removal(StringSet<flt_type> &vocab,
-                             const string &subword,
-                             const map<string, map<string, flt_type> > &backpointers,
-                             map<string, map<string, flt_type> > &backpointers_to_remove,
-                             map<string, map<string, flt_type> > &backpointers_to_add,
-                             map<string, flt_type> &freq_diffs)
+Unigrams::hypo_removal(StringSet<flt_type> &vocab,
+                       const string &subword,
+                       const map<string, map<string, flt_type> > &backpointers,
+                       map<string, map<string, flt_type> > &backpointers_to_remove,
+                       map<string, map<string, flt_type> > &backpointers_to_add,
+                       map<string, flt_type> &freq_diffs)
 {
     backpointers_to_remove.clear();
     backpointers_to_add.clear();

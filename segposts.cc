@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "defs.hh"
-#include "GreedyUnigrams.hh"
+#include "Unigrams.hh"
 #include "FactorEncoder.hh"
 #include "StringSet.hh"
 
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 
     // 1-GRAM POSTERIORS AFTER 5 FB ITERATIONS
     cerr << "Optimizing 1-gram probs w Forward-Backward" << endl;
-    GreedyUnigrams gg(forward_backward);
+    Unigrams gg(forward_backward);
     for (int i=0; i<5; i++) {
         gg.resegment_words(words, vocab, freqs);
         densum = gg.get_sum(freqs);

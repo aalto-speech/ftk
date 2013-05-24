@@ -13,7 +13,7 @@
 #include "defs.hh"
 #include "StringSet.hh"
 #include "FactorEncoder.hh"
-#include "GreedyUnigrams.hh"
+#include "Unigrams.hh"
 
 using namespace std;
 
@@ -308,7 +308,7 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "wordlist size: " << words.size() << endl;
     cerr << "\t" << "maximum word length: " << word_maxlen << endl;
 
-    GreedyUnigrams gg;
+    Unigrams gg;
     gg.set_segmentation_method(forward_backward);
 
     cerr << "Initial cutoff" << endl;

@@ -781,7 +781,7 @@ flt_type forward_backward(const transitions_t &transitions,
 
     post_scores.resize(text.text.size());
     for (int i=0; i<text.nodes.size(); i++)
-        post_scores[text.nodes[i].start_pos] += bw[i];
+        post_scores[text.nodes[i].start_pos+text.nodes[i].len-1] += bw[i];
 
     return fw.back();
 }

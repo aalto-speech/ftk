@@ -1,5 +1,5 @@
-#ifndef GREEDY_UNIGRAMS
-#define GREEDY_UNIGRAMS
+#ifndef UNIGRAMS
+#define UNIGRAMS
 
 #include <map>
 #include <vector>
@@ -7,11 +7,11 @@
 #include "defs.hh"
 #include "StringSet.hh"
 
-class GreedyUnigrams {
+class Unigrams {
 public:
 
-    GreedyUnigrams() {}
-    GreedyUnigrams(flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) : segf(segf) {}
+    Unigrams() {}
+    Unigrams(flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) : segf(segf) {}
 
     void set_segmentation_method(flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) {
         this->segf = segf;
@@ -77,4 +77,4 @@ private:
     flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);
 };
 
-#endif /* GREEDY_UNIGRAMS */
+#endif /* UNIGRAMS */
