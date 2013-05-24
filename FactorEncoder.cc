@@ -784,7 +784,7 @@ flt_type forward_backward(const transitions_t &transitions,
     for (int i=1; i<text.nodes.size()-1; i++) {
         int idx = int(text.nodes[i].start_pos) + int(text.nodes[i].len) - 1;
         if (post_scores[idx] == 0.0) post_scores[idx] = bw[i];
-        else post_scores[idx] += add_log_domain_probs(post_scores[idx], bw[i]);
+        else post_scores[idx] = add_log_domain_probs(post_scores[idx], bw[i]);
     }
 
     return fw.back();
