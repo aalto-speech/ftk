@@ -194,3 +194,12 @@ Bigrams::transition_count(const transitions_t &transitions)
     return count;
 }
 
+void
+Bigrams::trans_to_vocab(const transitions_t &transitions,
+                        map<string, flt_type> &vocab)
+{
+    vocab.clear();
+    for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
+        vocab[srcit->first] = 0.0;
+}
+

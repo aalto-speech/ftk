@@ -51,6 +51,9 @@ static int remove_least_common(const std::map<std::string, flt_type> &unigram_st
 
 static int transition_count(const transitions_t &transitions);
 
+static void trans_to_vocab(const transitions_t &transitions,
+                           std::map<std::string, flt_type> &vocab);
+
 };
 
 #endif /* BIGRAMS */
