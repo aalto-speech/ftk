@@ -5,7 +5,6 @@
 using namespace std;
 
 
-
 void
 MultiStringFactorGraph::expand(const FactorGraph &text,
                                int fg_src_node,
@@ -28,7 +27,7 @@ MultiStringFactorGraph::expand(const FactorGraph &text,
                 break;
             }
 
-        // Not found, check if added but no arc yet
+        // Not found, check if node added but no arc yet
         if (msfg_target_node < 0) {
         if (created_nodes.find(fg_target_node) != created_nodes.end()) {
             msfg_target_node = created_nodes[fg_target_node];
