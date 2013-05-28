@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
     float threshold_decrease = 25.0;
     int target_vocab_size = 50000;
     bool enable_forward_backward = false;
+    bool random_candidates = false;
     flt_type one_char_min_lp = -25.0;
     string vocab_fname;
     string wordlist_fname;
@@ -53,6 +54,7 @@ int main(int argc, char* argv[]) {
         {"threshold_decrease", 'd', POPT_ARG_FLOAT, &threshold_decrease, 11006, NULL, "Threshold decrease between iterations"},
         {"vocab_size", 'g', POPT_ARG_INT, &target_vocab_size, 11007, NULL, "Target vocabulary size (stopping criterion)"},
         {"forward_backward", 'f', POPT_ARG_NONE, &enable_forward_backward, 11007, "Use Forward-backward segmentation instead of Viterbi", NULL},
+        {"random_init", 'r', POPT_ARG_NONE, &random_candidates, 11007, "Select removal candidates by random", NULL},
         POPT_AUTOHELP
         {NULL}
     };
@@ -109,6 +111,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, min removals per iteration: " << min_removals_per_iter << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
     cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
+    cerr << "parameters, random candidates: " << random_candidates << endl;
 
     int maxlen, word_maxlen;
     map<string, flt_type> all_chars;
@@ -165,7 +168,10 @@ int main(int argc, char* argv[]) {
         cerr << "collecting candidate subwords for removal" << endl;
         map<string, map<string, flt_type> > diffs;
         if ((int)vocab.size()-n_candidates_per_iter < target_vocab_size) n_candidates_per_iter = (int)vocab.size()-target_vocab_size;
-        gg.init_removal_candidates(n_candidates_per_iter, words, vocab, diffs);
+        if (random_candidates)
+            gg.init_removal_candidates_by_random(n_candidates_per_iter, words, vocab, diffs);
+        else
+            gg.init_removal_candidates(n_candidates_per_iter, words, vocab, diffs);
 
         cerr << "ranking candidate subwords" << endl;
         vector<pair<string, flt_type> > removal_scores;

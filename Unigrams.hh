@@ -51,10 +51,15 @@ public:
     int cutoff(std::map<std::string, flt_type> &vocab,
                flt_type limit);
 
-    void init_removal_candidates(int n_candidates,
-                                 const std::map<std::string, flt_type> &words,
-                                 const std::map<std::string, flt_type> &vocab,
-                                 std::map<std::string, std::map<std::string, flt_type> > &diffs);
+    int init_removal_candidates(int n_candidates,
+                                const std::map<std::string, flt_type> &words,
+                                const std::map<std::string, flt_type> &vocab,
+                                std::map<std::string, std::map<std::string, flt_type> > &diffs);
+
+    int init_removal_candidates_by_random(int n_candidates,
+                                          const std::map<std::string, flt_type> &words,
+                                          const std::map<std::string, flt_type> &vocab,
+                                          std::map<std::string, std::map<std::string, flt_type> > &diffs);
 
     void rank_removal_candidates(const std::map<std::string, flt_type> &words,
                                  const std::map<std::string, flt_type> &vocab,

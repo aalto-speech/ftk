@@ -202,7 +202,7 @@ Unigrams::cutoff(map<string, flt_type> &vocab,
 
 // Select n_candidates number of subwords in the vocabulary as removal candidates
 // running from the least common subword
-void
+int
 Unigrams::init_removal_candidates(int n_candidates,
                                   const map<string, flt_type> &words,
                                   const map<string, flt_type> &vocab,
@@ -214,12 +214,43 @@ Unigrams::init_removal_candidates(int n_candidates,
     vector<pair<string, flt_type> > sorted_vocab;
     sort_vocab(new_morph_freqs, sorted_vocab, false);
 
-    for (int i=0; i<n_candidates; i++) {
-        pair<string, flt_type> &subword = sorted_vocab[i];
+    int selected_candidates = 0;
+    for (auto it = sorted_vocab.cbegin(); it != sorted_vocab.cend(); ++it) {
+        const string &subword = it->first;
+        if (subword.length() < 3) continue;
         map<string, flt_type> emptymap;
-        if (subword.first.length() > 1)
-            diffs[subword.first] = emptymap;
+        diffs[subword] = emptymap;
+        selected_candidates++;
+        if (selected_candidates >= n_candidates) break;
     }
+
+    return selected_candidates;
+}
+
+
+// Select n_candidates number of subwords in the vocabulary as removal candidates
+// by random
+int
+Unigrams::init_removal_candidates_by_random(int n_candidates,
+                                            const map<string, flt_type> &words,
+                                            const map<string, flt_type> &vocab,
+                                            map<string, map<string, flt_type> > &diffs)
+{
+    vector<string> shuffled_vocab;
+    for (auto it = vocab.cbegin(); it != vocab.cend(); ++it)
+        shuffled_vocab.push_back(it->first);
+    random_shuffle(shuffled_vocab.begin(), shuffled_vocab.end());
+
+    int selected_candidates = 0;
+    for (auto it = shuffled_vocab.begin(); it != shuffled_vocab.end(); ++it) {
+        if (it->length() < 3) continue;
+        map<string, flt_type> emptymap;
+        diffs[*it] = emptymap;
+        selected_candidates++;
+        if (selected_candidates >= n_candidates) break;
+    }
+
+    return selected_candidates;
 }
 
 
