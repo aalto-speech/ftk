@@ -56,7 +56,7 @@ public:
     { return node.factor; }
     std::string get_factor(int node) const
     { return nodes[node].factor; }
-    //int num_paths(std::string &text) const;
+    int num_paths(std::string &text) const;
     //void remove_arcs(const std::string &source, const std::string &target);
     //void remove_arcs(const std::string &remstr);
 

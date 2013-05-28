@@ -1,8 +1,15 @@
 #include <iostream>
+#include <vector>
 
 #include "MSFG.hh"
 
 using namespace std;
+
+
+MultiStringFactorGraph::~MultiStringFactorGraph() {
+    for (auto it = arcs.begin(); it != arcs.end(); ++it)
+        delete *it;
+}
 
 
 void
@@ -66,4 +73,25 @@ MultiStringFactorGraph::add(const FactorGraph &text)
     }
 
     string_end_nodes[text.text] = new_nodes[text.nodes.size()-1];
+}
+
+
+int
+MultiStringFactorGraph::num_paths(std::string &text) const
+{
+    if (nodes.size() == 0) return 0;
+    if (string_end_nodes.find(text) == string_end_nodes.end()) return 0;
+    int end_node = string_end_nodes.at(text);
+    map<int, int> path_counts;
+    path_counts[end_node] = 1;
+
+    // FIXME: inefficient, mainly for debug
+    for (int i=end_node; i>=0; i--) {
+        if (path_counts.find(i) == path_counts.end()) continue;
+        const MultiStringFactorGraph::Node &node = nodes[i];
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc)
+            path_counts[(**arc).source_node] += path_counts[i];
+    }
+
+    return path_counts[0];
 }
