@@ -869,3 +869,53 @@ flt_type forward_backward(const map<string, flt_type> &vocab,
     return fw.back();
 }
 
+
+flt_type posterior_decode(const transitions_t &transitions,
+                          FactorGraph &text,
+                          vector<string> &path,
+                          bool reverse)
+{
+    if (text.nodes.size() == 0) return MIN_FLOAT;
+    path.clear();
+
+    transitions_t stats;
+    vector<flt_type> fw(text.nodes.size(), MIN_FLOAT);
+    vector<flt_type> bw(text.nodes.size(), MIN_FLOAT);
+    fw[0] = 0.0; bw[text.nodes.size()-1] = 0.0;
+
+    forward(transitions, text, fw);
+    backward(text, fw, bw, stats);
+
+    // Initialize node scores
+    vector<flt_type> costs(text.nodes.size(), MIN_FLOAT);
+    vector<int> source_nodes(text.nodes.size());
+    costs[0] = 0.0; source_nodes[0] = -1;
+
+    // Traverse paths
+    for (int i=0; i<text.nodes.size(); i++) {
+
+        FactorGraph::Node &node = text.nodes[i];
+        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+
+            int tgt_node = (**arc).target_node;
+            flt_type curr_cost = costs[tgt_node];
+            flt_type new_cost = costs[i] + bw[tgt_node];
+            if (new_cost > curr_cost) {
+                costs[tgt_node] = new_cost;
+                source_nodes[tgt_node] = i;
+            }
+        }
+    }
+
+    // Find best path
+    unsigned int node = text.nodes.size()-1;
+    path.push_back(text.get_factor(node));
+    while (true) {
+        node = source_nodes[node];
+        if (node == -1) break;
+        path.push_back(text.get_factor(node));
+    }
+    if (reverse) std::reverse(path.begin(), path.end());
+
+    return costs.back();
+}

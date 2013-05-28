@@ -30,17 +30,19 @@ int main(int argc, char* argv[]) {
     StringSet<flt_type> *ss_vocab = NULL;
     transitions_t transitions;
     string start_end_symbol("*");
+    bool enable_posterior_decoding = false;
 
     poptContext pc;
     struct poptOption po[] = {
         {"vocabulary", 'v', POPT_ARG_STRING, &vocab_fname, 11001, NULL, "Vocabulary file name"},
         {"transitions", 't', POPT_ARG_STRING, &trans_fname, 11002, NULL, "Transition file name"},
+        {"posterior-decode", 'p', POPT_ARG_NONE, &enable_posterior_decoding, 11002, NULL, "Posterior decoding instead of Viterbi"},
         POPT_AUTOHELP
         {NULL}
     };
 
     pc = poptGetContext(NULL, argc, (const char **)argv, po, 0);
-    poptSetOtherOptionHelp(pc, "[INITIAL VOCABULARY] [WORDLIST]");
+    poptSetOtherOptionHelp(pc, "INPUT SEGMENTED_OUTPUT");
 
     int val;
     while ((val = poptGetNextOpt(pc)) >= 0)
@@ -133,10 +135,16 @@ int main(int argc, char* argv[]) {
         string line(linebuffer);
         vector<string> best_path;
         if (vocab_fname != NULL)
-            viterbi(*ss_vocab, line, best_path);
+            if (enable_posterior_decoding)
+                cerr << "Posterior decoding not implemented yet for unigrams." << endl;
+            else
+                viterbi(*ss_vocab, line, best_path);
         else {
             FactorGraph fg(line, start_end_symbol, vocab);
-            viterbi(transitions, fg, best_path);
+            if (enable_posterior_decoding)
+                posterior_decode(transitions, fg, best_path);
+            else
+                viterbi(transitions, fg, best_path);
             best_path.erase(best_path.begin());
             best_path.erase(best_path.end());
         }

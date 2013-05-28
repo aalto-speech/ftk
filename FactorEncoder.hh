@@ -205,4 +205,9 @@ flt_type forward_backward(const std::map<std::string, flt_type> &vocab,
                           FactorGraph &text,
                           transitions_t &stats);
 
+flt_type posterior_decode(const transitions_t &transitions,
+                          FactorGraph &text,
+                          std::vector<std::string> &path,
+                          bool reverse=true);
+
 #endif /* FACTOR_ENCODER */
