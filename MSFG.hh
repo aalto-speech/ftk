@@ -1,6 +1,8 @@
 #ifndef MSFG
 #define MSFG
 
+#include <vector>
+
 #include "FactorEncoder.hh"
 
 
@@ -41,7 +43,8 @@ public:
         std::vector<Arc*> outgoing;
     };
 
-    MultiStringFactorGraph(const std::string &start_end_symbol) {};
+    MultiStringFactorGraph(const std::string &start_end_symbol)
+    : start_end_symbol(start_end_symbol) { nodes.push_back(Node(std::string(start_end_symbol))); };
     ~MultiStringFactorGraph();
 
     void add(const FactorGraph &text);
@@ -53,10 +56,9 @@ public:
     { return node.factor; }
     std::string get_factor(int node) const
     { return nodes[node].factor; }
-    int num_paths() const;
-    void get_paths(std::vector<std::vector<std::string> > &paths) const;
-    void remove_arcs(const std::string &source, const std::string &target);
-    void remove_arcs(const std::string &remstr);
+    //int num_paths(std::string &text) const;
+    //void remove_arcs(const std::string &source, const std::string &target);
+    //void remove_arcs(const std::string &remstr);
 
     std::string start_end_symbol;
     std::vector<Node> nodes;
@@ -66,10 +68,14 @@ public:
 private:
 
     // Helper for removing arcs
-    void remove_arc(Arc *arc);
+    //void remove_arc(Arc *arc);
+
+    // Helper for adding new text recursively to the graph
+    void expand(const FactorGraph &text,
+                int curr_node_in_fg,
+                int curr_node_in_msfg,
+                std::map<int, int> &created_nodes); // Key is node idx in text FG, value node idx in MSFG
 };
-
-
 
 
 #endif /* MSFG */
