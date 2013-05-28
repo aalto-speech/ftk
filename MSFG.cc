@@ -61,17 +61,10 @@ MultiStringFactorGraph::add(const FactorGraph &text)
     map<int, int> new_nodes;
     expand(text, 0, 0, new_nodes);
 
-    int end_node = -1;
-    for (auto it = new_nodes.begin(); it != new_nodes.end(); ++it)
-        if (nodes[(*it).second].factor == start_end_symbol) {
-            end_node = (*it).second;
-            break;
-        }
-
-    if (end_node < 1) {
+    if (new_nodes.find(text.nodes.size()-1) == new_nodes.end()) {
         cerr << "MSFG: end node was not set properly for " << text.text << endl;
         exit(0);
     }
 
-    string_end_nodes[text.text] = end_node;
+    string_end_nodes[text.text] = new_nodes[text.nodes.size()-1];
 }
