@@ -22,6 +22,9 @@ class msfgtest : public CPPUNIT_NS :: TestFixture
         void MultiStringFactorGraphTest1(void);
         void MultiStringFactorGraphTest2(void);
         void MultiStringFactorGraphTest3(void);
+
+    private:
+        std::string start_end;
 };
 
 #endif
