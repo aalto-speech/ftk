@@ -5,7 +5,9 @@
 #include <string>
 
 #include "defs.hh"
-#include "FactorEncoder.hh"
+#include "FactorGraph.hh"
+#include "MSFG.hh"
+
 
 class Bigrams {
 public:
@@ -21,6 +23,14 @@ static void update_trans_stats(const transitions_t &collected_stats,
 static void collect_trans_stats(const transitions_t &transitions,
                                 const std::map<std::string, flt_type> &words,
                                 std::map<std::string, FactorGraph*> &fg_words,
+                                transitions_t &trans_stats,
+                                std::map<std::string, flt_type> &trans_normalizers,
+                                std::map<std::string, flt_type> &unigram_stats,
+                                bool fb=true);
+
+static void collect_trans_stats(const transitions_t &transitions,
+                                const std::map<std::string, flt_type> &words,
+                                MultiStringFactorGraph &msfg,
                                 transitions_t &trans_stats,
                                 std::map<std::string, flt_type> &trans_normalizers,
                                 std::map<std::string, flt_type> &unigram_stats,
@@ -44,10 +54,20 @@ static int cutoff(const std::map<std::string, flt_type> &unigram_stats,
                   transitions_t &transitions,
                   std::map<std::string, FactorGraph*> &fg_words);
 
+static int cutoff(const std::map<std::string, flt_type> &unigram_stats,
+                  flt_type cutoff,
+                  transitions_t &transitions,
+                  MultiStringFactorGraph &msfg);
+
 static int remove_least_common(const std::map<std::string, flt_type> &unigram_stats,
                                int num_removals,
                                transitions_t &transitions,
                                std::map<std::string, FactorGraph*> &fg_words);
+
+static int remove_least_common(const std::map<std::string, flt_type> &unigram_stats,
+                               int num_removals,
+                               transitions_t &transitions,
+                               MultiStringFactorGraph &msfg);
 
 static int transition_count(const transitions_t &transitions);
 
