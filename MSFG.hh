@@ -29,8 +29,8 @@ public:
             if (cost != rhs.cost) return true;
             return false;
         }
-        fg_node_idx_t source_node;
-        fg_node_idx_t target_node;
+        unsigned int source_node;
+        unsigned int target_node;
         flt_type cost;
     };
 

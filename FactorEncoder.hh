@@ -135,7 +135,6 @@ void forward(const transitions_t &transitions,
 void backward(const MultiStringFactorGraph &msfg,
               const std::string &text,
               const std::vector<flt_type> &fw,
-              std::vector<flt_type> &bw,
               transitions_t &stats);
 
 // Forward-backward for all strings
