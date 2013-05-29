@@ -140,7 +140,7 @@ int main(int argc, char* argv[]) {
             else
                 viterbi(*ss_vocab, line, best_path);
         else {
-            FactorGraph fg(line, start_end_symbol, vocab);
+            FactorGraph fg(line, start_end_symbol, *ss_vocab);
             if (enable_posterior_decoding)
                 posterior_decode(transitions, fg, best_path);
             else
