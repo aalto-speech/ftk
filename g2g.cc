@@ -118,6 +118,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, cutoff: " << setprecision(15) << cutoff_value << endl;
     cerr << "parameters, iterations: " << iter_amount << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
+    cerr << "parameters, least common subwords to remove: " << least_common << endl;
 
     int maxlen, word_maxlen;
     map<string, flt_type> all_chars;
@@ -162,9 +163,10 @@ int main(int argc, char* argv[]) {
     ug.freqs_to_logprobs(vocab, densum);
     assert_single_chars(vocab, all_chars, one_char_min_lp);
 
+    string start_end_symbol("*");
     StringSet<flt_type> ss_vocab(vocab);
     map<string, FactorGraph*> fg_words;
-    string start_end_symbol("*");
+    MultiStringFactorGraph msfg(start_end_symbol);
     transitions_t transitions;
     transitions_t trans_stats;
     map<string, flt_type> trans_normalizers;
@@ -172,13 +174,28 @@ int main(int argc, char* argv[]) {
     vocab[start_end_symbol] = 0.0;
 
     // Initial segmentation using unigram model
+    int old_nodes = 0;
+    int old_arcs = 0;
+    int curr_word_idx = 0;
     for (auto it = words.cbegin(); it != words.cend(); ++it) {
         FactorGraph *fg = new FactorGraph(it->first, start_end_symbol, ss_vocab);
         fg_words[it->first] = fg;
         transitions_t word_stats;
         forward_backward(vocab, *fg, word_stats);
         Bigrams::update_trans_stats(word_stats, it->second, trans_stats, trans_normalizers, unigram_stats);
+        msfg.add(*fg);
+        old_nodes += fg->nodes.size();
+        old_arcs += fg->arcs.size();
+        delete fg;
+        curr_word_idx++;
+        if (curr_word_idx % 10000 == 0) cerr << "... processing word " << curr_word_idx << endl;
     }
+
+    cerr << "factor graph strings: " << msfg.string_end_nodes.size() << endl;
+    cerr << "factor graph nodes: " << msfg.nodes.size() << endl;
+    cerr << "factor graph arcs: " << msfg.arcs.size() << endl;
+    cerr << "nodes for separate fgs: " << old_nodes << endl;
+    cerr << "arcs for separate fgs: " << old_arcs << endl;
 
     // Unigram cost with word end markers
     densum = ug.get_sum(unigram_stats);
@@ -191,14 +208,14 @@ int main(int argc, char* argv[]) {
     cerr << "bigram cost: " << Bigrams::bigram_cost(transitions, trans_stats) << endl;
     cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
     cerr << "\tvocab size: " << unigram_stats.size() << endl;
-    int co_removed = Bigrams::cutoff(unigram_stats, cutoff_value, transitions, fg_words);
+    int co_removed = Bigrams::cutoff(unigram_stats, cutoff_value, transitions, msfg);
     cerr << "\tremoved by cutoff: " << co_removed << endl;
 
     // Re-estimate using bigram stats
     int vocab_size = unigram_stats.size();
     for (int i=0; i<iter_amount; i++) {
 
-        Bigrams::collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats);
+        Bigrams::collect_trans_stats(transitions, words, msfg, trans_stats, trans_normalizers, unigram_stats);
         transitions = trans_stats;
         Bigrams::normalize(transitions, trans_normalizers);
         vocab_size = unigram_stats.size();
@@ -212,7 +229,7 @@ int main(int argc, char* argv[]) {
         Bigrams::write_transitions(transitions, transitions_temp.str());
 
         int curr_least_common = least_common + (vocab_size % 1000);
-        int lc_removed = Bigrams::remove_least_common(unigram_stats, curr_least_common, transitions, fg_words);
+        int lc_removed = Bigrams::remove_least_common(unigram_stats, curr_least_common, transitions, msfg);
         cerr << "\tremoved " << lc_removed << " least common subwords" << endl;
         vocab_size = transitions.size();
 
@@ -225,6 +242,7 @@ int main(int argc, char* argv[]) {
     write_vocab("unigram.out", unigram_stats);
 
     // Viterbi segmentations
+    /*
     ofstream wsegfile(wordseg_fname);
     if (!wsegfile) exit(0);
     for (auto it = fg_words.begin(); it != fg_words.cend(); ++it) {
@@ -237,6 +255,7 @@ int main(int argc, char* argv[]) {
         wsegfile << endl;
     }
     wsegfile.close();
+    */
 
     // Clean up
     for (auto it = fg_words.begin(); it != fg_words.cend(); ++it)
