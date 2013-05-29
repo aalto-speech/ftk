@@ -20,16 +20,16 @@ MultiStringFactorGraph::add(const FactorGraph &text)
 {
     map<int, int> created_nodes;
     vector<int> connect_to_end_node; // MSFG indices to connect to end node
-    vector<pair<int, int> > nodes_to_process; // First node idx in text FG, second node idx in MSFG
-    nodes_to_process.push_back(make_pair(0, 0));
+    map<int, int> nodes_to_process; // Key is node idx in text FG, value idx in MSFG
+    nodes_to_process[0] = 0;
 
     while (nodes_to_process.size() > 0) {
 
-        int fg_src_node = nodes_to_process[0].first;
-        int msfg_src_node = nodes_to_process[0].second;
+        int fg_src_node = nodes_to_process.begin()->first;
+        int msfg_src_node = nodes_to_process.begin()->second;
         nodes_to_process.erase(nodes_to_process.begin());
-        const FactorGraph::Node &fg_node = text.nodes[fg_src_node];
 
+        const FactorGraph::Node &fg_node = text.nodes[fg_src_node];
         for (auto fg_arcit = fg_node.outgoing.cbegin(); fg_arcit != fg_node.outgoing.cend(); ++fg_arcit) {
 
             int fg_target_node = (**fg_arcit).target_node;
@@ -71,10 +71,7 @@ MultiStringFactorGraph::add(const FactorGraph &text)
                 nodes[msfg_target_node].incoming.push_back(arc);
             }
 
-            nodes_to_process.push_back(make_pair(fg_target_node, msfg_target_node));
-            sort(nodes_to_process.begin(), nodes_to_process.end(), ascending_by_first);
-            auto uniq = unique(nodes_to_process.begin(), nodes_to_process.end());
-            nodes_to_process.erase(uniq, nodes_to_process.end());
+            nodes_to_process[fg_target_node] = msfg_target_node;
         }
     }
 
