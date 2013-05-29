@@ -58,8 +58,8 @@ public:
     std::string get_factor(int node) const
     { return nodes[node].factor; }
     int num_paths(std::string &text) const;
-    //void remove_arcs(const std::string &source, const std::string &target);
-    //void remove_arcs(const std::string &remstr);
+    void remove_arcs(const std::string &source, const std::string &target);
+    void remove_arcs(const std::string &remstr);
 
     std::string start_end_symbol;
     std::vector<Node> nodes;
@@ -69,7 +69,7 @@ public:
 private:
 
     // Helper for removing arcs
-    //void remove_arc(Arc *arc);
+    void remove_arc(Arc *arc);
 };
 
 

@@ -111,3 +111,75 @@ MultiStringFactorGraph::num_paths(std::string &text) const
     return path_counts[0];
 }
 
+
+void
+MultiStringFactorGraph::remove_arc(Arc *arc)
+{
+    auto ait = find(arcs.begin(), arcs.end(), arc);
+    arcs.erase(ait);
+
+    Node &src_node = nodes[(*arc).source_node];
+    auto sit = find(src_node.outgoing.begin(), src_node.outgoing.end(), arc);
+    src_node.outgoing.erase(sit);
+
+    Node &tgt_node = nodes[(*arc).target_node];
+    auto tit = find(tgt_node.incoming.begin(), tgt_node.incoming.end(), arc);
+    tgt_node.incoming.erase(tit);
+
+    delete arc;
+}
+
+
+void
+MultiStringFactorGraph::remove_arcs(const std::string &source,
+                                    const std::string &target)
+{
+    for (auto node = nodes.begin(); node != nodes.end(); ++node) {
+        if (source != this->get_factor(*node)) continue;
+        for (int i=0; i<node->outgoing.size(); i++) {
+            MultiStringFactorGraph::Arc *arc = node->outgoing[i];
+            if (target != this->get_factor(arc->target_node)) continue;
+            this->remove_arc(arc);
+            break;
+        }
+    }
+
+    // Prune all transitions from non-reachable nodes
+    for (auto it = nodes.begin(); it != nodes.end(); it++) {
+        if (it->incoming.size() == 0 && it->factor != start_end_symbol) {
+            while (it->outgoing.size() > 0)
+                remove_arc(it->outgoing[0]);
+            continue;
+        }
+        if (it->outgoing.size() == 0 && it->factor != start_end_symbol) {
+            while (it->incoming.size() > 0)
+                remove_arc(it->incoming[0]);
+        }
+    }
+}
+
+
+void
+MultiStringFactorGraph::remove_arcs(const std::string &remstr)
+{
+    for (auto node = nodes.begin(); node != nodes.end(); ++node) {
+        if (this->get_factor(*node) != remstr) continue;
+        while (node->incoming.size() > 0)
+            remove_arc(node->incoming[0]);
+        while (node->outgoing.size() > 0)
+            remove_arc(node->outgoing[0]);
+    }
+
+    // Prune all transitions from non-reachable nodes
+    for (auto it = nodes.begin(); it != nodes.end(); it++) {
+        if (it->incoming.size() == 0 && it->factor != start_end_symbol) {
+            while (it->outgoing.size() > 0)
+                remove_arc(it->outgoing[0]);
+            continue;
+        }
+        if (it->outgoing.size() == 0 && it->factor != start_end_symbol) {
+            while (it->incoming.size() > 0)
+                remove_arc(it->incoming[0]);
+        }
+    }
+}
