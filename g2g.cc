@@ -197,6 +197,8 @@ int main(int argc, char* argv[]) {
     cerr << "nodes for separate fgs: " << old_nodes << endl;
     cerr << "arcs for separate fgs: " << old_arcs << endl;
 
+    msfg.write("msfg.out");
+
     // Unigram cost with word end markers
     densum = ug.get_sum(unigram_stats);
     cost = ug.get_cost(unigram_stats, densum);

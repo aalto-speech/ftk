@@ -60,6 +60,7 @@ public:
     int num_paths(std::string &text) const;
     void remove_arcs(const std::string &source, const std::string &target);
     void remove_arcs(const std::string &remstr);
+    void write(const std::string &filename) const;
 
     std::string start_end_symbol;
     std::vector<Node> nodes;

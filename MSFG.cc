@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <vector>
 
@@ -180,3 +181,19 @@ MultiStringFactorGraph::remove_arcs(const std::string &remstr)
         }
     }
 }
+
+
+void
+MultiStringFactorGraph::write(const std::string &filename) const
+{
+    ofstream outfile(filename);
+    if (!outfile) return;
+
+    for (int i=0; i<nodes.size(); i++)
+        outfile << "n " << i << " " << nodes[i].factor << endl;
+    for (int i=0; i<arcs.size(); i++)
+        outfile << "a " << arcs[i]->source_node << " " << arcs[i]->target_node << endl;
+    for (auto it = string_end_nodes.cbegin(); it != string_end_nodes.cend(); ++it)
+        outfile << "e " << it->first << " " << it->second << endl;
+}
+
