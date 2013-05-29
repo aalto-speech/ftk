@@ -649,12 +649,12 @@ backward(const MultiStringFactorGraph &msfg,
 {
 
     int text_end_node = msfg.string_end_nodes.at(text);
-    map<int, flt_type> bw;
-    bw[text_end_node] = 0.0;
+    map<int, flt_type> bw; bw[text_end_node] = 0.0;
+    map<int, bool> nodes_to_process; nodes_to_process[text_end_node] = true;
 
-    for (int i=text_end_node; i>0; i--) {
+    while(nodes_to_process.size() > 0) {
 
-        if (bw.find(i) == bw.end()) continue;
+        int i = nodes_to_process.rbegin()->first;
 
         const MultiStringFactorGraph::Node &node = msfg.nodes[i];
         string target_node_str = msfg.get_factor(node);
@@ -664,9 +664,14 @@ backward(const MultiStringFactorGraph &msfg,
             if (fw[src_node] == MIN_FLOAT) continue;
             flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
             stats[msfg.get_factor(src_node)][target_node_str] += exp(curr_cost);
-            if (bw.find(i) == bw.end()) bw[src_node] = curr_cost;
+            if (bw.find(i) == bw.end()) {
+                bw[src_node] = curr_cost;
+                nodes_to_process[src_node] = true;
+            }
             else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
         }
+
+        nodes_to_process.erase(i);
     }
 }
 
