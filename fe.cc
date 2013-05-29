@@ -13,6 +13,7 @@
 #include "defs.hh"
 #include "io.hh"
 #include "StringSet.hh"
+#include "FactorGraph.hh"
 #include "FactorEncoder.hh"
 #include "Bigrams.hh"
 

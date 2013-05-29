@@ -110,3 +110,4 @@ MultiStringFactorGraph::num_paths(std::string &text) const
 
     return path_counts[0];
 }
+

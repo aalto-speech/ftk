@@ -1,9 +1,11 @@
 #ifndef MSFG
 #define MSFG
 
+#include <map>
 #include <vector>
 
-#include "FactorEncoder.hh"
+#include "defs.hh"
+#include "FactorGraph.hh"
 
 
 class MultiStringFactorGraph {
@@ -69,21 +71,6 @@ private:
     // Helper for removing arcs
     //void remove_arc(Arc *arc);
 };
-
-
-void forward(const transitions_t &transitions,
-             MultiStringFactorGraph &msfg,
-             const std::vector<flt_type> &fw);
-
-void backward(const MultiStringFactorGraph &msfg,
-              std::string &text,
-              std::vector<flt_type> &fw,
-              std::vector<flt_type> &bw,
-              transitions_t &stats);
-
-flt_type forward_backward(const transitions_t &transitions,
-                          MultiStringFactorGraph &msfg,
-                          transitions_t &stats);
 
 
 #endif /* MSFG */
