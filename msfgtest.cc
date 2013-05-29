@@ -30,9 +30,9 @@ void msfgtest :: MultiStringFactorGraphTest1 (void)
     map<string, flt_type> vocab;
     vocab["k"] = 0.0;
     vocab["i"] = 0.0;
+    vocab["s"] = 0.0;
     vocab["a"] = 0.0;
     vocab["sa"] = 0.0;
-    vocab["s"] = 0.0;
     vocab["ki"] = 0.0;
     vocab["kis"] = 0.0;
     vocab["kissa"] = 0.0;

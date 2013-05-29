@@ -69,12 +69,6 @@ private:
 
     // Helper for removing arcs
     //void remove_arc(Arc *arc);
-
-    // Helper for adding new text recursively to the graph
-    void expand(const FactorGraph &text,
-                int curr_node_in_fg,
-                int curr_node_in_msfg,
-                std::map<int, int> &created_nodes); // Key is node idx in text FG, value node idx in MSFG
 };
 
 
