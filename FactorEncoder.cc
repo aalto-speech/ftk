@@ -415,7 +415,7 @@ void forward(const transitions_t &transitions,
 
 
 void backward(const FactorGraph &text,
-              vector<flt_type> &fw,
+              const vector<flt_type> &fw,
               vector<flt_type> &bw,
               transitions_t &stats)
 {
@@ -617,7 +617,7 @@ flt_type posterior_decode(const transitions_t &transitions,
 void
 forward(const transitions_t &transitions,
         MultiStringFactorGraph &msfg,
-        std::vector<flt_type> &fw)
+        vector<flt_type> &fw)
 {
     for (int i=0; i<msfg.nodes.size(); i++) {
 
@@ -644,20 +644,64 @@ forward(const transitions_t &transitions,
 
 void
 backward(const MultiStringFactorGraph &msfg,
-         std::string &text,
-         std::vector<flt_type> &fw,
-         std::vector<flt_type> &bw,
+         const string &text,
+         const vector<flt_type> &fw,
+         vector<flt_type> &bw,
          transitions_t &stats)
 {
-    return;
+    // FIXME: slow?
+    for (int i=msfg.string_end_nodes.at(text); i>0; i--) {
+
+        if (bw[i] == MIN_FLOAT) continue;
+
+        const MultiStringFactorGraph::Node &node = msfg.nodes[i];
+        string target_node_str = msfg.get_factor(node);
+
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
+            int src_node = (**arc).source_node;
+            if (fw[src_node] == MIN_FLOAT) continue;
+            flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
+            stats[msfg.get_factor(src_node)][target_node_str] += exp(curr_cost);
+            if (bw[src_node] == MIN_FLOAT) bw[src_node] = curr_cost;
+            else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
+        }
+    }
 }
 
 
-flt_type
+void
 forward_backward(const transitions_t &transitions,
                  MultiStringFactorGraph &msfg,
                  transitions_t &stats)
 {
-    return 1.0;
+    if (msfg.nodes.size() == 0) return;
+    stats.clear();
+
+    vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
+    vector<flt_type> bw(msfg.nodes.size(), MIN_FLOAT);
+    fw[0] = 0.0; bw[msfg.nodes.size()-1] = 0.0;
+
+    forward(transitions, msfg, fw);
+    for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
+        fill(bw.begin(), bw.end(), MIN_FLOAT); // FIXME
+        backward(msfg, it->first, fw, bw, stats);
+    }
 }
 
+
+void
+forward_backward(const transitions_t &transitions,
+                 MultiStringFactorGraph &msfg,
+                 const string &text,
+                 transitions_t &stats)
+{
+    if (msfg.nodes.size() == 0) return;
+    stats.clear();
+
+    vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
+    vector<flt_type> bw(msfg.nodes.size(), MIN_FLOAT);
+    fw[0] = 0.0; bw[msfg.nodes.size()-1] = 0.0;
+
+    forward(transitions, msfg, fw);
+    backward(msfg, text, fw, bw, stats);
+}

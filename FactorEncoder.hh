@@ -94,7 +94,7 @@ void forward(const transitions_t &transitions,
              std::vector<flt_type> &fw);
 
 void backward(const FactorGraph &text,
-              std::vector<flt_type> &fw,
+              const std::vector<flt_type> &fw,
               std::vector<flt_type> &bw,
               transitions_t &stats);
 
@@ -130,17 +130,24 @@ flt_type posterior_decode(const transitions_t &transitions,
 // MultiStringFactorGraph implementations
 void forward(const transitions_t &transitions,
              MultiStringFactorGraph &msfg,
-             const std::vector<flt_type> &fw);
+             std::vector<flt_type> &fw);
 
 void backward(const MultiStringFactorGraph &msfg,
-              std::string &text,
-              std::vector<flt_type> &fw,
+              const std::string &text,
+              const std::vector<flt_type> &fw,
               std::vector<flt_type> &bw,
               transitions_t &stats);
 
-flt_type forward_backward(const transitions_t &transitions,
-                          MultiStringFactorGraph &msfg,
-                          transitions_t &stats);
+// Forward-backward for all strings
+void forward_backward(const transitions_t &transitions,
+                      MultiStringFactorGraph &msfg,
+                      transitions_t &stats);
+
+// Forward-backward for one string
+void forward_backward(const transitions_t &transitions,
+                      MultiStringFactorGraph &msfg,
+                      const std::string &text,
+                      transitions_t &stats);
 
 
 #endif /* FACTOR_ENCODER */
