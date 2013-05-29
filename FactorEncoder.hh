@@ -11,8 +11,6 @@
 #include "FactorGraph.hh"
 #include "MSFG.hh"
 
-typedef std::map<std::string, std::map<std::string, flt_type> > transitions_t;
-
 
 // 1-GRAM
 int read_vocab(std::string fname,
