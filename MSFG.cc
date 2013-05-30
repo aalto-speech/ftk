@@ -95,7 +95,7 @@ MultiStringFactorGraph::num_paths(std::string &text) const
         const Node &node = nodes[i];
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
             path_counts[(**arc).source_node] += path_counts[i];
-            nodes_to_process[(**arc).source_node] = true;
+            nodes_to_process.insert((**arc).source_node);
         }
 
         nodes_to_process.erase(i);
