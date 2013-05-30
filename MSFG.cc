@@ -85,18 +85,56 @@ MultiStringFactorGraph::num_paths(std::string &text) const
     if (nodes.size() == 0) return 0;
     if (string_end_nodes.find(text) == string_end_nodes.end()) return 0;
     int end_node = string_end_nodes.at(text);
-    map<int, int> path_counts;
-    path_counts[end_node] = 1;
+    map<int, int> path_counts; path_counts[end_node] = 1;
+    map<int, bool> nodes_to_process; nodes_to_process[end_node] = true;
 
-    // FIXME: inefficient, mainly for debug
-    for (int i=end_node; i>=0; i--) {
-        if (path_counts.find(i) == path_counts.end()) continue;
-        const MultiStringFactorGraph::Node &node = nodes[i];
-        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc)
+    while(nodes_to_process.size() > 0) {
+
+        int i = nodes_to_process.rbegin()->first;
+
+        const Node &node = nodes[i];
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
             path_counts[(**arc).source_node] += path_counts[i];
+            nodes_to_process[(**arc).source_node] = true;
+        }
+
+        nodes_to_process.erase(i);
     }
 
     return path_counts[0];
+}
+
+
+void
+MultiStringFactorGraph::get_paths(const string &text,
+                                  vector<vector<string> > &paths) const
+{
+    if (string_end_nodes.find(text) == string_end_nodes.end()) return;
+    int end_node = string_end_nodes.at(text);
+    vector<string> curr_string;
+    advance(paths, curr_string, end_node);
+    for (auto it = paths.begin(); it != paths.end(); ++it)
+        std::reverse(it->begin(), it->end());
+}
+
+
+void
+MultiStringFactorGraph::advance(vector<vector<string> > &paths,
+                                vector<string> &curr_string,
+                                unsigned int node_idx) const
+{
+    const MultiStringFactorGraph::Node &node = nodes[node_idx];
+    curr_string.push_back(node.factor);
+
+    if (node_idx == 0) {
+        paths.push_back(curr_string);
+        return;
+    }
+
+    for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
+        vector<string> curr_copy(curr_string);
+        advance(paths, curr_copy, (**arc).source_node);
+    }
 }
 
 
@@ -259,5 +297,4 @@ MultiStringFactorGraph::read(const std::string &filename)
 
     infile.close();
 }
-
 

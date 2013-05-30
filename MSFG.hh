@@ -59,6 +59,7 @@ public:
     std::string get_factor(int node) const
     { return nodes[node].factor; }
     int num_paths(std::string &text) const;
+    void get_paths(const std::string &text, std::vector<std::vector<std::string> > &paths) const;
     void create_arc(unsigned int src_node, unsigned int tgt_node);
     void remove_arcs(const std::string &source, const std::string &target);
     void remove_arcs(const std::string &remstr);
@@ -72,6 +73,9 @@ public:
 
 private:
 
+    // Helper for enumerating paths
+    void advance(std::vector<std::vector<std::string> > &paths,
+                 std::vector<std::string> &curr_string, unsigned int node) const;
     // Helper for removing arcs
     void remove_arc(Arc *arc);
 };
