@@ -685,6 +685,7 @@ backward(const MultiStringFactorGraph &msfg,
         int i = nodes_to_process.rbegin()->first;
 
         const MultiStringFactorGraph::Node &node = msfg.nodes[i];
+        // FIXME ?
         string target_node_str = msfg.get_factor(node);
 
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
@@ -692,7 +693,7 @@ backward(const MultiStringFactorGraph &msfg,
             if (fw[src_node] == MIN_FLOAT) continue;
             flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
             stats[msfg.get_factor(src_node)][target_node_str] += exp(curr_cost);
-            if (bw.find(i) == bw.end()) {
+            if (bw.find(src_node) == bw.end()) {
                 bw[src_node] = curr_cost;
                 nodes_to_process[src_node] = true;
             }
