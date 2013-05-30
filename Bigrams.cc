@@ -175,6 +175,24 @@ Bigrams::bigram_cost(const transitions_t &transitions,
 }
 
 
+
+void
+remove_transitions(vector<string> &to_remove,
+                   transitions_t &transitions)
+{
+    for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
+        transitions.erase(*it);
+
+    for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit)
+        for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
+            srcit->second.erase(*it);
+
+    for (auto srcit = transitions.begin(); srcit != transitions.end();)
+        if (srcit->second.size() == 0) transitions.erase(srcit++);
+        else ++srcit;
+}
+
+
 int
 Bigrams::cutoff(const map<string, flt_type> &unigram_stats,
                 flt_type cutoff,
@@ -183,14 +201,9 @@ Bigrams::cutoff(const map<string, flt_type> &unigram_stats,
 {
     vector<string> to_remove;
     for (auto it = unigram_stats.begin(); it != unigram_stats.end(); ++it)
-        if (it->second < cutoff) to_remove.push_back(it->first);
+        if (it->second < cutoff && it->first.length() > 1) to_remove.push_back(it->first);
 
-    for (int i=0; i<to_remove.size(); i++)
-        transitions.erase(to_remove[i]);
-
-    for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit)
-        for (int i=0; i<to_remove.size(); i++)
-            srcit->second.erase(to_remove[i]);
+    remove_transitions(to_remove, transitions);
 
     for (auto fgit = fg_words.begin(); fgit != fg_words.end(); ++fgit) {
         for (int i=0; i<to_remove.size(); i++) {
@@ -211,14 +224,9 @@ Bigrams::cutoff(const map<string, flt_type> &unigram_stats,
 {
     vector<string> to_remove;
     for (auto it = unigram_stats.begin(); it != unigram_stats.end(); ++it)
-        if (it->second < cutoff) to_remove.push_back(it->first);
+        if (it->second < cutoff && it->first.length() > 1) to_remove.push_back(it->first);
 
-    for (int i=0; i<to_remove.size(); i++)
-        transitions.erase(to_remove[i]);
-
-    for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit)
-        for (int i=0; i<to_remove.size(); i++)
-            srcit->second.erase(to_remove[i]);
+    remove_transitions(to_remove, transitions);
 
     for (int i=0; i<to_remove.size(); i++)
         msfg.remove_arcs(to_remove[i]);
@@ -233,20 +241,16 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
                              transitions_t &transitions,
                              map<string, FactorGraph*> &fg_words)
 {
-    int start_size = transitions.size();
     vector<pair<string, flt_type> > sorted_stats;
     sort_vocab(unigram_stats, sorted_stats, false);
+    vector<string> to_remove;
+    for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
+        if (it->first.length() == 1) continue;
+        to_remove.push_back(it->first);
+        if (to_remove.size() >= num_removals) break;
+    }
 
-    for (int i=0; i<num_removals; i++)
-        transitions.erase(sorted_stats[i].first);
-
-    for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit)
-        for (int i=0; i<num_removals; i++)
-            srcit->second.erase(sorted_stats[i].first);
-
-    for (auto srcit = transitions.begin(); srcit != transitions.end();)
-        if (srcit->second.size() == 0) transitions.erase(srcit++);
-        else ++srcit;
+    remove_transitions(to_remove, transitions);
 
     for (auto fgit = fg_words.begin(); fgit != fg_words.end(); ++fgit) {
         for (int i=0; i<num_removals; i++) {
@@ -255,7 +259,7 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
         }
     }
 
-    return start_size-transitions.size();
+    return to_remove.size();
 }
 
 
@@ -265,25 +269,21 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
                              transitions_t &transitions,
                              MultiStringFactorGraph &msfg)
 {
-    int start_size = transitions.size();
     vector<pair<string, flt_type> > sorted_stats;
     sort_vocab(unigram_stats, sorted_stats, false);
+    vector<string> to_remove;
+    for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
+        if (it->first.length() == 1) continue;
+        to_remove.push_back(it->first);
+        if (to_remove.size() >= num_removals) break;
+    }
 
-    for (int i=0; i<num_removals; i++)
-        transitions.erase(sorted_stats[i].first);
-
-    for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit)
-        for (int i=0; i<num_removals; i++)
-            srcit->second.erase(sorted_stats[i].first);
-
-    for (auto srcit = transitions.begin(); srcit != transitions.end();)
-        if (srcit->second.size() == 0) transitions.erase(srcit++);
-        else ++srcit;
+    remove_transitions(to_remove, transitions);
 
     for (int i=0; i<num_removals; i++)
         msfg.remove_arcs(sorted_stats[i].first);
 
-    return start_size-transitions.size();
+    return to_remove.size();
 }
 
 
