@@ -75,6 +75,31 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
 
 
 void
+Bigrams::collect_trans_stats(const map<string, flt_type> &vocab,
+                             const map<string, flt_type> &words,
+                             MultiStringFactorGraph &msfg,
+                             transitions_t &trans_stats,
+                             map<string, flt_type> &trans_normalizers,
+                             map<string, flt_type> &unigram_stats,
+                             bool fb)
+{
+    trans_stats.clear();
+    trans_normalizers.clear();
+    unigram_stats.clear();
+
+    vector<flt_type> fw(msfg.nodes.size(), -std::numeric_limits<flt_type>::max());
+    fw[0] = 0.0;
+
+    forward(vocab, msfg, fw);
+    for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
+        transitions_t word_stats;
+        backward(msfg, it->first, fw, word_stats);
+        update_trans_stats(word_stats, words.at(it->first), trans_stats, trans_normalizers, unigram_stats);
+    }
+}
+
+
+void
 Bigrams::normalize(transitions_t &trans_stats,
                    map<string, flt_type> &trans_normalizers,
                    flt_type min_cost)

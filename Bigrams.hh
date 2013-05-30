@@ -36,6 +36,14 @@ static void collect_trans_stats(const transitions_t &transitions,
                                 std::map<std::string, flt_type> &unigram_stats,
                                 bool fb=true);
 
+static void collect_trans_stats(const std::map<std::string, flt_type> &vocab,
+                                const std::map<std::string, flt_type> &words,
+                                MultiStringFactorGraph &msfg,
+                                transitions_t &trans_stats,
+                                std::map<std::string, flt_type> &trans_normalizers,
+                                std::map<std::string, flt_type> &unigram_stats,
+                                bool fb=true);
+
 static void normalize(transitions_t &trans_stats,
                       std::map<std::string, flt_type> &trans_normalizers,
                       flt_type min_cost = -200.0);
