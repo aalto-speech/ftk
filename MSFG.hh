@@ -2,6 +2,7 @@
 #define MSFG
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "defs.hh"
@@ -41,8 +42,8 @@ public:
         Node(const std::string &factor) { this->factor.assign(factor); }
         ~Node() { incoming.clear(); outgoing.clear(); }
         std::string factor;
-        std::vector<Arc*> incoming;
-        std::vector<Arc*> outgoing;
+        std::set<Arc*> incoming;
+        std::set<Arc*> outgoing;
     };
 
     MultiStringFactorGraph(const std::string &start_end_symbol)
@@ -61,14 +62,14 @@ public:
     int num_paths(std::string &text) const;
     void get_paths(const std::string &text, std::vector<std::vector<std::string> > &paths) const;
     void create_arc(msfg_node_idx_t src_node, msfg_node_idx_t tgt_node);
-    void remove_arcs(const std::string &source, const std::string &target);
-    void remove_arcs(const std::string &remstr);
+    void remove_arcs(const std::string &factor);
+    void prune_unreachable();
     void write(const std::string &filename) const;
     void read(const std::string &filename);
 
     std::string start_end_symbol;
     std::vector<Node> nodes;
-    std::vector<Arc*> arcs;
+    std::set<Arc*> arcs;
     std::map<std::string, int> string_end_nodes;
     std::map<std::string, std::vector<msfg_node_idx_t> > factor_node_map;
 

@@ -86,11 +86,11 @@ MultiStringFactorGraph::num_paths(std::string &text) const
     if (string_end_nodes.find(text) == string_end_nodes.end()) return 0;
     int end_node = string_end_nodes.at(text);
     map<int, int> path_counts; path_counts[end_node] = 1;
-    map<int, bool> nodes_to_process; nodes_to_process[end_node] = true;
+    set<int> nodes_to_process; nodes_to_process.insert(end_node);
 
     while(nodes_to_process.size() > 0) {
 
-        int i = nodes_to_process.rbegin()->first;
+        int i = *(nodes_to_process.rbegin());
 
         const Node &node = nodes[i];
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
@@ -143,86 +143,66 @@ MultiStringFactorGraph::create_arc(msfg_node_idx_t src_node,
                                    msfg_node_idx_t tgt_node)
 {
     Arc *arc = new Arc(src_node, tgt_node, 0.0);
-    arcs.push_back(arc);
-    nodes[src_node].outgoing.push_back(arc);
-    nodes[tgt_node].incoming.push_back(arc);
+    arcs.insert(arc);
+    nodes[src_node].outgoing.insert(arc);
+    nodes[tgt_node].incoming.insert(arc);
 }
 
 
 void
 MultiStringFactorGraph::remove_arc(Arc *arc)
 {
-    auto ait = find(arcs.begin(), arcs.end(), arc);
-    arcs.erase(ait);
+    //auto ait = find(arcs.begin(), arcs.end(), arc);
+    //arcs.erase(ait);
+    arcs.erase(arc);
 
     Node &src_node = nodes[(*arc).source_node];
-    auto sit = find(src_node.outgoing.begin(), src_node.outgoing.end(), arc);
-    src_node.outgoing.erase(sit);
+    //auto sit = find(src_node.outgoing.begin(), src_node.outgoing.end(), arc);
+    //src_node.outgoing.erase(sit);
+    src_node.outgoing.erase(arc);
 
     Node &tgt_node = nodes[(*arc).target_node];
-    auto tit = find(tgt_node.incoming.begin(), tgt_node.incoming.end(), arc);
-    tgt_node.incoming.erase(tit);
+    //auto tit = find(tgt_node.incoming.begin(), tgt_node.incoming.end(), arc);
+    //tgt_node.incoming.erase(tit);
+    tgt_node.incoming.erase(arc);
 
     delete arc;
 }
 
 
 void
-MultiStringFactorGraph::remove_arcs(const std::string &source,
-                                    const std::string &target)
+MultiStringFactorGraph::remove_arcs(const std::string &factor)
 {
-    for (auto node = nodes.begin(); node != nodes.end(); ++node) {
-        if (source != node->factor) continue;
-        for (int i=0; i<node->outgoing.size(); i++) {
-            MultiStringFactorGraph::Arc *arc = node->outgoing[i];
-            if (target != nodes[arc->target_node].factor) continue;
-            remove_arc(arc);
-            break;
-        }
+    if (factor.length() < 2) {
+        cerr << "Trying to remove factor of length 1: " << factor << endl;
+        exit(0);
     }
 
-    // Prune all transitions from non-reachable nodes
-    /*
-    for (auto it = nodes.begin(); it != nodes.end(); it++) {
-        if (it->incoming.size() == 0 && it->factor != start_end_symbol) {
-            while (it->outgoing.size() > 0)
-                remove_arc(it->outgoing[0]);
-            continue;
-        }
-        if (it->outgoing.size() == 0 && it->factor != start_end_symbol) {
-            while (it->incoming.size() > 0)
-                remove_arc(it->incoming[0]);
-        }
+    for (auto ndit = factor_node_map[factor].begin(); ndit != factor_node_map[factor].end(); ++ndit) {
+        Node &node = nodes[*ndit];
+        while (node.incoming.size() > 0)
+            remove_arc(*(node.incoming.begin()));
+        while (node.outgoing.size() > 0)
+            remove_arc(*(node.outgoing.begin()));
     }
-    */
 }
 
 
 void
-MultiStringFactorGraph::remove_arcs(const std::string &remstr)
+MultiStringFactorGraph::prune_unreachable()
 {
-    for (auto node = nodes.begin(); node != nodes.end(); ++node) {
-        if (node->factor != remstr) continue;
-        while (node->incoming.size() > 0)
-            remove_arc(node->incoming[0]);
-        while (node->outgoing.size() > 0)
-            remove_arc(node->outgoing[0]);
-    }
-
-    // Prune all transitions from non-reachable nodes
-    /*
     for (auto it = nodes.begin(); it != nodes.end(); it++) {
-        if (it->incoming.size() == 0 && it->factor != start_end_symbol) {
+
+        if (it->factor == start_end_symbol) continue;
+
+        if (it->incoming.size() == 0)
             while (it->outgoing.size() > 0)
-                remove_arc(it->outgoing[0]);
-            continue;
-        }
-        if (it->outgoing.size() == 0 && it->factor != start_end_symbol) {
+                remove_arc(*(it->outgoing.begin()));
+
+        if (it->outgoing.size() == 0)
             while (it->incoming.size() > 0)
-                remove_arc(it->incoming[0]);
-        }
+                remove_arc(*(it->incoming.begin()));
     }
-    */
 }
 
 
@@ -235,8 +215,8 @@ MultiStringFactorGraph::write(const std::string &filename) const
     outfile << nodes.size() << " " << arcs.size() << " " << string_end_nodes.size() << endl;
     for (int i=0; i<nodes.size(); i++)
         outfile << "n " << i << " " << nodes[i].factor << endl;
-    for (int i=0; i<arcs.size(); i++)
-        outfile << "a " << arcs[i]->source_node << " " << arcs[i]->target_node << endl;
+    for (auto it = arcs.begin(); it != arcs.end(); ++it)
+        outfile << "a " << (**it).source_node << " " << (**it).target_node << endl;
     for (auto it = string_end_nodes.cbegin(); it != string_end_nodes.cend(); ++it)
         outfile << "e " << it->first << " " << it->second << endl;
     outfile.close();
@@ -271,6 +251,7 @@ MultiStringFactorGraph::read(const std::string &filename)
         }
         nodess >> node_idx >> factor;
         nodes[node_idx].factor.assign(factor);
+        factor_node_map[factor].push_back(node_idx);
     }
 
     msfg_node_idx_t src_node, tgt_node;
