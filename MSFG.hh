@@ -29,8 +29,8 @@ public:
             if (cost != rhs.cost) return true;
             return false;
         }
-        unsigned int source_node;
-        unsigned int target_node;
+        msfg_node_idx_t source_node;
+        msfg_node_idx_t target_node;
         flt_type cost;
     };
 
@@ -52,7 +52,7 @@ public:
     void add(const FactorGraph &text);
     void get_factor(const Node &node, std::string &nstr) const
     { nstr.assign(node.factor); }
-    void get_factor(int node, std::string &nstr) const
+    void get_factor(msfg_node_idx_t node, std::string &nstr) const
     { nstr.assign(nodes[node].factor); }
     std::string get_factor(const Node &node) const
     { return node.factor; }
@@ -60,7 +60,7 @@ public:
     { return nodes[node].factor; }
     int num_paths(std::string &text) const;
     void get_paths(const std::string &text, std::vector<std::vector<std::string> > &paths) const;
-    void create_arc(unsigned int src_node, unsigned int tgt_node);
+    void create_arc(msfg_node_idx_t src_node, msfg_node_idx_t tgt_node);
     void remove_arcs(const std::string &source, const std::string &target);
     void remove_arcs(const std::string &remstr);
     void write(const std::string &filename) const;
@@ -70,12 +70,14 @@ public:
     std::vector<Node> nodes;
     std::vector<Arc*> arcs;
     std::map<std::string, int> string_end_nodes;
+    std::map<std::string, std::vector<msfg_node_idx_t> > factor_node_map;
 
 private:
 
     // Helper for enumerating paths
     void advance(std::vector<std::vector<std::string> > &paths,
-                 std::vector<std::string> &curr_string, unsigned int node) const;
+                 std::vector<std::string> &curr_string,
+                 msfg_node_idx_t node) const;
     // Helper for removing arcs
     void remove_arc(Arc *arc);
 };

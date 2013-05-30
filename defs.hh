@@ -3,6 +3,7 @@
 
 typedef double flt_type;
 typedef unsigned short int fg_node_idx_t;
+typedef unsigned int msfg_node_idx_t;
 typedef char factor_pos_t;
 typedef char factor_len_t;
 
