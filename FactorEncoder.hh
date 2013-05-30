@@ -130,6 +130,11 @@ void forward(const transitions_t &transitions,
              MultiStringFactorGraph &msfg,
              std::vector<flt_type> &fw);
 
+// Initialization with unigram scores, bigram stats out
+void forward(const std::map<std::string, flt_type> &vocab,
+             MultiStringFactorGraph &msfg,
+             std::vector<flt_type> &fw);
+
 void backward(const MultiStringFactorGraph &msfg,
               const std::string &text,
               const std::vector<flt_type> &fw,

@@ -627,7 +627,35 @@ forward(const transitions_t &transitions,
 
             int tgt_node = (**arc).target_node;
             try {
-                (**arc).cost = transitions.at(msfg.get_factor(node)).at(msfg.get_factor(tgt_node));
+                (**arc).cost = transitions.at(msfg.nodes[i].factor).at(msfg.nodes[tgt_node].factor);
+            }
+            catch (std::out_of_range &oor) {
+                (**arc).cost = SMALL_LP;
+            }
+
+            flt_type cost = fw[i] + (**arc).cost;
+            if (fw[tgt_node] == MIN_FLOAT) fw[tgt_node] = cost;
+            else fw[tgt_node] = add_log_domain_probs(fw[tgt_node], cost);
+        }
+    }
+}
+
+
+void
+forward(const map<string, flt_type> &vocab,
+        MultiStringFactorGraph &msfg,
+        vector<flt_type> &fw)
+{
+    for (int i=0; i<msfg.nodes.size(); i++) {
+
+        if (fw[i] == MIN_FLOAT) continue;
+
+        MultiStringFactorGraph::Node &node = msfg.nodes[i];
+        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+
+            int tgt_node = (**arc).target_node;
+            try {
+                (**arc).cost = vocab.at(msfg.nodes[tgt_node].factor);
             }
             catch (std::out_of_range &oor) {
                 (**arc).cost = SMALL_LP;
