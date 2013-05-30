@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #include "MSFG.hh"
@@ -51,14 +52,10 @@ MultiStringFactorGraph::add(const FactorGraph &text)
             }
 
             // Not found, check if node added but no arc yet
-            if (msfg_target_node < 0) {
+            if (msfg_target_node < 0)
             if (created_nodes.find(fg_target_node) != created_nodes.end()) {
                 msfg_target_node = created_nodes[fg_target_node];
-                Arc *arc = new Arc(msfg_src_node, msfg_target_node, 0.0);
-                arcs.push_back(arc);
-                nodes[msfg_src_node].outgoing.push_back(arc);
-                nodes[msfg_target_node].incoming.push_back(arc);
-            }
+                create_arc(msfg_src_node, msfg_target_node);
             }
 
             // Create node and arc
@@ -66,10 +63,7 @@ MultiStringFactorGraph::add(const FactorGraph &text)
                 nodes.push_back(Node(target_node_factor));
                 msfg_target_node = nodes.size()-1;
                 created_nodes[fg_target_node] = msfg_target_node;
-                Arc *arc = new Arc(msfg_src_node, msfg_target_node, 0.0);
-                arcs.push_back(arc);
-                nodes[msfg_src_node].outgoing.push_back(arc);
-                nodes[msfg_target_node].incoming.push_back(arc);
+                create_arc(msfg_src_node, msfg_target_node);
             }
 
             nodes_to_process[fg_target_node] = msfg_target_node;
@@ -79,12 +73,8 @@ MultiStringFactorGraph::add(const FactorGraph &text)
     // Create end node and connect to it
     nodes.push_back(Node(start_end_symbol));
     created_nodes[text.nodes.size()-1] = nodes.size()-1;
-    for (auto it = connect_to_end_node.begin(); it != connect_to_end_node.end(); ++it) {
-        Arc *arc = new Arc(*it, nodes.size()-1, 0.0);
-        arcs.push_back(arc);
-        nodes[*it].outgoing.push_back(arc);
-        nodes[nodes.size()-1].incoming.push_back(arc);
-    }
+    for (auto it = connect_to_end_node.begin(); it != connect_to_end_node.end(); ++it)
+        create_arc(*it, nodes.size()-1);
     string_end_nodes[text.text] = nodes.size()-1;
 }
 
@@ -111,6 +101,16 @@ MultiStringFactorGraph::num_paths(std::string &text) const
 
 
 void
+MultiStringFactorGraph::create_arc(unsigned int src_node, unsigned int tgt_node)
+{
+    Arc *arc = new Arc(src_node, tgt_node, 0.0);
+    arcs.push_back(arc);
+    nodes[src_node].outgoing.push_back(arc);
+    nodes[tgt_node].incoming.push_back(arc);
+}
+
+
+void
 MultiStringFactorGraph::remove_arc(Arc *arc)
 {
     auto ait = find(arcs.begin(), arcs.end(), arc);
@@ -133,11 +133,11 @@ MultiStringFactorGraph::remove_arcs(const std::string &source,
                                     const std::string &target)
 {
     for (auto node = nodes.begin(); node != nodes.end(); ++node) {
-        if (source != this->get_factor(*node)) continue;
+        if (source != node->factor) continue;
         for (int i=0; i<node->outgoing.size(); i++) {
             MultiStringFactorGraph::Arc *arc = node->outgoing[i];
-            if (target != this->get_factor(arc->target_node)) continue;
-            this->remove_arc(arc);
+            if (target != nodes[arc->target_node].factor) continue;
+            remove_arc(arc);
             break;
         }
     }
@@ -161,7 +161,7 @@ void
 MultiStringFactorGraph::remove_arcs(const std::string &remstr)
 {
     for (auto node = nodes.begin(); node != nodes.end(); ++node) {
-        if (this->get_factor(*node) != remstr) continue;
+        if (node->factor != remstr) continue;
         while (node->incoming.size() > 0)
             remove_arc(node->incoming[0]);
         while (node->outgoing.size() > 0)
@@ -189,11 +189,75 @@ MultiStringFactorGraph::write(const std::string &filename) const
     ofstream outfile(filename);
     if (!outfile) return;
 
+    outfile << nodes.size() << " " << arcs.size() << " " << string_end_nodes.size() << endl;
     for (int i=0; i<nodes.size(); i++)
         outfile << "n " << i << " " << nodes[i].factor << endl;
     for (int i=0; i<arcs.size(); i++)
         outfile << "a " << arcs[i]->source_node << " " << arcs[i]->target_node << endl;
     for (auto it = string_end_nodes.cbegin(); it != string_end_nodes.cend(); ++it)
         outfile << "e " << it->first << " " << it->second << endl;
+    outfile.close();
 }
+
+
+void
+MultiStringFactorGraph::read(const std::string &filename)
+{
+    ifstream infile(filename);
+    if (!infile) return;
+
+    int node_count, arc_count, end_node_count;
+    char type;
+    string line;
+    getline(infile, line);
+    stringstream ss(line);
+    ss >> node_count >> arc_count >> end_node_count;
+
+    nodes.clear(); arcs.clear(); string_end_nodes.clear();
+    nodes.resize(node_count);
+
+    int node_idx;
+    string factor;
+    for (int i=0; i<node_count; i++) {
+        getline(infile, line);
+        stringstream nodess(line);
+        nodess >> type;
+        if (type != 'n') {
+            cerr << "Some problem reading MSFG file" << endl;
+            exit(0);
+        }
+        nodess >> node_idx >> factor;
+        nodes[node_idx].factor.assign(factor);
+    }
+
+    int src_node, tgt_node;
+    for (int i=0; i<arc_count; i++) {
+        getline(infile, line);
+        stringstream arcss(line);
+        arcss >> type;
+        if (type != 'a') {
+            cerr << "Some problem reading MSFG file" << endl;
+            exit(0);
+        }
+        arcss >> src_node >> tgt_node;
+        create_arc(src_node, tgt_node);
+    }
+
+    int end_node_idx;
+    string curr_string;
+    for (int i=0; i<arc_count; i++) {
+        getline(infile, line);
+        stringstream endnss(line);
+        endnss >> type;
+        if (type != 'e') {
+            cerr << "Some problem reading MSFG file" << endl;
+            exit(0);
+        }
+        endnss >> curr_string >> end_node_idx;
+        string_end_nodes[curr_string] = end_node_idx;
+    }
+
+    infile.close();
+}
+
 

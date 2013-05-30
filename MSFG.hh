@@ -37,6 +37,7 @@ public:
     /** Node of a multi string factor graph. */
     class Node {
     public:
+        Node() { }
         Node(const std::string &factor) { this->factor.assign(factor); }
         ~Node() { incoming.clear(); outgoing.clear(); }
         std::string factor;
@@ -58,9 +59,11 @@ public:
     std::string get_factor(int node) const
     { return nodes[node].factor; }
     int num_paths(std::string &text) const;
+    void create_arc(unsigned int src_node, unsigned int tgt_node);
     void remove_arcs(const std::string &source, const std::string &target);
     void remove_arcs(const std::string &remstr);
     void write(const std::string &filename) const;
+    void read(const std::string &filename);
 
     std::string start_end_symbol;
     std::vector<Node> nodes;
