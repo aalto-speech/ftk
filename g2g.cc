@@ -39,8 +39,8 @@ int main(int argc, char* argv[]) {
     flt_type one_char_min_lp = -25.0;
     string vocab_fname;
     string wordlist_fname;
+    string msfg_fname;
     string transition_fname;
-    string wordseg_fname;
 
     // Popt documentation:
     // http://linux.die.net/man/3/popt
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
     };
 
     pc = poptGetContext(NULL, argc, (const char **)argv, po, 0);
-    poptSetOtherOptionHelp(pc, "[INITIAL VOCABULARY] [WORDLIST] [TRANSITIONS] [WORD_SEGS]");
+    poptSetOtherOptionHelp(pc, "[INITIAL VOCABULARY] [WORDLIST] [MSFG_IN] [TRANSITIONS]");
 
     int val;
     while ((val = poptGetNextOpt(pc)) >= 0)
@@ -98,23 +98,23 @@ int main(int argc, char* argv[]) {
     }
 
     if (poptPeekArg(pc) != NULL)
+        msfg_fname.assign((char*)poptGetArg(pc));
+    else {
+        cerr << "Input MSFG file not set" << endl;
+        exit(1);
+    }
+
+    if (poptPeekArg(pc) != NULL)
         transition_fname.assign((char*)poptGetArg(pc));
     else {
         cerr << "Transition file not set" << endl;
         exit(1);
     }
 
-    if (poptPeekArg(pc) != NULL)
-        wordseg_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Word segmentation file not set" << endl;
-        exit(1);
-    }
-
     cerr << "parameters, initial vocabulary: " << vocab_fname << endl;
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
+    cerr << "parameters, msfg: " << msfg_fname << endl;
     cerr << "parameters, transitions: " << transition_fname << endl;
-    cerr << "parameters, word segmentations: " << wordseg_fname << endl;
     cerr << "parameters, cutoff: " << setprecision(15) << cutoff_value << endl;
     cerr << "parameters, iterations: " << iter_amount << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
@@ -167,6 +167,7 @@ int main(int argc, char* argv[]) {
     StringSet<flt_type> ss_vocab(vocab);
     map<string, FactorGraph*> fg_words;
     MultiStringFactorGraph msfg(start_end_symbol);
+    msfg.read(msfg_fname);
     transitions_t transitions;
     transitions_t trans_stats;
     map<string, flt_type> trans_normalizers;
@@ -174,30 +175,7 @@ int main(int argc, char* argv[]) {
     vocab[start_end_symbol] = 0.0;
 
     // Initial segmentation using unigram model
-    int old_nodes = 0;
-    int old_arcs = 0;
-    int curr_word_idx = 0;
-    for (auto it = words.cbegin(); it != words.cend(); ++it) {
-        FactorGraph *fg = new FactorGraph(it->first, start_end_symbol, ss_vocab);
-        fg_words[it->first] = fg;
-        transitions_t word_stats;
-        forward_backward(vocab, *fg, word_stats);
-        Bigrams::update_trans_stats(word_stats, it->second, trans_stats, trans_normalizers, unigram_stats);
-        msfg.add(*fg);
-        old_nodes += fg->nodes.size();
-        old_arcs += fg->arcs.size();
-        delete fg;
-        curr_word_idx++;
-        if (curr_word_idx % 10000 == 0) cerr << "... processing word " << curr_word_idx << endl;
-    }
-
-    cerr << "factor graph strings: " << msfg.string_end_nodes.size() << endl;
-    cerr << "factor graph nodes: " << msfg.nodes.size() << endl;
-    cerr << "factor graph arcs: " << msfg.arcs.size() << endl;
-    cerr << "nodes for separate fgs: " << old_nodes << endl;
-    cerr << "arcs for separate fgs: " << old_arcs << endl;
-
-    msfg.write("msfg.out");
+    Bigrams::collect_trans_stats(vocab, words, msfg, trans_stats, trans_normalizers, unigram_stats);
 
     // Unigram cost with word end markers
     densum = ug.get_sum(unigram_stats);
@@ -240,28 +218,8 @@ int main(int argc, char* argv[]) {
 
     // Write transitions
     Bigrams::write_transitions(transitions, transition_fname);
-    Bigrams::write_transitions(trans_stats, "trans_stats.out");
-    write_vocab("unigram.out", unigram_stats);
-
-    // Viterbi segmentations
-    /*
-    ofstream wsegfile(wordseg_fname);
-    if (!wsegfile) exit(0);
-    for (auto it = fg_words.begin(); it != fg_words.cend(); ++it) {
-        std::vector<std::string> best_path;
-        viterbi(transitions, *it->second, best_path);
-        for (int i=0; i<best_path.size(); i++) {
-            wsegfile << best_path[i];
-            if (i<best_path.size()-1) wsegfile << " ";
-        }
-        wsegfile << endl;
-    }
-    wsegfile.close();
-    */
-
-    // Clean up
-    for (auto it = fg_words.begin(); it != fg_words.cend(); ++it)
-        delete it->second;
+    Bigrams::write_transitions(trans_stats, "debug.trans_stats.out");
+    write_vocab("debug.unigram.out", unigram_stats);
 
     exit(1);
 }
