@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <queue>
@@ -678,24 +679,22 @@ backward(const MultiStringFactorGraph &msfg,
 
     int text_end_node = msfg.string_end_nodes.at(text);
     map<int, flt_type> bw; bw[text_end_node] = 0.0;
-    map<int, bool> nodes_to_process; nodes_to_process[text_end_node] = true;
+    set<int> nodes_to_process; nodes_to_process.insert(text_end_node);
 
     while(nodes_to_process.size() > 0) {
 
-        int i = nodes_to_process.rbegin()->first;
+        int i = *(nodes_to_process.rbegin());
 
         const MultiStringFactorGraph::Node &node = msfg.nodes[i];
-        // FIXME ?
-        string target_node_str = msfg.get_factor(node);
 
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
             int src_node = (**arc).source_node;
             if (fw[src_node] == MIN_FLOAT) continue;
             flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
-            stats[msfg.get_factor(src_node)][target_node_str] += exp(curr_cost);
+            stats[msfg.nodes.at(src_node).factor][node.factor] += exp(curr_cost);
             if (bw.find(src_node) == bw.end()) {
                 bw[src_node] = curr_cost;
-                nodes_to_process[src_node] = true;
+                nodes_to_process.insert(src_node);
             }
             else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
         }
