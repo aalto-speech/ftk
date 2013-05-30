@@ -280,8 +280,8 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
 
     remove_transitions(to_remove, transitions);
 
-    for (int i=0; i<num_removals; i++)
-        msfg.remove_arcs(sorted_stats[i].first);
+    for (int i=0; i<to_remove.size(); i++)
+        msfg.remove_arcs(to_remove[i]);
 
     return to_remove.size();
 }
@@ -296,6 +296,7 @@ Bigrams::transition_count(const transitions_t &transitions)
             count++;
     return count;
 }
+
 
 void
 Bigrams::trans_to_vocab(const transitions_t &transitions,
