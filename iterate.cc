@@ -127,8 +127,6 @@ int main(int argc, char* argv[]) {
     else
         gg.set_segmentation_method(viterbi);
 
-    StringSet<flt_type> ss_vocab(vocab);
-
     for (int i=0; i<num_iterations; i++) {
         gg.resegment_words(words, vocab, freqs);
         flt_type densum = gg.get_sum(freqs);
