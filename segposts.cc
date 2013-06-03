@@ -1,109 +1,159 @@
 #include <cmath>
-#include <string>
-#include <iostream>
+#include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <map>
+#include <sstream>
+#include <cstring>
+#include <string>
 #include <vector>
 
+#include <popt.h>
+
 #include "defs.hh"
-#include "Unigrams.hh"
-#include "Bigrams.hh"
-#include "FactorEncoder.hh"
+#include "io.hh"
 #include "StringSet.hh"
+#include "FactorGraph.hh"
+#include "FactorEncoder.hh"
+#include "Bigrams.hh"
 
 using namespace std;
 
 
 int main(int argc, char* argv[]) {
 
-    int maxlen, word_maxlen;
-    flt_type densum;
-    string vocab_fname, wordlist_fname;
+    char *vocab_fname;
+    char *trans_fname;
+    string in_fname;
+    string out_fname;
+    int maxlen;
     map<string, flt_type> vocab;
-    map<string, flt_type> words;
-    map<string, flt_type> all_chars;
-    map<string, flt_type> freqs;
-
-    cerr << "Reading vocabulary " << argv[1] << endl;
-    read_vocab(std::string(argv[1]), vocab, maxlen);
-
-    cerr << "Reading word list " << argv[2] << endl;
-    read_vocab(std::string(argv[2]), words, word_maxlen);
-
-
-    // 1-GRAM POSTERIORS AFTER 5 FB ITERATIONS
-    cerr << "Optimizing 1-gram probs w Forward-Backward" << endl;
-    Unigrams gg(forward_backward);
-    for (int i=0; i<5; i++) {
-        gg.resegment_words(words, vocab, freqs);
-        densum = gg.get_sum(freqs);
-        vocab = freqs;
-        gg.freqs_to_logprobs(vocab, densum);
-    }
-
-    StringSet<double> ss_vocab(vocab);
-    ofstream outpost("posteriors.1gram");
-    for (auto wordit = words.cbegin(); wordit != words.cend(); ++wordit) {
-        vector<string> best_path;
-        map<string, flt_type> stats;
-        vector<flt_type> post_scores;
-
-        viterbi(ss_vocab, wordit->first, best_path, true);
-        forward_backward(ss_vocab, wordit->first, stats, post_scores);
-
-        outpost << wordit->first << ": ";
-        for (int i=0; i<best_path.size(); i++)
-            outpost << best_path[i] << " ";
-        for (int i=0; i<post_scores.size(); i++)
-            outpost << exp(post_scores[i]) << " ";
-        outpost << endl;
-    }
-    outpost.close();
-
-    // 2-GRAM POSTERIORS AFTER 5 FB ITERATIONS
-    cerr << "Optimizing 2-gram probs w Forward-Backward" << endl;
-    map<string, FactorGraph*> fg_words;
-    string start_end_symbol("*");
+    StringSet<flt_type> *ss_vocab = NULL;
     transitions_t transitions;
-    transitions_t trans_stats;
-    map<string, flt_type> trans_normalizers;
-    map<string, flt_type> unigram_stats;
-    vocab[start_end_symbol] = 0.0;
+    string start_end_symbol("*");
 
-    // Initial segmentation using unigram model
-    for (auto it = words.cbegin(); it != words.cend(); ++it) {
-        FactorGraph *fg = new FactorGraph(it->first, start_end_symbol, ss_vocab);
-        fg_words[it->first] = fg;
-        transitions_t word_stats;
-        forward_backward(vocab, *fg, word_stats);
-        Bigrams::update_trans_stats(word_stats, it->second, trans_stats, trans_normalizers, unigram_stats);
+    poptContext pc;
+    struct poptOption po[] = {
+        {"vocabulary", 'v', POPT_ARG_STRING, &vocab_fname, 11001, NULL, "Vocabulary file name"},
+        {"transitions", 't', POPT_ARG_STRING, &trans_fname, 11002, NULL, "Transition file name"},
+        POPT_AUTOHELP
+        {NULL}
+    };
+
+    pc = poptGetContext(NULL, argc, (const char **)argv, po, 0);
+    poptSetOtherOptionHelp(pc, "INPUT SEGPROBS_OUTPUT");
+
+    int val;
+    while ((val = poptGetNextOpt(pc)) >= 0)
+        continue;
+
+    // poptGetNextOpt returns -1 when the final argument has been parsed
+    // otherwise an error occured
+    if (val != -1) {
+        switch (val) {
+        case POPT_ERROR_NOARG:
+            cerr << "Argument missing for an option" << endl;
+            exit(1);
+        case POPT_ERROR_BADOPT:
+            cerr << "Option's argument could not be parsed" << endl;
+            exit(1);
+        case POPT_ERROR_BADNUMBER:
+        case POPT_ERROR_OVERFLOW:
+            cerr << "Option could not be converted to number" << endl;
+            exit(1);
+        default:
+            cerr << "Unknown error in option processing" << endl;
+            exit(1);
+        }
     }
 
-    for (int i=0; i<5; i++) {
-        Bigrams::collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats);
-        transitions = trans_stats;
-        Bigrams::normalize(transitions, trans_normalizers);
+    if (poptPeekArg(pc) != NULL)
+        in_fname.assign((char*)poptGetArg(pc));
+    else {
+        cerr << "Input file not set" << endl;
+        exit(1);
     }
 
-    outpost.open("posteriors.2gram");
-    for (auto wordit = words.cbegin(); wordit != words.cend(); ++wordit) {
-        vector<string> best_path;
-        transitions_t stats;
+    if (poptPeekArg(pc) != NULL)
+        out_fname.assign((char*)poptGetArg(pc));
+    else {
+        cerr << "Output file not set" << endl;
+        exit(1);
+    }
+
+    if (vocab_fname == NULL && trans_fname == NULL) {
+        cerr << "Please define vocabulary or transitions" << endl;
+        exit(0);
+    }
+
+    if (vocab_fname != NULL && trans_fname != NULL) {
+        cerr << "Don't define both vocabulary and transitions" << endl;
+        exit(0);
+    }
+
+    if (vocab_fname != NULL) {
+        cerr << "Reading vocabulary " << vocab_fname << endl;
+        int retval = read_vocab(vocab_fname, vocab, maxlen);
+        if (retval < 0) {
+            cerr << "something went wrong reading vocabulary" << endl;
+            exit(0);
+        }
+        cerr << "\t" << "size: " << vocab.size() << endl;
+        cerr << "\t" << "maximum string length: " << maxlen << endl;
+        ss_vocab = new StringSet<flt_type>(vocab);
+    }
+
+    if (trans_fname != NULL) {
+        cerr << "Reading transitions " << trans_fname << endl;
+        int retval = Bigrams::read_transitions(transitions, trans_fname);
+        Bigrams::trans_to_vocab(transitions, vocab);
+        ss_vocab = new StringSet<flt_type>(vocab);
+        if (retval < 0) {
+            cerr << "something went wrong reading transitions" << endl;
+            exit(0);
+        }
+        cerr << "\t" << "vocabulary: " << transitions.size() << endl;
+        cerr << "\t" << "transitions: " << retval << endl;
+    }
+
+    cerr << "Segmenting corpus" << endl;
+    io::Stream infile, outfile;
+    try {
+        infile.open(in_fname, "r");
+        outfile.open(out_fname, "w");
+    }
+    catch (io::Stream::OpenError oe) {
+        cerr << "Something went wrong opening the files." << endl;
+        exit(0);
+    }
+
+    char linebuffer[8192];
+    while (fgets(linebuffer, 8192 , infile.file) != NULL) {
+
+        linebuffer[strlen(linebuffer)-1] = '\0';
+        string line(linebuffer);
+        map<string, flt_type> ug_stats;
+        transitions_t bg_stats;
         vector<flt_type> post_scores;
 
-        viterbi(transitions, *fg_words[wordit->first], best_path, true);
-        forward_backward(transitions, *fg_words[wordit->first], stats, post_scores);
+        // Unigram
+        if (vocab_fname != NULL) {
+            forward_backward(*ss_vocab, line, ug_stats, post_scores);
+        }
 
-        outpost << wordit->first << ": ";
-        for (int i=0; i<best_path.size(); i++)
-            outpost << best_path[i] << " ";
-        for (int i=0; i<post_scores.size(); i++)
-            outpost << exp(post_scores[i]) << " ";
-        outpost << endl;
+        // Bigram
+        else {
+            FactorGraph fg(line, start_end_symbol, *ss_vocab);
+            forward_backward(transitions, fg, bg_stats, post_scores);
+        }
+
+        fprintf(outfile.file, "%s\t", line.c_str());
+        for (int i=0; i<post_scores.size()-1; i++)
+            fprintf(outfile.file, "%f ", post_scores[i]);
+        fprintf(outfile.file, "\n");
     }
 
-    // Clean up
-    for (auto it = fg_words.begin(); it != fg_words.cend(); ++it)
-        delete it->second;
+    if (ss_vocab != NULL) delete ss_vocab;
 
+    exit(1);
 }
