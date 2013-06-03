@@ -667,7 +667,7 @@ forward(const map<string, flt_type> &vocab,
 }
 
 
-void
+flt_type
 backward(const MultiStringFactorGraph &msfg,
          const string &text,
          const vector<flt_type> &fw,
@@ -698,32 +698,40 @@ backward(const MultiStringFactorGraph &msfg,
 
         nodes_to_process.erase(i);
     }
+
+    return fw.at(msfg.string_end_nodes.at(text));
 }
 
 
-void
+flt_type
 forward_backward(const transitions_t &transitions,
                  MultiStringFactorGraph &msfg,
-                 transitions_t &stats)
+                 transitions_t &stats,
+                 map<string, flt_type> &word_freqs)
 {
-    if (msfg.nodes.size() == 0) return;
+    if (msfg.nodes.size() == 0) return MIN_FLOAT;
 
     vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
     fw[0] = 0.0;
 
     forward(transitions, msfg, fw);
-    for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it)
-        backward(msfg, it->first, fw, stats);
+    flt_type total_lp = 0.0;
+    for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
+        flt_type lp = backward(msfg, it->first, fw, stats);
+        total_lp += word_freqs[it->first] * lp;
+    }
+
+    return total_lp;
 }
 
 
-void
+flt_type
 forward_backward(const transitions_t &transitions,
                  MultiStringFactorGraph &msfg,
                  const string &text,
                  transitions_t &stats)
 {
-    if (msfg.nodes.size() == 0) return;
+    if (msfg.nodes.size() == 0) return MIN_FLOAT;
 
     vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
     vector<flt_type> bw(msfg.nodes.size(), MIN_FLOAT);
@@ -731,4 +739,6 @@ forward_backward(const transitions_t &transitions,
 
     forward(transitions, msfg, fw);
     backward(msfg, text, fw, stats);
+
+    return fw[msfg.string_end_nodes[text]];
 }

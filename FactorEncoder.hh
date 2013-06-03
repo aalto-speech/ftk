@@ -134,21 +134,22 @@ void forward(const std::map<std::string, flt_type> &vocab,
              MultiStringFactorGraph &msfg,
              std::vector<flt_type> &fw);
 
-void backward(const MultiStringFactorGraph &msfg,
-              const std::string &text,
-              const std::vector<flt_type> &fw,
-              transitions_t &stats);
+flt_type backward(const MultiStringFactorGraph &msfg,
+                  const std::string &text,
+                  const std::vector<flt_type> &fw,
+                  transitions_t &stats);
 
 // Forward-backward for all strings
-void forward_backward(const transitions_t &transitions,
-                      MultiStringFactorGraph &msfg,
-                      transitions_t &stats);
+flt_type forward_backward(const transitions_t &transitions,
+                          MultiStringFactorGraph &msfg,
+                          transitions_t &stats,
+                          std::map<std::string, flt_type> &word_freqs);
 
 // Forward-backward for one string
-void forward_backward(const transitions_t &transitions,
-                      MultiStringFactorGraph &msfg,
-                      const std::string &text,
-                      transitions_t &stats);
+flt_type forward_backward(const transitions_t &transitions,
+                          MultiStringFactorGraph &msfg,
+                          const std::string &text,
+                          transitions_t &stats);
 
 
 #endif /* FACTOR_ENCODER */
