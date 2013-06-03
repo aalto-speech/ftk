@@ -208,10 +208,12 @@ int main(int argc, char* argv[]) {
         transitions_temp << "transitions.iter" << i+1;
         Bigrams::write_transitions(transitions, transitions_temp.str());
 
-        int curr_least_common = least_common + (vocab_size % 1000);
-        int lc_removed = Bigrams::remove_least_common(unigram_stats, curr_least_common, transitions, msfg);
-        cerr << "\tremoved " << lc_removed << " least common subwords" << endl;
-        vocab_size = transitions.size();
+        if (least_common > 0) {
+            int curr_least_common = least_common + (vocab_size % 1000);
+            int lc_removed = Bigrams::remove_least_common(unigram_stats, curr_least_common, transitions, msfg);
+            cerr << "\tremoved " << lc_removed << " least common subwords" << endl;
+            vocab_size = transitions.size();
+        }
 
         if  (vocab_size < target_vocab_size) break;
     }
