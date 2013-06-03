@@ -46,7 +46,7 @@ static void collect_trans_stats(const std::map<std::string, flt_type> &vocab,
 
 static void normalize(transitions_t &trans_stats,
                       std::map<std::string, flt_type> &trans_normalizers,
-                      flt_type min_cost = -200.0);
+                      flt_type min_cost = SMALL_LP);
 
 static void write_transitions(const transitions_t &transitions,
                               const std::string &filename);

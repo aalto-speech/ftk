@@ -12,9 +12,6 @@
 
 using namespace std;
 
-flt_type SMALL_LP = -200.0;
-flt_type MIN_FLOAT = -std::numeric_limits<flt_type>::max();
-
 
 int read_vocab(string fname,
                map<string, flt_type> &vocab,

@@ -1,5 +1,5 @@
 
-cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-sign-compare
+cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-sign-compare -Wno-unused-variable
 #cxxflags = -O0 -gddb -std=gnu++0x -Wall
 #cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-sign-compare
 

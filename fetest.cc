@@ -69,7 +69,7 @@ void fetest :: viterbiTest3 (void)
     int maxlen = 1;
     flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(-std::numeric_limits<flt_type>::max(), lp);
+    CPPUNIT_ASSERT_EQUAL(MIN_FLOAT, lp);
 }
 
 // Empty string
@@ -83,7 +83,7 @@ void fetest :: viterbiTest4 (void)
     int maxlen = 1;
     flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(-std::numeric_limits<flt_type>::max(), lp);
+    CPPUNIT_ASSERT_EQUAL(MIN_FLOAT, lp);
 }
 
 // One character sentence
@@ -116,7 +116,7 @@ void fetest :: viterbiTest6 (void)
     int maxlen = 1;
     flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(-std::numeric_limits<flt_type>::max(), lp);
+    CPPUNIT_ASSERT_EQUAL(MIN_FLOAT, lp);
 }
 
 void fetest :: viterbiTest7 (void)
@@ -159,7 +159,7 @@ void fetest :: ForwardBackwardTest1 (void)
     map<string, flt_type> stats;
     flt_type lp = forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
-    CPPUNIT_ASSERT_EQUAL(-std::numeric_limits<flt_type>::max(), lp);
+    CPPUNIT_ASSERT_EQUAL(MIN_FLOAT, lp);
 }
 
 // No segmentation
@@ -176,7 +176,7 @@ void fetest :: ForwardBackwardTest2 (void)
     map<string, flt_type> stats;
     flt_type lp = forward_backward(vocab, sentence, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
-    CPPUNIT_ASSERT_EQUAL(-std::numeric_limits<flt_type>::max(), lp);
+    CPPUNIT_ASSERT_EQUAL(MIN_FLOAT, lp);
 }
 
 // One character string
@@ -618,7 +618,7 @@ void fetest :: TransitionViterbiTest3 (void)
     vector<string> best_path;
     flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( MIN_FLOAT, lp, DBL_ACCURACY );
 }
 
 // Empty string
@@ -636,7 +636,7 @@ void fetest :: TransitionViterbiTest4 (void)
     vector<string> best_path;
     flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( MIN_FLOAT, lp, DBL_ACCURACY );
 }
 
 // One character sentence
@@ -682,7 +682,7 @@ void fetest :: TransitionViterbiTest6 (void)
     vector<string> best_path;
     flt_type lp = viterbi(transitions, fg, best_path);
     CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( MIN_FLOAT, lp, DBL_ACCURACY );
 }
 
 // Normal scenario with few variations
@@ -866,7 +866,7 @@ void fetest :: TransitionForwardBackwardTest3 (void)
     transitions_t stats;
     flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( MIN_FLOAT, lp, DBL_ACCURACY );
 }
 
 // Empty string
@@ -884,7 +884,7 @@ void fetest :: TransitionForwardBackwardTest4 (void)
     transitions_t stats;
     flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( MIN_FLOAT, lp, DBL_ACCURACY );
 }
 
 // One character sentence
@@ -929,7 +929,7 @@ void fetest :: TransitionForwardBackwardTest6 (void)
     transitions_t stats;
     flt_type lp = forward_backward(transitions, fg, stats);
     CPPUNIT_ASSERT_EQUAL(0, (int)stats.size());
-    CPPUNIT_ASSERT_DOUBLES_EQUAL( -std::numeric_limits<flt_type>::max(), lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( MIN_FLOAT, lp, DBL_ACCURACY );
 }
 
 // Multiple paths

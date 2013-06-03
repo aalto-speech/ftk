@@ -62,7 +62,7 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
     trans_normalizers.clear();
     unigram_stats.clear();
 
-    vector<flt_type> fw(msfg.nodes.size(), -std::numeric_limits<flt_type>::max());
+    vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
     fw[0] = 0.0;
 
     forward(transitions, msfg, fw);
@@ -87,7 +87,7 @@ Bigrams::collect_trans_stats(const map<string, flt_type> &vocab,
     trans_normalizers.clear();
     unigram_stats.clear();
 
-    vector<flt_type> fw(msfg.nodes.size(), -std::numeric_limits<flt_type>::max());
+    vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
     fw[0] = 0.0;
 
     forward(vocab, msfg, fw);
@@ -201,7 +201,7 @@ Bigrams::cutoff(const map<string, flt_type> &unigram_stats,
 {
     vector<string> to_remove;
     for (auto it = unigram_stats.begin(); it != unigram_stats.end(); ++it)
-        if (it->second < cutoff && it->first.length() > 1) to_remove.push_back(it->first);
+        if (it->second < cutoff && it->first.length() > 2) to_remove.push_back(it->first);
 
     remove_transitions(to_remove, transitions);
 
@@ -224,7 +224,7 @@ Bigrams::cutoff(const map<string, flt_type> &unigram_stats,
 {
     vector<string> to_remove;
     for (auto it = unigram_stats.begin(); it != unigram_stats.end(); ++it)
-        if (it->second < cutoff && it->first.length() > 1) to_remove.push_back(it->first);
+        if (it->second < cutoff && it->first.length() > 2) to_remove.push_back(it->first);
 
     remove_transitions(to_remove, transitions);
 
@@ -246,7 +246,7 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
     sort_vocab(unigram_stats, sorted_stats, false);
     vector<string> to_remove;
     for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
-        if (it->first.length() == 1) continue;
+        if (it->first.length() < 3) continue;
         to_remove.push_back(it->first);
         if (to_remove.size() >= num_removals) break;
     }
@@ -274,7 +274,7 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
     sort_vocab(unigram_stats, sorted_stats, false);
     vector<string> to_remove;
     for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
-        if (it->first.length() == 1) continue;
+        if (it->first.length() < 3) continue;
         to_remove.push_back(it->first);
         if (to_remove.size() >= num_removals) break;
     }

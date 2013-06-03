@@ -1,7 +1,6 @@
 #ifndef FACTOR_ENCODER
 #define FACTOR_ENCODER
 
-#include <limits>
 #include <map>
 #include <string>
 #include <vector>
@@ -47,7 +46,7 @@ class Token {
     public:
         int source;
         flt_type cost;
-        Token(): source(-1), cost(-std::numeric_limits<flt_type>::max()) {};
+        Token(): source(-1), cost(MIN_FLOAT) {};
         Token(int src, flt_type cst): source(src), cost(cst) {};
         Token(const Token& orig) { this->source=orig.source; this->cost=orig.cost; };
 };

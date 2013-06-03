@@ -16,7 +16,7 @@ public:
     class Arc {
     public:
         Arc(unsigned int source_node, unsigned int target_node,
-            double cost=-std::numeric_limits<flt_type>::max())
+            double cost=MIN_FLOAT)
         : source_node(source_node), target_node(target_node), cost(0.0) {}
         bool operator==(Arc& rhs) const {
             if (source_node != rhs.source_node) return false;
