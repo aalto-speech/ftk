@@ -173,9 +173,10 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> trans_normalizers;
     map<string, flt_type> unigram_stats;
     vocab[start_end_symbol] = 0.0;
+    flt_type lp = 0.0;
 
     // Initial segmentation using unigram model
-    Bigrams::collect_trans_stats(vocab, words, msfg, trans_stats, trans_normalizers, unigram_stats);
+    lp = Bigrams::collect_trans_stats(vocab, words, msfg, trans_stats, trans_normalizers, unigram_stats);
 
     // Unigram cost with word end markers
     densum = ug.get_sum(unigram_stats);
@@ -185,35 +186,36 @@ int main(int argc, char* argv[]) {
     // Initial bigram cost
     transitions = trans_stats;
     Bigrams::normalize(transitions, trans_normalizers);
-    cerr << "bigram cost: " << Bigrams::bigram_cost(transitions, trans_stats) << endl;
+    cerr << "bigram cost: " << lp << endl;
     cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
     cerr << "\tvocab size: " << unigram_stats.size() << endl;
     int co_removed = Bigrams::cutoff(unigram_stats, cutoff_value, transitions, msfg);
     cerr << "\tremoved by cutoff: " << co_removed << endl;
 
     // Re-estimate using bigram stats
-    int vocab_size = unigram_stats.size();
+
     for (int i=0; i<iter_amount; i++) {
 
-        Bigrams::collect_trans_stats(transitions, words, msfg, trans_stats, trans_normalizers, unigram_stats);
-        transitions = trans_stats;
-        Bigrams::normalize(transitions, trans_normalizers);
-        vocab_size = unigram_stats.size();
-        cerr << "bigram cost: " << Bigrams::bigram_cost(transitions, trans_stats) << endl;
+        flt_type lp = Bigrams::collect_trans_stats(transitions, words, msfg, trans_stats, trans_normalizers, unigram_stats);
+        int vocab_size = unigram_stats.size();
+        cerr << "bigram cost: " << lp << endl;
         cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
         cerr << "\tvocab size: " << vocab_size << endl;
+
+        transitions = trans_stats;
+        if (least_common > 0) {
+            int curr_least_common = least_common + ((vocab_size-least_common) % 1000);
+            int lc_removed = Bigrams::remove_least_common(unigram_stats, curr_least_common, transitions, msfg);
+            cerr << "\tremoved " << lc_removed << " least common subwords" << endl;
+        }
+        Bigrams::normalize(transitions, trans_normalizers);
+        vocab_size = unigram_stats.size();
 
         // Write temp transitions
         ostringstream transitions_temp;
         transitions_temp << "transitions.iter" << i+1;
+        cerr << "\twriting to: " << transitions_temp.str() << endl;
         Bigrams::write_transitions(transitions, transitions_temp.str());
-
-        if (least_common > 0) {
-            int curr_least_common = least_common + (vocab_size % 1000);
-            int lc_removed = Bigrams::remove_least_common(unigram_stats, curr_least_common, transitions, msfg);
-            cerr << "\tremoved " << lc_removed << " least common subwords" << endl;
-            vocab_size = transitions.size();
-        }
 
         if  (vocab_size < target_vocab_size) break;
     }
