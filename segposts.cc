@@ -7,70 +7,11 @@
 
 #include "defs.hh"
 #include "Unigrams.hh"
+#include "Bigrams.hh"
 #include "FactorEncoder.hh"
 #include "StringSet.hh"
 
 using namespace std;
-
-
-void
-update_trans_stats(const transitions_t &collected_stats,
-                   flt_type weight,
-                   transitions_t &trans_stats,
-                   map<string, flt_type> &trans_normalizers,
-                   map<string, flt_type> &unigram_stats)
-{
-    for (auto srcit = collected_stats.cbegin(); srcit != collected_stats.cend(); ++srcit) {
-        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit) {
-            trans_stats[srcit->first][tgtit->first] += weight * tgtit->second;
-            trans_normalizers[srcit->first] += weight * tgtit->second;
-            unigram_stats[tgtit->first] += weight * tgtit->second;
-        }
-    }
-}
-
-
-void
-normalize(transitions_t &trans_stats,
-          map<string, flt_type> &trans_normalizers,
-          flt_type min_cost = -200.0)
-{
-    for (auto srcit = trans_stats.begin(); srcit != trans_stats.end(); ++srcit) {
-        auto tgtit = srcit->second.begin();
-        while (tgtit != srcit->second.end()) {
-            tgtit->second /= trans_normalizers[srcit->first];
-            tgtit->second = log(tgtit->second);
-            if (tgtit->second < min_cost || std::isnan(tgtit->second))
-                srcit->second.erase(tgtit++);
-            else
-                ++tgtit;
-        }
-    }
-}
-
-
-void
-collect_trans_stats(const transitions_t &transitions,
-                    const map<string, flt_type> &words,
-                    map<string, FactorGraph*> &fg_words,
-                    transitions_t &trans_stats,
-                    map<string, flt_type> &trans_normalizers,
-                    map<string, flt_type> &unigram_stats,
-                    bool fb=true)
-{
-    trans_stats.clear();
-    trans_normalizers.clear();
-    unigram_stats.clear();
-
-    for (auto it = fg_words.begin(); it != fg_words.end(); ++it) {
-        transitions_t word_stats;
-        if (fb)
-            forward_backward(transitions, *it->second, word_stats);
-        else
-            viterbi(transitions, *it->second, word_stats);
-        update_trans_stats(word_stats, words.at(it->first), trans_stats, trans_normalizers, unigram_stats);
-    }
-}
 
 
 int main(int argc, char* argv[]) {
@@ -135,13 +76,13 @@ int main(int argc, char* argv[]) {
         fg_words[it->first] = fg;
         transitions_t word_stats;
         forward_backward(vocab, *fg, word_stats);
-        update_trans_stats(word_stats, it->second, trans_stats, trans_normalizers, unigram_stats);
+        Bigrams::update_trans_stats(word_stats, it->second, trans_stats, trans_normalizers, unigram_stats);
     }
 
     for (int i=0; i<5; i++) {
-        collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats);
+        Bigrams::collect_trans_stats(transitions, words, fg_words, trans_stats, trans_normalizers, unigram_stats);
         transitions = trans_stats;
-        normalize(transitions, trans_normalizers);
+        Bigrams::normalize(transitions, trans_normalizers);
     }
 
     outpost.open("posteriors.2gram");
