@@ -59,8 +59,9 @@ public:
     { return node.factor; }
     std::string get_factor(int node) const
     { return nodes[node].factor; }
-    int num_paths(std::string &text) const;
+    int num_paths(const std::string &text) const;
     void get_paths(const std::string &text, std::vector<std::vector<std::string> > &paths) const;
+    void print_paths(const std::string &text) const;
     void create_arc(msfg_node_idx_t src_node, msfg_node_idx_t tgt_node);
     void remove_arcs(const std::string &factor);
     void prune_unreachable();

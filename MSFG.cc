@@ -80,7 +80,7 @@ MultiStringFactorGraph::add(const FactorGraph &text)
 
 
 int
-MultiStringFactorGraph::num_paths(std::string &text) const
+MultiStringFactorGraph::num_paths(const std::string &text) const
 {
     if (nodes.size() == 0) return 0;
     if (string_end_nodes.find(text) == string_end_nodes.end()) return 0;
@@ -115,6 +115,20 @@ MultiStringFactorGraph::get_paths(const string &text,
     advance(paths, curr_string, end_node);
     for (auto it = paths.begin(); it != paths.end(); ++it)
         std::reverse(it->begin(), it->end());
+}
+
+
+void
+MultiStringFactorGraph::print_paths(const string &text) const
+{
+    vector<vector<string> > paths;
+    get_paths(text, paths);
+
+    for (auto pathit = paths.begin(); pathit != paths.end(); ++pathit) {
+        for (auto it = pathit->begin(); it != pathit->end(); ++it)
+            cout << *it << " ";
+        cout << endl;
+    }
 }
 
 
