@@ -10,7 +10,7 @@
 class Unigrams {
 public:
 
-    Unigrams() {}
+    Unigrams() { this->segf = viterbi; }
     Unigrams(flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) : segf(segf) {}
 
     void set_segmentation_method(flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) {
