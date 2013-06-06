@@ -89,5 +89,25 @@ void msfgtest :: MultiStringFactorGraphTest2 (void)
 // No possible segmentation
 void msfgtest :: MultiStringFactorGraphTest3 (void)
 {
-    CPPUNIT_ASSERT (false);
+    MultiStringFactorGraph msfg(start_end);
+
+    map<string, flt_type> vocab;
+    vocab["aarian"] = 0.0;
+    vocab["aari"] = 0.0;
+    vocab["an"] = 0.0;
+    vocab["a"] = 0.0;
+    vocab["ari"] = 0.0;
+    vocab["ri"] = 0.0;
+    vocab["ar"] = 0.0;
+    vocab["i"] = 0.0;
+    vocab["n"] = 0.0;
+    vocab["r"] = 0.0;
+
+    string word("aarian");
+    FactorGraph fg(word, start_end, vocab, 6);
+    msfg.add(fg);
+    vector<vector<string> > paths;
+    msfg.get_paths(word, paths);
+    CPPUNIT_ASSERT_EQUAL( 11, (int)paths.size() );
+    CPPUNIT_ASSERT_EQUAL( 11, msfg.num_paths(word) );
 }
