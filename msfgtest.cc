@@ -51,7 +51,9 @@ void msfgtest :: MultiStringFactorGraphTest1 (void)
     CPPUNIT_ASSERT_EQUAL( 7, (int)msfg.num_paths(sentence) );
     msfg.add(fg2);
     CPPUNIT_ASSERT_EQUAL( 2, (int)msfg.string_end_nodes.size() );
-    CPPUNIT_ASSERT_EQUAL( 7, (int)msfg.num_paths(sentence2) );
+    msfg.num_paths(sentence2);
+    cout << "problem" << endl;
+    CPPUNIT_ASSERT_EQUAL( 7, msfg.num_paths(sentence2) );
     msfg.add(fg3);
     CPPUNIT_ASSERT_EQUAL( 3, (int)msfg.string_end_nodes.size() );
     CPPUNIT_ASSERT_EQUAL( 7, (int)msfg.num_paths(sentence3) );
@@ -103,11 +105,13 @@ void msfgtest :: MultiStringFactorGraphTest3 (void)
     vocab["n"] = 0.0;
     vocab["r"] = 0.0;
 
+    cout << endl;
     string word("aarian");
     FactorGraph fg(word, start_end, vocab, 6);
     msfg.add(fg);
     vector<vector<string> > paths;
     msfg.get_paths(word, paths);
+    CPPUNIT_ASSERT_EQUAL( 11, fg.num_paths() );
     CPPUNIT_ASSERT_EQUAL( 11, (int)paths.size() );
     CPPUNIT_ASSERT_EQUAL( 11, msfg.num_paths(word) );
 }

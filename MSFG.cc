@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <map>
 
 #include "MSFG.hh"
 
@@ -20,62 +21,69 @@ bool ascending_by_first(pair<int, int> i,pair<int, int> j) { return (i.first < j
 void
 MultiStringFactorGraph::add(const FactorGraph &text)
 {
-    map<fg_node_idx_t, msfg_node_idx_t> created_nodes;
-    vector<msfg_node_idx_t> connect_to_end_node; // MSFG indices to connect to end node
-    map<fg_node_idx_t, msfg_node_idx_t> nodes_to_process; // Key is node idx in text FG, value idx in MSFG
-    nodes_to_process[0] = 0;
+    map<fg_node_idx_t, msfg_node_idx_t> visited_nodes;
+    multimap<fg_node_idx_t, pair<msfg_node_idx_t, FactorGraph::Arc*> > arcs_to_process;
+    // multimap key is target index in fg, value pair source index in msfg, arc in fg
+    // ordering arcs by target index ensures topological order for text nodes in msfg
 
-    while (nodes_to_process.size() > 0) {
+    const FactorGraph::Node &fg_node = text.nodes[0];
+    for (auto fg_arcit = fg_node.outgoing.cbegin(); fg_arcit != fg_node.outgoing.cend(); ++fg_arcit)
+        arcs_to_process.insert(make_pair((**fg_arcit).target_node, make_pair(0, *fg_arcit)));
+    visited_nodes[0] = 0;
 
-        fg_node_idx_t fg_src_node = nodes_to_process.begin()->first;
-        msfg_node_idx_t msfg_src_node = nodes_to_process.begin()->second;
-        nodes_to_process.erase(nodes_to_process.begin());
+    while (arcs_to_process.size() > 0) {
 
-        const FactorGraph::Node &fg_node = text.nodes[fg_src_node];
-        for (auto fg_arcit = fg_node.outgoing.cbegin(); fg_arcit != fg_node.outgoing.cend(); ++fg_arcit) {
+        auto arc_to_process = arcs_to_process.begin();
+        FactorGraph::Arc *arc = (*arc_to_process).second.second;
+        fg_node_idx_t fg_source_node = arc->source_node;
+        fg_node_idx_t fg_target_node = arc->target_node;
+//        cout << "fg src tgt: " << fg_source_node << " " << fg_target_node << endl;
+        arcs_to_process.erase(arcs_to_process.begin());
+        msfg_node_idx_t msfg_source_node = (*arc_to_process).second.first;
 
-            fg_node_idx_t fg_target_node = (**fg_arcit).target_node;
-            string target_node_factor = text.get_factor(fg_target_node);
-            if (target_node_factor == start_end_symbol) {
-                connect_to_end_node.push_back(msfg_src_node);
-                continue;
-            }
-            msfg_node_idx_t msfg_target_node = 0;
+        string target_node_factor = text.get_factor(fg_target_node);
+        msfg_node_idx_t msfg_target_node = 0;
 
-            // Check existing target nodes
-            MultiStringFactorGraph::Node &msfg_node = nodes[msfg_src_node];
-            for (auto msfg_arcit = msfg_node.outgoing.begin(); msfg_arcit != msfg_node.outgoing.end(); ++msfg_arcit) {
-                if (get_factor((**msfg_arcit).target_node) == target_node_factor) {
-                    msfg_target_node = (**msfg_arcit).target_node;
-                    break;
-                }
-            }
-
-            // Not found, check if node added but no arc yet
-            if (msfg_target_node == 0)
-            if (created_nodes.find(fg_target_node) != created_nodes.end()) {
-                msfg_target_node = created_nodes[fg_target_node];
-                create_arc(msfg_src_node, msfg_target_node);
-            }
-
-            // Create node and arc
-            if (msfg_target_node == 0) {
-                nodes.push_back(Node(target_node_factor));
-                msfg_target_node = nodes.size()-1;
-                created_nodes[fg_target_node] = msfg_target_node;
-                create_arc(msfg_src_node, msfg_target_node);
-            }
-
-            nodes_to_process[fg_target_node] = msfg_target_node;
+        // Check if have connected to this node already from some other node
+        // Just add arc and continue
+        if (visited_nodes.find(fg_target_node) != visited_nodes.end()) {
+            msfg_target_node = visited_nodes[fg_target_node];
+            create_arc(msfg_source_node, msfg_target_node);
+            continue;
         }
+
+        // Check if node exists, just not connected to it yet
+        MultiStringFactorGraph::Node &msfg_node = nodes[msfg_source_node];
+        for (auto msfg_arcit = msfg_node.outgoing.begin(); msfg_arcit != msfg_node.outgoing.end(); ++msfg_arcit) {
+            if (nodes[(**msfg_arcit).target_node].factor == target_node_factor) {
+                msfg_target_node = (**msfg_arcit).target_node;
+                break;
+            }
+        }
+
+        // Create node
+        if (msfg_target_node == 0) {
+            nodes.push_back(Node(target_node_factor));
+            msfg_target_node = nodes.size()-1;
+            visited_nodes[fg_target_node] = msfg_target_node;
+            const FactorGraph::Node &fg_node = text.nodes[fg_target_node];
+            for (auto fg_arcit = fg_node.outgoing.cbegin(); fg_arcit != fg_node.outgoing.cend(); ++fg_arcit)
+                arcs_to_process.insert(make_pair((**fg_arcit).target_node, make_pair(msfg_target_node, *fg_arcit)));
+            create_arc(msfg_source_node, msfg_target_node);
+            continue;
+        }
+
+        // Target node visited for the first time
+        // Add arcs to be processed, create arcs
+        visited_nodes[fg_target_node] = msfg_target_node;
+        const FactorGraph::Node &fg_node = text.nodes[fg_target_node];
+        for (auto fg_arcit = fg_node.outgoing.cbegin(); fg_arcit != fg_node.outgoing.cend(); ++fg_arcit)
+            arcs_to_process.insert(make_pair((**fg_arcit).target_node, make_pair(msfg_target_node, *fg_arcit)));
+        find_or_create_arc(msfg_source_node, msfg_target_node);
+
     }
 
-    // Create end node and connect to it
-    nodes.push_back(Node(start_end_symbol));
-    created_nodes[text.nodes.size()-1] = nodes.size()-1;
-    for (auto it = connect_to_end_node.begin(); it != connect_to_end_node.end(); ++it)
-        create_arc((*it), (nodes.size()-1));
-    string_end_nodes[text.text] = nodes.size()-1;
+    string_end_nodes[text.text] = visited_nodes[text.nodes.size()-1];
 }
 
 
@@ -160,6 +168,16 @@ MultiStringFactorGraph::create_arc(msfg_node_idx_t src_node,
     arcs.insert(arc);
     nodes[src_node].outgoing.insert(arc);
     nodes[tgt_node].incoming.insert(arc);
+}
+
+
+void
+MultiStringFactorGraph::find_or_create_arc(msfg_node_idx_t src_node,
+                                           msfg_node_idx_t tgt_node)
+{
+    for (auto ait = nodes[tgt_node].incoming.begin(); ait != nodes[tgt_node].incoming.end(); ++ait)
+        if ((**ait).source_node == src_node) return;
+    create_arc(src_node, tgt_node);
 }
 
 

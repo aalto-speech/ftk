@@ -63,6 +63,7 @@ public:
     void get_paths(const std::string &text, std::vector<std::vector<std::string> > &paths) const;
     void print_paths(const std::string &text) const;
     void create_arc(msfg_node_idx_t src_node, msfg_node_idx_t tgt_node);
+    void find_or_create_arc(msfg_node_idx_t src_node, msfg_node_idx_t tgt_node);
     void remove_arcs(const std::string &factor);
     void prune_unreachable();
     void write(const std::string &filename) const;
