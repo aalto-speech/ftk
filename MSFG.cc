@@ -37,7 +37,6 @@ MultiStringFactorGraph::add(const FactorGraph &text)
         FactorGraph::Arc *arc = (*arc_to_process).second.second;
         fg_node_idx_t fg_source_node = arc->source_node;
         fg_node_idx_t fg_target_node = arc->target_node;
-//        cout << "fg src tgt: " << fg_source_node << " " << fg_target_node << endl;
         arcs_to_process.erase(arcs_to_process.begin());
         msfg_node_idx_t msfg_source_node = (*arc_to_process).second.first;
 
@@ -48,7 +47,7 @@ MultiStringFactorGraph::add(const FactorGraph &text)
         // Just add arc and continue
         if (visited_nodes.find(fg_target_node) != visited_nodes.end()) {
             msfg_target_node = visited_nodes[fg_target_node];
-            create_arc(msfg_source_node, msfg_target_node);
+            find_or_create_arc(msfg_source_node, msfg_target_node);
             continue;
         }
 
@@ -60,26 +59,24 @@ MultiStringFactorGraph::add(const FactorGraph &text)
                 break;
             }
         }
-
-        // Create node
-        if (msfg_target_node == 0) {
-            nodes.push_back(Node(target_node_factor));
-            msfg_target_node = nodes.size()-1;
+        if (msfg_target_node != 0) {
             visited_nodes[fg_target_node] = msfg_target_node;
             const FactorGraph::Node &fg_node = text.nodes[fg_target_node];
             for (auto fg_arcit = fg_node.outgoing.cbegin(); fg_arcit != fg_node.outgoing.cend(); ++fg_arcit)
                 arcs_to_process.insert(make_pair((**fg_arcit).target_node, make_pair(msfg_target_node, *fg_arcit)));
-            create_arc(msfg_source_node, msfg_target_node);
+            find_or_create_arc(msfg_source_node, msfg_target_node);
             continue;
         }
 
-        // Target node visited for the first time
-        // Add arcs to be processed, create arcs
+        // Create new node
+        nodes.push_back(Node(target_node_factor));
+        msfg_target_node = nodes.size()-1;
         visited_nodes[fg_target_node] = msfg_target_node;
         const FactorGraph::Node &fg_node = text.nodes[fg_target_node];
         for (auto fg_arcit = fg_node.outgoing.cbegin(); fg_arcit != fg_node.outgoing.cend(); ++fg_arcit)
             arcs_to_process.insert(make_pair((**fg_arcit).target_node, make_pair(msfg_target_node, *fg_arcit)));
-        find_or_create_arc(msfg_source_node, msfg_target_node);
+        create_arc(msfg_source_node, msfg_target_node);
+        continue;
 
     }
 
