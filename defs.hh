@@ -12,4 +12,6 @@ typedef char factor_len_t;
 static flt_type SMALL_LP = -100.0;
 static flt_type MIN_FLOAT = -std::numeric_limits<flt_type>::max();
 
+static int NUM_THREADS = 8;
+
 #endif /* PROJECT_DEFS */

@@ -1,6 +1,7 @@
 #include <cmath>
 #include <fstream>
 #include <sstream>
+#include <thread>
 
 #include "io.hh"
 #include "Bigrams.hh"
@@ -46,13 +47,41 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
 }
 
 
+void
+Bigrams::threaded_backward(const MultiStringFactorGraph *msfg,
+                           const std::vector<flt_type> *fw,
+                           const map<string, flt_type> *words,
+                           transitions_t *trans_stats,
+                           int thread_index,
+                           int thread_count,
+                           flt_type *total_lp)
+{
+    *total_lp = 0.0;
+
+    auto it = msfg->string_end_nodes.begin();
+    for (int i=0; i<thread_index; i++)
+        it++;
+
+    while (true) {
+        flt_type lp = backward(*msfg, it->first, *fw, *trans_stats, words->at(it->first));
+        (*total_lp) += words->at(it->first) * lp;
+        for (int i=0; i<thread_count; i++) {
+            it++;
+            if (it == msfg->string_end_nodes.end()) break;
+        }
+        if (it == msfg->string_end_nodes.end()) break;
+    }
+}
+
+
 flt_type
 Bigrams::collect_trans_stats(const transitions_t &transitions,
                              const map<string, flt_type> &words,
                              MultiStringFactorGraph &msfg,
                              transitions_t &trans_stats,
                              map<string, flt_type> &unigram_stats,
-                             bool fb)
+                             bool fb,
+                             bool threaded)
 {
     trans_stats.clear();
     unigram_stats.clear();
@@ -61,12 +90,35 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
     fw[0] = 0.0;
 
     forward(transitions, msfg, fw);
+
+    if (!threaded) {
+        flt_type total_lp = 0.0;
+        for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
+            transitions_t word_stats;
+            flt_type lp = backward(msfg, it->first, fw, word_stats);
+            total_lp += words.at(it->first) * lp;
+            update_trans_stats(word_stats, words.at(it->first), trans_stats, unigram_stats);
+        }
+        return total_lp;
+    }
+
     flt_type total_lp = 0.0;
-    for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
-        transitions_t word_stats;
-        flt_type lp = backward(msfg, it->first, fw, word_stats);
-        total_lp += words.at(it->first) * lp;
-        update_trans_stats(word_stats, words.at(it->first), trans_stats, unigram_stats);
+
+    vector<transitions_t*> thread_stats(NUM_THREADS);
+    vector<flt_type> total_lps(NUM_THREADS);
+    thread thrs[NUM_THREADS];
+
+    for (int i=0; i<NUM_THREADS; i++) {
+        thread_stats[i] = new transitions_t;
+        thrs[i] = thread(threaded_backward, &msfg, &fw, &words, thread_stats[i], i, NUM_THREADS, &(total_lps[i]));
+    }
+
+    for (int i=0; i<NUM_THREADS; i++)
+        thrs[i].join();
+
+    for (int i=0; i<NUM_THREADS; i++) {
+        total_lp += total_lps[i];
+        update_trans_stats(*(thread_stats[i]), 1.0, trans_stats, unigram_stats);
     }
 
     return total_lp;
@@ -89,11 +141,12 @@ Bigrams::collect_trans_stats(const map<string, flt_type> &vocab,
 
     forward(vocab, msfg, fw);
     flt_type total_lp = 0.0;
+
+    transitions_t word_stats;
     for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
-        transitions_t word_stats;
-        total_lp += words.at(it->first) * backward(msfg, it->first, fw, word_stats);
-        update_trans_stats(word_stats, words.at(it->first), trans_stats, unigram_stats);
+        total_lp += words.at(it->first) * backward(msfg, it->first, fw, word_stats, words.at(it->first));
     }
+    update_trans_stats(word_stats, 1.0, trans_stats, unigram_stats);
 
     return total_lp;
 }
