@@ -213,7 +213,7 @@ int main(int argc, char* argv[]) {
 
         // Write temp transitions
         ostringstream transitions_temp;
-        transitions_temp << "transitions.iter" << i+1;
+        transitions_temp << "transitions.iter" << i+1 << ".bz2";
         cerr << "\twriting to: " << transitions_temp.str() << endl;
         Bigrams::write_transitions(transitions, transitions_temp.str());
 
@@ -222,8 +222,6 @@ int main(int argc, char* argv[]) {
 
     // Write transitions
     Bigrams::write_transitions(transitions, transition_fname);
-    Bigrams::write_transitions(trans_stats, "debug.trans_stats.out");
-    write_vocab("debug.unigram.out", unigram_stats);
 
     exit(1);
 }

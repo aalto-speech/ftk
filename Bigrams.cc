@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "io.hh"
 #include "Bigrams.hh"
 #include "FactorEncoder.hh"
 
@@ -139,12 +140,11 @@ void
 Bigrams::write_transitions(const transitions_t &transitions,
                            const string &filename)
 {
-    ofstream transfile(filename);
-    if (!transfile) return;
+    io::Stream transfile(filename, "w");
 
     for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
         for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
-            transfile << srcit->first << " " << tgtit->first << " " << tgtit->second << endl;
+            fprintf(transfile.file, "%s %s %f\n", srcit->first.c_str(), tgtit->first.c_str(), tgtit->second);
 
     transfile.close();
 }
