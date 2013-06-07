@@ -671,7 +671,8 @@ flt_type
 backward(const MultiStringFactorGraph &msfg,
          const string &text,
          const vector<flt_type> &fw,
-         transitions_t &stats)
+         transitions_t &stats,
+         flt_type text_weight)
 {
 
     int text_end_node = msfg.string_end_nodes.at(text);
@@ -688,7 +689,7 @@ backward(const MultiStringFactorGraph &msfg,
             int src_node = (**arc).source_node;
             if (fw[src_node] == MIN_FLOAT) continue;
             flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
-            stats[msfg.nodes.at(src_node).factor][node.factor] += exp(curr_cost);
+            stats[msfg.nodes.at(src_node).factor][node.factor] += text_weight * exp(curr_cost);
             if (bw.find(src_node) == bw.end()) {
                 bw[src_node] = curr_cost;
                 nodes_to_process.insert(src_node);

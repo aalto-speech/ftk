@@ -137,7 +137,8 @@ void forward(const std::map<std::string, flt_type> &vocab,
 flt_type backward(const MultiStringFactorGraph &msfg,
                   const std::string &text,
                   const std::vector<flt_type> &fw,
-                  transitions_t &stats);
+                  transitions_t &stats,
+                  flt_type text_weight = 1.0);
 
 // Forward-backward for all strings
 flt_type forward_backward(const transitions_t &transitions,
