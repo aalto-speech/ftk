@@ -91,8 +91,9 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
 
     forward(transitions, msfg, fw);
 
+    flt_type total_lp = 0.0;
+
     if (!threaded) {
-        flt_type total_lp = 0.0;
         for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
             transitions_t word_stats;
             flt_type lp = backward(msfg, it->first, fw, word_stats);
@@ -101,8 +102,6 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
         }
         return total_lp;
     }
-
-    flt_type total_lp = 0.0;
 
     vector<transitions_t*> thread_stats(NUM_THREADS);
     vector<flt_type> total_lps(NUM_THREADS);
@@ -113,10 +112,8 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
         thrs[i] = thread(threaded_backward, &msfg, &fw, &words, thread_stats[i], i, NUM_THREADS, &(total_lps[i]));
     }
 
-    for (int i=0; i<NUM_THREADS; i++)
-        thrs[i].join();
-
     for (int i=0; i<NUM_THREADS; i++) {
+        thrs[i].join();
         total_lp += total_lps[i];
         update_trans_stats(*(thread_stats[i]), 1.0, trans_stats, unigram_stats);
     }
