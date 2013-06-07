@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <thread>
 
 #include <popt.h>
 
@@ -170,13 +171,12 @@ int main(int argc, char* argv[]) {
     msfg.read(msfg_fname);
     transitions_t transitions;
     transitions_t trans_stats;
-    map<string, flt_type> trans_normalizers;
     map<string, flt_type> unigram_stats;
     vocab[start_end_symbol] = 0.0;
     flt_type lp = 0.0;
 
     // Initial segmentation using unigram model
-    lp = Bigrams::collect_trans_stats(vocab, words, msfg, trans_stats, trans_normalizers, unigram_stats);
+    lp = Bigrams::collect_trans_stats(vocab, words, msfg, trans_stats, unigram_stats);
 
     // Unigram cost with word end markers
     densum = ug.get_sum(unigram_stats);
@@ -185,7 +185,7 @@ int main(int argc, char* argv[]) {
 
     // Initial bigram cost
     transitions = trans_stats;
-    Bigrams::normalize(transitions, trans_normalizers);
+    Bigrams::normalize(transitions);
     cerr << "bigram cost: " << lp << endl;
     cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
     cerr << "\tvocab size: " << unigram_stats.size() << endl;
@@ -193,10 +193,9 @@ int main(int argc, char* argv[]) {
     cerr << "\tremoved by cutoff: " << co_removed << endl;
 
     // Re-estimate using bigram stats
-
     for (int i=0; i<iter_amount; i++) {
 
-        flt_type lp = Bigrams::collect_trans_stats(transitions, words, msfg, trans_stats, trans_normalizers, unigram_stats);
+        flt_type lp = Bigrams::collect_trans_stats(transitions, words, msfg, trans_stats, unigram_stats);
         int vocab_size = unigram_stats.size();
         cerr << "bigram cost: " << lp << endl;
         cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
@@ -208,7 +207,7 @@ int main(int argc, char* argv[]) {
             int lc_removed = Bigrams::remove_least_common(unigram_stats, curr_least_common, transitions, msfg);
             cerr << "\tremoved " << lc_removed << " least common subwords" << endl;
         }
-        Bigrams::normalize(transitions, trans_normalizers);
+        Bigrams::normalize(transitions);
         vocab_size = unigram_stats.size();
 
         // Write temp transitions

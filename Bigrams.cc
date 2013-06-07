@@ -13,13 +13,11 @@ void
 Bigrams::update_trans_stats(const transitions_t &collected_stats,
                             flt_type weight,
                             transitions_t &trans_stats,
-                            map<string, flt_type> &trans_normalizers,
                             map<string, flt_type> &unigram_stats)
 {
     for (auto srcit = collected_stats.cbegin(); srcit != collected_stats.cend(); ++srcit) {
         for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit) {
             trans_stats[srcit->first][tgtit->first] += weight * tgtit->second;
-            trans_normalizers[srcit->first] += weight * tgtit->second;
             unigram_stats[tgtit->first] += weight * tgtit->second;
         }
     }
@@ -31,12 +29,10 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
                              const map<string, flt_type> &words,
                              map<string, FactorGraph*> &fg_words,
                              transitions_t &trans_stats,
-                             map<string, flt_type> &trans_normalizers,
                              map<string, flt_type> &unigram_stats,
                              bool fb)
 {
     trans_stats.clear();
-    trans_normalizers.clear();
     unigram_stats.clear();
 
     for (auto it = fg_words.begin(); it != fg_words.end(); ++it) {
@@ -45,7 +41,7 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
             forward_backward(transitions, *it->second, word_stats);
         else
             viterbi(transitions, *it->second, word_stats);
-        update_trans_stats(word_stats, words.at(it->first), trans_stats, trans_normalizers, unigram_stats);
+        update_trans_stats(word_stats, words.at(it->first), trans_stats, unigram_stats);
     }
 }
 
@@ -55,12 +51,10 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
                              const map<string, flt_type> &words,
                              MultiStringFactorGraph &msfg,
                              transitions_t &trans_stats,
-                             map<string, flt_type> &trans_normalizers,
                              map<string, flt_type> &unigram_stats,
                              bool fb)
 {
     trans_stats.clear();
-    trans_normalizers.clear();
     unigram_stats.clear();
 
     vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
@@ -72,7 +66,7 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
         transitions_t word_stats;
         flt_type lp = backward(msfg, it->first, fw, word_stats);
         total_lp += words.at(it->first) * lp;
-        update_trans_stats(word_stats, words.at(it->first), trans_stats, trans_normalizers, unigram_stats);
+        update_trans_stats(word_stats, words.at(it->first), trans_stats, unigram_stats);
     }
 
     return total_lp;
@@ -84,12 +78,10 @@ Bigrams::collect_trans_stats(const map<string, flt_type> &vocab,
                              const map<string, flt_type> &words,
                              MultiStringFactorGraph &msfg,
                              transitions_t &trans_stats,
-                             map<string, flt_type> &trans_normalizers,
                              map<string, flt_type> &unigram_stats,
                              bool fb)
 {
     trans_stats.clear();
-    trans_normalizers.clear();
     unigram_stats.clear();
 
     vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
@@ -100,7 +92,7 @@ Bigrams::collect_trans_stats(const map<string, flt_type> &vocab,
     for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
         transitions_t word_stats;
         total_lp += words.at(it->first) * backward(msfg, it->first, fw, word_stats);
-        update_trans_stats(word_stats, words.at(it->first), trans_stats, trans_normalizers, unigram_stats);
+        update_trans_stats(word_stats, words.at(it->first), trans_stats, unigram_stats);
     }
 
     return total_lp;
@@ -109,7 +101,6 @@ Bigrams::collect_trans_stats(const map<string, flt_type> &vocab,
 
 void
 Bigrams::normalize(transitions_t &trans_stats,
-                   map<string, flt_type> &trans_normalizers,
                    flt_type min_cost)
 {
     for (auto srcit = trans_stats.begin(); srcit != trans_stats.end(); ++srcit) {
@@ -119,18 +110,14 @@ Bigrams::normalize(transitions_t &trans_stats,
             normalizer += tgtit->second;
         normalizer = log(normalizer);
 
-        auto tgtit = srcit->second.begin();
-        while (tgtit != srcit->second.end()) {
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
 
             tgtit->second = log(tgtit->second) - normalizer;
-
-            if (std::isfinite(tgtit->second) && tgtit->second > 0)
-                tgtit->second = 0.0;
-
-            if (tgtit->second < min_cost || std::isnan(tgtit->second) || std::isinf(tgtit->second))
-                tgtit->second = min_cost;
-
-            ++tgtit;
+            if (!std::isfinite(tgtit->second)) {
+                cerr << "transition " << srcit->first << " " << tgtit->first << " value " << tgtit->second << endl;
+                exit(0);
+            }
+            if (tgtit->second < min_cost) tgtit->second = min_cost;
         }
     }
 }

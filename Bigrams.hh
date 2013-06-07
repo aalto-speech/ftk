@@ -17,14 +17,12 @@ Bigrams() {}
 static void update_trans_stats(const transitions_t &collected_stats,
                                flt_type weight,
                                transitions_t &trans_stats,
-                               std::map<std::string, flt_type> &trans_normalizers,
                                std::map<std::string, flt_type> &unigram_stats);
 
 static void collect_trans_stats(const transitions_t &transitions,
                                 const std::map<std::string, flt_type> &words,
                                 std::map<std::string, FactorGraph*> &fg_words,
                                 transitions_t &trans_stats,
-                                std::map<std::string, flt_type> &trans_normalizers,
                                 std::map<std::string, flt_type> &unigram_stats,
                                 bool fb=true);
 
@@ -32,7 +30,6 @@ static flt_type collect_trans_stats(const transitions_t &transitions,
                                     const std::map<std::string, flt_type> &words,
                                     MultiStringFactorGraph &msfg,
                                     transitions_t &trans_stats,
-                                    std::map<std::string, flt_type> &trans_normalizers,
                                     std::map<std::string, flt_type> &unigram_stats,
                                     bool fb=true);
 
@@ -40,12 +37,10 @@ static flt_type collect_trans_stats(const std::map<std::string, flt_type> &vocab
                                     const std::map<std::string, flt_type> &words,
                                     MultiStringFactorGraph &msfg,
                                     transitions_t &trans_stats,
-                                    std::map<std::string, flt_type> &trans_normalizers,
                                     std::map<std::string, flt_type> &unigram_stats,
                                     bool fb=true);
 
 static void normalize(transitions_t &trans_stats,
-                      std::map<std::string, flt_type> &trans_normalizers,
                       flt_type min_cost = SMALL_LP);
 
 static void write_transitions(const transitions_t &transitions,
