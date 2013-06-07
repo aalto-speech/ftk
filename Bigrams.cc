@@ -103,19 +103,17 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
         return total_lp;
     }
 
-    vector<transitions_t*> thread_stats(NUM_THREADS);
+    vector<transitions_t> thread_stats(NUM_THREADS);
     vector<flt_type> total_lps(NUM_THREADS);
     thread thrs[NUM_THREADS];
 
-    for (int i=0; i<NUM_THREADS; i++) {
-        thread_stats[i] = new transitions_t;
-        thrs[i] = thread(threaded_backward, &msfg, &fw, &words, thread_stats[i], i, NUM_THREADS, &(total_lps[i]));
-    }
+    for (int i=0; i<NUM_THREADS; i++)
+        thrs[i] = thread(threaded_backward, &msfg, &fw, &words, &(thread_stats[i]), i, NUM_THREADS, &(total_lps[i]));
 
     for (int i=0; i<NUM_THREADS; i++) {
         thrs[i].join();
         total_lp += total_lps[i];
-        update_trans_stats(*(thread_stats[i]), 1.0, trans_stats, unigram_stats);
+        update_trans_stats(thread_stats[i], 1.0, trans_stats, unigram_stats);
     }
 
     return total_lp;
