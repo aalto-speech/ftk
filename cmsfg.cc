@@ -160,6 +160,12 @@ int main(int argc, char* argv[]) {
         old_arcs += fg.arcs.size();
         curr_word_idx++;
         if (curr_word_idx % 10000 == 0) cerr << "... processing word " << curr_word_idx << endl;
+        if (curr_word_idx % 100000 == 0) {
+            stringstream tempfname;
+            tempfname << "msfg." << curr_word_idx;
+            cerr << "... writing to file " << tempfname.str() << endl;
+            msfg.write(tempfname.str());
+        }
     }
 
     cerr << "factor graph strings: " << msfg.string_end_nodes.size() << endl;
