@@ -7,8 +7,6 @@
 #include "defs.hh"
 #include "StringSet.hh"
 
-typedef std::map<std::string, std::map<std::string, flt_type> > transitions_t;
-
 
 class FactorGraph {
 public:
