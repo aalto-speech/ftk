@@ -362,3 +362,14 @@ Bigrams::trans_to_vocab(const transitions_t &transitions,
         vocab[srcit->first] = 0.0;
 }
 
+
+void
+Bigrams::reverse_transitions(const transitions_t &transitions,
+                             transitions_t &reverse_transitions)
+{
+    reverse_transitions.clear();
+    for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
+        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
+            reverse_transitions[tgtit->first][srcit->first] = tgtit->second;
+}
+
