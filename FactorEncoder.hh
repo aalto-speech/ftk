@@ -123,17 +123,31 @@ flt_type posterior_decode(const transitions_t &transitions,
                           bool reverse=true);
 
 
-// 2-GRAM
 // MultiStringFactorGraph implementations
+
+// Scores each arc in the MSFG with bigram scores
+void score_arcs(const transitions_t &transitions,
+                MultiStringFactorGraph &msfg);
+
+// Scores each arc in the MSFG with unigram scores
+void score_arcs(const std::map<std::string, flt_type> &vocab,
+                MultiStringFactorGraph &msfg);
+
+// Basic forward pass, assumes prescored arcs in msfg
+void forward(MultiStringFactorGraph &msfg,
+             std::vector<flt_type> &fw);
+
+// Normal forward pass for all paths with bigram scores
 void forward(const transitions_t &transitions,
              MultiStringFactorGraph &msfg,
              std::vector<flt_type> &fw);
 
-// Initialization with unigram scores, bigram stats out
+// Forward pass for all paths using unigram stats
 void forward(const std::map<std::string, flt_type> &vocab,
              MultiStringFactorGraph &msfg,
              std::vector<flt_type> &fw);
 
+// Backward pass for one string given forward scores
 flt_type backward(const MultiStringFactorGraph &msfg,
                   const std::string &text,
                   const std::vector<flt_type> &fw,

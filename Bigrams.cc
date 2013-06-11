@@ -284,7 +284,6 @@ Bigrams::cutoff(const map<string, flt_type> &unigram_stats,
 
     for (int i=0; i<to_remove.size(); i++)
         msfg.remove_arcs(to_remove[i]);
-    msfg.prune_unreachable();
 
     return to_remove.size();
 }
