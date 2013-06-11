@@ -210,6 +210,9 @@ MultiStringFactorGraph::remove_arcs(const std::string &factor)
         while (node.outgoing.size() > 0)
             remove_arc(*(node.outgoing.begin()));
     }
+
+    // NOTE: may want to change this later?
+    factor_node_map.erase(factor);
 }
 
 
