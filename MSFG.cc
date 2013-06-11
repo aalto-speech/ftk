@@ -160,7 +160,6 @@ MultiStringFactorGraph::create_arc(msfg_node_idx_t src_node,
                                    msfg_node_idx_t tgt_node)
 {
     Arc *arc = new Arc(src_node, tgt_node, 0.0);
-    //arcs.insert(arc);
     nodes[src_node].outgoing.insert(arc);
     nodes[tgt_node].incoming.insert(arc);
 }
@@ -179,18 +178,10 @@ MultiStringFactorGraph::find_or_create_arc(msfg_node_idx_t src_node,
 void
 MultiStringFactorGraph::remove_arc(Arc *arc)
 {
-    //auto ait = find(arcs.begin(), arcs.end(), arc);
-    //arcs.erase(ait);
-    //arcs.erase(arc);
-
     Node &src_node = nodes[(*arc).source_node];
-    //auto sit = find(src_node.outgoing.begin(), src_node.outgoing.end(), arc);
-    //src_node.outgoing.erase(sit);
     src_node.outgoing.erase(arc);
 
     Node &tgt_node = nodes[(*arc).target_node];
-    //auto tit = find(tgt_node.incoming.begin(), tgt_node.incoming.end(), arc);
-    //tgt_node.incoming.erase(tit);
     tgt_node.incoming.erase(arc);
 
     delete arc;
@@ -324,3 +315,25 @@ MultiStringFactorGraph::collect_arcs(vector<Arc*> &arcs) const
         for (auto arcit = ndit->outgoing.begin(); arcit != ndit->outgoing.end(); ++arcit)
             arcs.push_back(*arcit);
 }
+
+
+void
+MultiStringFactorGraph::collect_arcs(const string &text, map<msfg_node_idx_t, vector<Arc*> > &arcs) const
+{
+    msfg_node_idx_t end_node = string_end_nodes.at(text);
+    set<msfg_node_idx_t> nodes_to_process; nodes_to_process.insert(end_node);
+
+    while(nodes_to_process.size() > 0) {
+
+        msfg_node_idx_t i = *(nodes_to_process.rbegin());
+
+        const Node &node = nodes[i];
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
+            arcs[(**arc).source_node].push_back(*arc);
+            nodes_to_process.insert((**arc).source_node);
+        }
+
+        nodes_to_process.erase(i);
+    }
+}
+
