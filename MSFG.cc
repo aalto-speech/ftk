@@ -11,6 +11,8 @@ using namespace std;
 
 
 MultiStringFactorGraph::~MultiStringFactorGraph() {
+    vector<Arc*> arcs;
+    collect_arcs(arcs);
     for (auto it = arcs.begin(); it != arcs.end(); ++it)
         delete *it;
 }
@@ -158,7 +160,7 @@ MultiStringFactorGraph::create_arc(msfg_node_idx_t src_node,
                                    msfg_node_idx_t tgt_node)
 {
     Arc *arc = new Arc(src_node, tgt_node, 0.0);
-    arcs.insert(arc);
+    //arcs.insert(arc);
     nodes[src_node].outgoing.insert(arc);
     nodes[tgt_node].incoming.insert(arc);
 }
@@ -179,7 +181,7 @@ MultiStringFactorGraph::remove_arc(Arc *arc)
 {
     //auto ait = find(arcs.begin(), arcs.end(), arc);
     //arcs.erase(ait);
-    arcs.erase(arc);
+    //arcs.erase(arc);
 
     Node &src_node = nodes[(*arc).source_node];
     //auto sit = find(src_node.outgoing.begin(), src_node.outgoing.end(), arc);
@@ -240,6 +242,8 @@ MultiStringFactorGraph::write(const std::string &filename) const
     ofstream outfile(filename);
     if (!outfile) return;
 
+    vector<Arc*> arcs; collect_arcs(arcs);
+
     outfile << nodes.size() << " " << arcs.size() << " " << string_end_nodes.size() << endl;
     for (int i=0; i<nodes.size(); i++)
         outfile << "n " << i << " " << nodes[i].factor << endl;
@@ -264,7 +268,7 @@ MultiStringFactorGraph::read(const std::string &filename)
     stringstream ss(line);
     ss >> node_count >> arc_count >> end_node_count;
 
-    nodes.clear(); arcs.clear(); string_end_nodes.clear();
+    nodes.clear(); string_end_nodes.clear();
     nodes.resize(node_count);
 
     msfg_node_idx_t node_idx;
@@ -312,3 +316,11 @@ MultiStringFactorGraph::read(const std::string &filename)
     infile.close();
 }
 
+
+void
+MultiStringFactorGraph::collect_arcs(vector<Arc*> &arcs) const
+{
+    for (auto ndit = nodes.begin(); ndit != nodes.end(); ++ndit)
+        for (auto arcit = ndit->outgoing.begin(); arcit != ndit->outgoing.end(); ++arcit)
+            arcs.push_back(*arcit);
+}

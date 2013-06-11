@@ -168,13 +168,12 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    msfg.write(msfg_fname);
+
     cerr << "factor graph strings: " << msfg.string_end_nodes.size() << endl;
     cerr << "factor graph nodes: " << msfg.nodes.size() << endl;
-    cerr << "factor graph arcs: " << msfg.arcs.size() << endl;
     cerr << "nodes for separate fgs: " << old_nodes << endl;
     cerr << "arcs for separate fgs: " << old_arcs << endl;
-
-    msfg.write(msfg_fname);
 
     exit(1);
 }

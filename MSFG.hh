@@ -71,7 +71,6 @@ public:
 
     std::string start_end_symbol;
     std::vector<Node> nodes;
-    std::set<Arc*> arcs;
     std::map<std::string, int> string_end_nodes;
     std::map<std::string, std::vector<msfg_node_idx_t> > factor_node_map;
 
@@ -83,6 +82,7 @@ private:
                  msfg_node_idx_t node) const;
     // Helper for removing arcs
     void remove_arc(Arc *arc);
+    void collect_arcs(std::vector<Arc*> &arcs) const;
 };
 
 
