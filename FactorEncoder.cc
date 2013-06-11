@@ -683,6 +683,30 @@ forward(const map<string, flt_type> &vocab,
 }
 
 
+void
+forward(const transitions_t &transitions,
+        const std::string &text,
+        MultiStringFactorGraph &msfg,
+        std::map<msfg_node_idx_t, flt_type> &fw)
+{
+    map<msfg_node_idx_t, vector<MultiStringFactorGraph::Arc*> > arcs;
+    msfg.collect_arcs(text, arcs);
+
+    for (auto ndit = arcs.begin(); ndit != arcs.end(); ++ndit) {
+
+        MultiStringFactorGraph::Node &node = msfg.nodes[ndit->first];
+        const map<string, flt_type> &curr_transitions = transitions.at(node.factor);
+        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+            int tgt_node = (**arc).target_node;
+            (**arc).cost = curr_transitions.at(msfg.nodes[tgt_node].factor);
+            flt_type cost = fw[ndit->first] + (**arc).cost;
+            if (fw.find(tgt_node) == fw.end()) fw[tgt_node] = cost;
+            else fw[tgt_node] = add_log_domain_probs(fw[tgt_node], cost);
+        }
+    }
+}
+
+
 flt_type
 backward(const MultiStringFactorGraph &msfg,
          const string &text,
@@ -721,6 +745,43 @@ backward(const MultiStringFactorGraph &msfg,
 
 
 flt_type
+backward(const MultiStringFactorGraph &msfg,
+         const string &text,
+         const map<msfg_node_idx_t, flt_type> &fw,
+         transitions_t &stats,
+         flt_type text_weight)
+{
+
+    int text_end_node = msfg.string_end_nodes.at(text);
+    map<int, flt_type> bw; bw[text_end_node] = 0.0;
+    set<int> nodes_to_process; nodes_to_process.insert(text_end_node);
+
+    while(nodes_to_process.size() > 0) {
+
+        int i = *(nodes_to_process.rbegin());
+
+        const MultiStringFactorGraph::Node &node = msfg.nodes[i];
+
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
+            int src_node = (**arc).source_node;
+            flt_type curr_cost = (**arc).cost + fw.at(src_node) - fw.at(i) + bw[i];
+            stats[msfg.nodes.at(src_node).factor][node.factor] += text_weight * exp(curr_cost);
+            if (bw.find(src_node) == bw.end()) {
+                bw[src_node] = curr_cost;
+                nodes_to_process.insert(src_node);
+            }
+            else bw[src_node] = add_log_domain_probs(bw[src_node], curr_cost);
+        }
+
+        nodes_to_process.erase(i);
+    }
+
+    return fw.at(msfg.string_end_nodes.at(text));
+}
+
+
+
+flt_type
 forward_backward(const transitions_t &transitions,
                  MultiStringFactorGraph &msfg,
                  transitions_t &stats,
@@ -750,11 +811,10 @@ forward_backward(const transitions_t &transitions,
 {
     if (msfg.nodes.size() == 0) return MIN_FLOAT;
 
-    vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
-    vector<flt_type> bw(msfg.nodes.size(), MIN_FLOAT);
-    fw[0] = 0.0; bw[msfg.nodes.size()-1] = 0.0;
+    map<msfg_node_idx_t, flt_type> fw;
+    fw[0] = 0.0;
 
-    forward(transitions, msfg, fw);
+    forward(transitions, text, msfg, fw);
     backward(msfg, text, fw, stats);
 
     return fw[msfg.string_end_nodes[text]];

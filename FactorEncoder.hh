@@ -147,10 +147,24 @@ void forward(const std::map<std::string, flt_type> &vocab,
              MultiStringFactorGraph &msfg,
              std::vector<flt_type> &fw);
 
+// Forward pass for only one string
+void forward(const transitions_t &transitions,
+             const std::string &text,
+             MultiStringFactorGraph &msfg,
+             std::map<msfg_node_idx_t, flt_type> &fw);
+
 // Backward pass for one string given forward scores
 flt_type backward(const MultiStringFactorGraph &msfg,
                   const std::string &text,
                   const std::vector<flt_type> &fw,
+                  transitions_t &stats,
+                  flt_type text_weight = 1.0);
+
+// Backward pass for one string given forward scores
+// Map container for forward scores
+flt_type backward(const MultiStringFactorGraph &msfg,
+                  const std::string &text,
+                  const std::map<msfg_node_idx_t, flt_type> &fw,
                   transitions_t &stats,
                   flt_type text_weight = 1.0);
 
