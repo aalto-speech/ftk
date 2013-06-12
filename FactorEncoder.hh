@@ -185,5 +185,11 @@ flt_type forward_backward(const transitions_t &transitions,
                           const std::string &text,
                           transitions_t &stats);
 
+// Forward-backward for selected strings, don't collect stats
+flt_type forward_backward(const transitions_t &transitions,
+                          const std::map<std::string, flt_type> &words,
+                          MultiStringFactorGraph &msfg,
+                          const std::set<std::string> &selected_words);
+
 
 #endif /* FACTOR_ENCODER */

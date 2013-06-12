@@ -831,3 +831,19 @@ forward_backward(const transitions_t &transitions,
 
     return fw[msfg.string_end_nodes[text]];
 }
+
+
+flt_type
+forward_backward(const transitions_t &transitions,
+                 const map<string, flt_type> &words,
+                 MultiStringFactorGraph &msfg,
+                 const std::set<std::string> &words_to_fb)
+{
+    transitions_t stats;
+    flt_type total_lp = 0;
+
+    for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit)
+        total_lp += words.at(*wit) * forward_backward(transitions, msfg, *wit, stats);
+
+    return total_lp;
+}
