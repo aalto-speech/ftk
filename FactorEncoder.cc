@@ -187,7 +187,7 @@ flt_type viterbi(const StringSet<flt_type> &vocab,
     return lp;
 }
 
-
+// Return log(X+Y) where a=log(X) b=log(Y)
 flt_type add_log_domain_probs(flt_type a, flt_type b) {
 
     if (b>a) {
@@ -197,6 +197,18 @@ flt_type add_log_domain_probs(flt_type a, flt_type b) {
     }
 
     return a + log(1 + exp(b - a));
+}
+
+// Return log(X-Y) where a=log(X) b=log(Y)
+flt_type sub_log_domain_probs(flt_type a, flt_type b) {
+
+    if (b>a) {
+        flt_type tmp = b;
+        b = a;
+        a = tmp;
+    }
+
+    return a + log(1 - exp(b - a));
 }
 
 
