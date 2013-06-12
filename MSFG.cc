@@ -337,3 +337,23 @@ MultiStringFactorGraph::collect_arcs(const string &text, map<msfg_node_idx_t, ve
     }
 }
 
+
+void
+MultiStringFactorGraph::collect_factors(const string &text, set<string> &factors) const
+{
+    msfg_node_idx_t end_node = string_end_nodes.at(text);
+    set<msfg_node_idx_t> nodes_to_process; nodes_to_process.insert(end_node);
+
+    while(nodes_to_process.size() > 0) {
+
+        msfg_node_idx_t i = *(nodes_to_process.rbegin());
+
+        const Node &node = nodes[i];
+        factors.insert(node.factor);
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc)
+            nodes_to_process.insert((**arc).source_node);
+
+        nodes_to_process.erase(i);
+    }
+}
+
