@@ -93,6 +93,11 @@ static void remove_string(const transitions_t &reverse_transitions,
 static void trans_to_vocab(const transitions_t &transitions,
                            std::map<std::string, flt_type> &vocab);
 
+static void get_backpointers(const MultiStringFactorGraph &msfg,
+                             std::map<std::string, std::set<std::string> > &backpointers,
+                             unsigned int minlen=2);
+
+
 private:
 
 static void remove_transitions(std::vector<std::string> &to_remove,

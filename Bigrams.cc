@@ -395,3 +395,20 @@ Bigrams::remove_string(const transitions_t &reverse_transitions,
     }
 }
 
+
+void
+Bigrams::get_backpointers(const MultiStringFactorGraph &msfg,
+                          map<string, set<string> > &backpointers,
+                          unsigned int minlen)
+{
+    backpointers.clear();
+    for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
+        set<string> factors;
+        msfg.collect_factors(it->first, factors);
+        for (auto fit = factors.begin(); fit != factors.end(); ++fit) {
+            if ((*fit).length() < minlen) continue;
+            backpointers[*fit].insert(it->first);
+        }
+    }
+}
+
