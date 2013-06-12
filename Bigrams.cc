@@ -373,3 +373,25 @@ Bigrams::reverse_transitions(const transitions_t &transitions,
             reverse_transitions[tgtit->first][srcit->first] = tgtit->second;
 }
 
+
+void
+Bigrams::remove_string(const transitions_t &reverse_transitions,
+                       const std::string &text,
+                       transitions_t &transitions)
+{
+    for (auto it = transitions[text].begin(); it != transitions[text].begin(); ++it)
+        it->second = SMALL_LP;
+
+    // FIXME: is there a better way to calculate the normalizer
+    for (auto contit = reverse_transitions.at(text).begin(); contit != reverse_transitions.at(text).end(); ++contit) {
+        flt_type normalizer = MIN_FLOAT;
+        for (auto it = transitions[contit->first].begin(); it != transitions[contit->first].end(); ++it) {
+            if (it->first == text) { it->second = SMALL_LP; continue; }
+            if (normalizer == MIN_FLOAT) normalizer = it->second;
+            else normalizer = add_log_domain_probs(normalizer, it->second);
+        }
+        for (auto it = transitions[contit->first].begin(); it != transitions[contit->first].end(); ++it)
+            it->second -= normalizer;
+    }
+}
+

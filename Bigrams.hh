@@ -86,6 +86,10 @@ static int transition_count(const transitions_t &transitions);
 static void reverse_transitions(const transitions_t &transitions,
                                 transitions_t &reverse_transitions);
 
+static void remove_string(const transitions_t &reverse_transitions,
+                          const std::string &text,
+                          transitions_t &transitions);
+
 static void trans_to_vocab(const transitions_t &transitions,
                            std::map<std::string, flt_type> &vocab);
 
