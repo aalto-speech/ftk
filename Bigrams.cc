@@ -412,3 +412,17 @@ Bigrams::get_backpointers(const MultiStringFactorGraph &msfg,
     }
 }
 
+
+void
+Bigrams::augment_affected_strings(const transitions_t &reverse_transitions,
+                                  const std::map<std::string, std::set<std::string> > &backpointers,
+                                  const std::string &factor,
+                                  std::set<std::string> &strings)
+{
+    for (auto it = reverse_transitions.at(factor).begin(); it != reverse_transitions.at(factor).end(); ++it) {
+        if (it->first.length() < 2) continue;
+        for (auto fit = backpointers.at(it->first).begin(); fit != backpointers.at(it->first).end(); ++fit)
+            strings.insert(*fit);
+    }
+
+}
