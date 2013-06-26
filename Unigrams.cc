@@ -8,18 +8,19 @@
 using namespace std;
 
 
-void
+flt_type
 Unigrams::resegment_words(const map<string, flt_type> &words,
                           const map<string, flt_type> &vocab,
                           map<string, flt_type> &new_freqs)
 {
     new_freqs.clear();
     StringSet<flt_type> stringset_vocab(vocab);
+    flt_type ll = 0.0;
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, flt_type> stats;
-        segf(stringset_vocab, worditer->first, stats);
+        ll += worditer->second * segf(stringset_vocab, worditer->first, stats);
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
@@ -30,6 +31,8 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
         for (auto it = stats.begin(); it != stats.end(); ++it)
             new_freqs[it->first] += worditer->second * it->second;
     }
+
+    return ll;
 }
 
 
@@ -217,7 +220,7 @@ Unigrams::init_removal_candidates(int n_candidates,
     int selected_candidates = 0;
     for (auto it = sorted_vocab.cbegin(); it != sorted_vocab.cend(); ++it) {
         const string &subword = it->first;
-        if (subword.length() < 3) continue;
+        if (subword.length() < 2) continue;
         map<string, flt_type> emptymap;
         diffs[subword] = emptymap;
         selected_candidates++;
@@ -243,7 +246,7 @@ Unigrams::init_removal_candidates_by_random(int n_candidates,
 
     int selected_candidates = 0;
     for (auto it = shuffled_vocab.begin(); it != shuffled_vocab.end(); ++it) {
-        if (it->length() < 3) continue;
+        if (it->length() < 2) continue;
         map<string, flt_type> emptymap;
         diffs[*it] = emptymap;
         selected_candidates++;
