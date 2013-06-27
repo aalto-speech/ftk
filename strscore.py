@@ -9,6 +9,7 @@ def read_bo_model(infname):
     curr_n = -1
     ngrams = dict()
     ngramfile = open(infname)
+    separator = ' '
 
     for line in ngramfile:
         line = line.strip()
@@ -24,7 +25,8 @@ def read_bo_model(infname):
             curr_n  = int(vals[0][1:len(vals[0])])
             continue
 
-        vals = line.partition(' ')
+        if '\t' in line: separator = '\t'
+        vals = line.partition(separator)
         logp  = float(vals[0])
         backoff = None
         ngram = vals[2]
