@@ -89,6 +89,7 @@ def get_score(letters, ngrams):
 if  __name__ =='__main__':
 
     if len(sys.argv) < 2:
+        print "Usage: strscore.py ARPAFILE STRINGFILE"
         exit()
 
     ngrams = read_bo_model(sys.argv[1])
