@@ -57,6 +57,11 @@ class fetest : public CPPUNIT_NS :: TestFixture
         void tearDown(void);
 
     protected:
+        void viterbiChecks(const std::map<std::string, flt_type> &vocab,
+                           int maxlen,
+                           std::string &sentence,
+                           std::vector<std::string> &correct_path,
+                           flt_type correct_lp);
         void viterbiTest1(void);
         void viterbiTest2(void);
         void viterbiTest3(void);

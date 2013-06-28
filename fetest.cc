@@ -23,6 +23,30 @@ void fetest :: tearDown (void)
 {
 }
 
+
+void fetest :: viterbiChecks(const map<string, flt_type> &vocab,
+                             int maxlen,
+                             string &sentence,
+                             vector<string> &correct_path,
+                             flt_type correct_lp)
+{
+    vector<string> result_path;
+    flt_type result_lp = viterbi(vocab, maxlen, sentence, result_path);
+    CPPUNIT_ASSERT_EQUAL( correct_path.size(), result_path.size() );
+    CPPUNIT_ASSERT_EQUAL( correct_lp, result_lp );
+    for (int i=0; i<correct_path.size(); i++)
+        CPPUNIT_ASSERT_EQUAL( correct_path[i], result_path[i] );
+
+    result_path.clear();
+    StringSet<flt_type> ssvocab(vocab);
+    result_lp = viterbi(ssvocab, sentence, result_path);
+    CPPUNIT_ASSERT_EQUAL( correct_path.size(), result_path.size() );
+    CPPUNIT_ASSERT_EQUAL( correct_lp, result_lp );
+    for (int i=0; i<correct_path.size(); i++)
+        CPPUNIT_ASSERT_EQUAL( correct_path[i], result_path[i] );
+}
+
+
 void fetest :: viterbiTest1 (void)
 {
     map<string, flt_type> vocab;
@@ -30,13 +54,11 @@ void fetest :: viterbiTest1 (void)
     vocab[str1] = -1.0;
     vocab[str2] = -2.0;
     string sentence("abc");
-    vector<string> best_path;
     int maxlen = 2;
-    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
-    CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
-    CPPUNIT_ASSERT_EQUAL(str2, best_path[1]);
-    CPPUNIT_ASSERT_EQUAL(-3.0, lp);
+    vector<string> correct_path;
+    correct_path.push_back(str1);
+    correct_path.push_back(str2);
+    viterbiChecks(vocab, maxlen, sentence, correct_path, -3.0);
 }
 
 void fetest :: viterbiTest2 (void)
@@ -49,13 +71,11 @@ void fetest :: viterbiTest2 (void)
     vocab[str3] = 0.0;
     vocab[str4] = 0.0;
     string sentence("abc");
-    vector<string> best_path;
     int maxlen = 2;
-    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
-    CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(str3, best_path[0]);
-    CPPUNIT_ASSERT_EQUAL(str4, best_path[1]);
-    CPPUNIT_ASSERT_EQUAL(0.0, lp);
+    vector<string> correct_path;
+    correct_path.push_back(str3);
+    correct_path.push_back(str4);
+    viterbiChecks(vocab, maxlen, sentence, correct_path, 0.0);
 }
 
 // No possible segmentation
@@ -65,11 +85,9 @@ void fetest :: viterbiTest3 (void)
     string str1("a");
     vocab[str1] = -1.0;
     string sentence("abc");
-    vector<string> best_path;
     int maxlen = 1;
-    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
-    CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(MIN_FLOAT, lp);
+    vector<string> correct_path;
+    viterbiChecks(vocab, maxlen, sentence, correct_path, MIN_FLOAT);
 }
 
 // Empty string
@@ -79,11 +97,9 @@ void fetest :: viterbiTest4 (void)
     string str1("a");
     vocab[str1] = -1.0;
     string sentence("");
-    vector<string> best_path;
     int maxlen = 1;
-    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
-    CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(MIN_FLOAT, lp);
+    vector<string> correct_path;
+    viterbiChecks(vocab, maxlen, sentence, correct_path, MIN_FLOAT);
 }
 
 // One character sentence
@@ -93,12 +109,10 @@ void fetest :: viterbiTest5 (void)
     string str1("a");
     vocab[str1] = -1.0;
     string sentence("a");
-    vector<string> best_path;
     int maxlen = 1;
-    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
-    CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(str1, best_path[0]);
-    CPPUNIT_ASSERT_EQUAL(-1.0, lp);
+    vector<string> correct_path;
+    correct_path.push_back(str1);
+    viterbiChecks(vocab, maxlen, sentence, correct_path, -1.0);
 }
 
 // No segmentation
@@ -112,11 +126,9 @@ void fetest :: viterbiTest6 (void)
     vocab[str3] = 0.0;
     vocab[str4] = 0.0;
     string sentence("a-bcd");
-    vector<string> best_path;
     int maxlen = 1;
-    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
-    CPPUNIT_ASSERT_EQUAL(0, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(MIN_FLOAT, lp);
+    vector<string> correct_path;
+    viterbiChecks(vocab, maxlen, sentence, correct_path, MIN_FLOAT);
 }
 
 void fetest :: viterbiTest7 (void)
@@ -135,17 +147,15 @@ void fetest :: viterbiTest7 (void)
     vocab[str7] = -2.0;
     vocab[str8] = -1.0;
     string sentence("kissalla");
-    vector<string> best_path;
     int maxlen = 8;
-    viterbi(vocab, maxlen, sentence, best_path);
-    CPPUNIT_ASSERT_EQUAL(1, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(str8, best_path[0]);
+    vector<string> correct_path;
+    correct_path.push_back(str8);
+    viterbiChecks(vocab, maxlen, sentence, correct_path, -1);
+    correct_path.clear();
+    correct_path.push_back(str6);
+    correct_path.push_back(str7);
     vocab[str8] = -6.0;
-    flt_type lp = viterbi(vocab, maxlen, sentence, best_path);
-    CPPUNIT_ASSERT_EQUAL(2, (int)best_path.size());
-    CPPUNIT_ASSERT_EQUAL(str6, best_path[0]);
-    CPPUNIT_ASSERT_EQUAL(str7, best_path[1]);
-    CPPUNIT_ASSERT_EQUAL(-5.0, lp);
+    viterbiChecks(vocab, maxlen, sentence, correct_path, -5.0);
 }
 
 
