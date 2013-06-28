@@ -171,7 +171,7 @@ flt_type viterbi(const StringSet<flt_type> &vocab,
     }
 
     if (reverse) std::reverse(best_path.begin(), best_path.end());
-    return MIN_FLOAT;
+    return search.back().cost;
 }
 
 
