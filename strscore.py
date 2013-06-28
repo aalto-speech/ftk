@@ -86,6 +86,15 @@ def get_score(letters, ngrams):
     return score
 
 
+# log(X+Y) where a=log(X), b=log(Y)
+def log_domain_add(a, b):
+    if b > a:
+        tmp = a
+        a = b
+        b = tmp
+    return a + math.log(1.0 + math.exp(b-a))
+
+
 if  __name__ =='__main__':
 
     if len(sys.argv) < 2:
@@ -99,6 +108,8 @@ if  __name__ =='__main__':
         strfname = sys.argv[2]
         strfile = open(strfname)
 
+    normalizer = -1000000000
+    substrings = list()
     for line in strfile:
         line = line.strip()
         if len(line.split()) == 2:
@@ -106,4 +117,12 @@ if  __name__ =='__main__':
         letters = list(line)
         score = get_score(letters, ngrams)
         score *= math.log(10) # Convert from log10 (ARPA default) to ln
-        print "%f %s" % (score, line)
+        substrings.append((line, score))
+        normalizer = log_domain_add(normalizer, score)
+
+    for substr, score in substrings:
+        score -= normalizer
+        print "%f %s" % (score, substr)
+
+
+
