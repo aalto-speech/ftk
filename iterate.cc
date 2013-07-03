@@ -135,7 +135,8 @@ int main(int argc, char* argv[]) {
         gg.set_segmentation_method(viterbi);
 
     for (int i=0; i<num_iterations; i++) {
-        gg.resegment_words(words, vocab, freqs);
+        flt_type segwords_cost = gg.resegment_words(words, vocab, freqs);
+        cerr << "cost from resegment_words: " << segwords_cost << endl;
         flt_type densum = gg.get_sum(freqs);
         flt_type cost = gg.get_cost(freqs, densum);
         cerr << "cost: " << cost << endl;
