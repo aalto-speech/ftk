@@ -14,7 +14,7 @@ objs = $(srcs:.cc=.o)
 test_progs = test_fe
 test_progs_srcs = $(test_progs:=.cc)
 test_progs_objs = $(test_progs:=.o)
-test_srcs = fetest.cc msfgtest.cc
+test_srcs = fetest.cc msfgtest.cc sstest.cc
 test_objs = $(test_srcs:.cc=.o)
 
 ##################################################
