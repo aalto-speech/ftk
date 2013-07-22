@@ -56,49 +56,6 @@ public:
             delete arcs[i];
     }
 
-    /** Insert a letter to a node (or follow an existing arc).
-     * \param letter = a letter to insert to the node
-     * \param factor = a possible factor corresponding to this node (can be empty)
-     * \param node = a node to which the letter is inserted
-     * \return pointer to the created or existing node
-     */
-    typename StringSet<T>::Node*
-    insert(char letter, const std::string &factor, T cost, StringSet<T>::Node *node)
-    {
-        // Find a possible existing arc with the letter
-        Arc *arc = node->first_arc;
-        while (arc != NULL) {
-            if (arc->letter == letter) break;
-            arc = arc->sibling_arc;
-        }
-
-        // No existing arc: create a new arc
-        if (arc == NULL) {
-            Node *new_node = new Node(NULL);
-            node->first_arc = new Arc(letter, factor, new_node, node->first_arc, cost);
-            arc = node->first_arc;
-            nodes.push_back(new_node);
-            arcs.push_back(arc);
-        }
-
-        // Update the existing arc if factor was set
-        else if (factor.length() > 0) {
-            if (arc->factor.length() > 0) {
-                std::cerr << "ERROR: StringSet::insert(): trying to redefine factor "
-                          << factor << std::endl;
-                exit(1);
-            }
-            arc->factor = factor;
-            arc->cost = cost;
-        }
-
-        // Maintain the length of the longest factor
-        if ((int)factor.length() > max_factor_length)
-            max_factor_length = factor.length();
-
-        return arc->target_node;
-    }
-
     /** Find an arc with the given letter from the given node.
      * \param letter = the letter to search
      * \param node = the source node
@@ -185,6 +142,49 @@ private:
     // Just for destructor
     std::vector<Arc*> arcs;
     std::vector<Node*> nodes;
+
+    /** Insert a letter to a node (or follow an existing arc).
+     * \param letter = a letter to insert to the node
+     * \param factor = a possible factor corresponding to this node (can be empty)
+     * \param node = a node to which the letter is inserted
+     * \return pointer to the created or existing node
+     */
+    typename StringSet<T>::Node*
+    insert(char letter, const std::string &factor, T cost, StringSet<T>::Node *node)
+    {
+        // Find a possible existing arc with the letter
+        Arc *arc = node->first_arc;
+        while (arc != NULL) {
+            if (arc->letter == letter) break;
+            arc = arc->sibling_arc;
+        }
+
+        // No existing arc: create a new arc
+        if (arc == NULL) {
+            Node *new_node = new Node(NULL);
+            node->first_arc = new Arc(letter, factor, new_node, node->first_arc, cost);
+            arc = node->first_arc;
+            nodes.push_back(new_node);
+            arcs.push_back(arc);
+        }
+
+        // Update the existing arc if factor was set
+        else if (factor.length() > 0) {
+            if (arc->factor.length() > 0) {
+                std::cerr << "ERROR: StringSet::insert(): trying to redefine factor "
+                          << factor << std::endl;
+                exit(1);
+            }
+            arc->factor = factor;
+            arc->cost = cost;
+        }
+
+        // Maintain the length of the longest factor
+        if ((int)factor.length() > max_factor_length)
+            max_factor_length = factor.length();
+
+        return arc->target_node;
+    }
 };
 
 
