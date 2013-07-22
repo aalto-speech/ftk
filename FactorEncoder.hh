@@ -27,14 +27,6 @@ flt_type viterbi(const StringSet<flt_type> &vocab,
                  const std::string &text,
                  std::map<std::string, flt_type> &stats);
 
-// Return log(X+Y) where a=log(X) b=log(Y)
-flt_type add_log_domain_probs(flt_type a,
-                              flt_type b);
-
-// Return log(X-Y) where a=log(X) b=log(Y)
-flt_type sub_log_domain_probs(flt_type a,
-                              flt_type b);
-
 
 class Token {
     public:

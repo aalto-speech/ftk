@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cmath>
 #include <cstdlib>
 #include <set>
 #include <stdexcept>
@@ -123,30 +122,6 @@ flt_type viterbi(const StringSet<flt_type> &vocab,
     for (auto it = best_path.begin(); it != best_path.end(); ++it)
         stats[*it] += 1.0;
     return lp;
-}
-
-// Return log(X+Y) where a=log(X) b=log(Y)
-flt_type add_log_domain_probs(flt_type a, flt_type b) {
-
-    if (b>a) {
-        flt_type tmp = b;
-        b = a;
-        a = tmp;
-    }
-
-    return a + log(1 + exp(b - a));
-}
-
-// Return log(X-Y) where a=log(X) b=log(Y)
-flt_type sub_log_domain_probs(flt_type a, flt_type b) {
-
-    if (b>a) {
-        flt_type tmp = b;
-        b = a;
-        a = tmp;
-    }
-
-    return a + log(1 - exp(b - a));
 }
 
 

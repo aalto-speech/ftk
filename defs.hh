@@ -1,6 +1,7 @@
 #ifndef PROJECT_DEFS
 #define PROJECT_DEFS
 
+#include <cmath>
 #include <limits>
 #include <map>
 #include <string>
@@ -17,5 +18,29 @@ static flt_type SMALL_LP = -100.0;
 static flt_type MIN_FLOAT = -std::numeric_limits<flt_type>::max();
 
 static int NUM_THREADS = 4;
+
+// Return log(X+Y) where a=log(X) b=log(Y)
+static flt_type add_log_domain_probs(flt_type a, flt_type b) {
+
+    if (b>a) {
+        flt_type tmp = b;
+        b = a;
+        a = tmp;
+    }
+
+    return a + log(1 + exp(b - a));
+}
+
+// Return log(X-Y) where a=log(X) b=log(Y)
+static flt_type sub_log_domain_probs(flt_type a, flt_type b) {
+
+    if (b>a) {
+        flt_type tmp = b;
+        b = a;
+        a = tmp;
+    }
+
+    return a + log(1 - exp(b - a));
+}
 
 #endif /* PROJECT_DEFS */
