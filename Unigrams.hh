@@ -33,6 +33,10 @@ public:
                              const std::map<std::string, flt_type> &vocab,
                              std::map<std::string, flt_type> &new_freqs);
 
+    flt_type resegment_words(const std::map<std::string, flt_type> &words,
+                             const StringSet &vocab,
+                             std::map<std::string, flt_type> &new_freqs);
+
     void resegment_words_w_diff(const std::map<std::string, flt_type> &words,
                                 const std::map<std::string, flt_type> &vocab,
                                 std::map<std::string, flt_type> &new_freqs,

@@ -101,6 +101,33 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
 }
 
 
+flt_type
+Unigrams::resegment_words(const map<string, flt_type> &words,
+                          const StringSet &vocab,
+                          map<string, flt_type> &new_freqs)
+{
+    new_freqs.clear();
+    flt_type ll = 0.0;
+
+    for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
+
+        map<string, flt_type> stats;
+        ll += worditer->second * segf(vocab, worditer->first, stats);
+
+        if (stats.size() == 0) {
+            cerr << "warning, no segmentation for word: " << worditer->first << endl;
+            exit(0);
+        }
+
+        // Update statistics
+        for (auto it = stats.begin(); it != stats.end(); ++it)
+            new_freqs[it->first] += worditer->second * it->second;
+    }
+
+    return ll;
+}
+
+
 void
 Unigrams::resegment_words_w_diff(const map<string, flt_type> &words,
                                  const map<string, flt_type> &vocab,
