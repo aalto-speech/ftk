@@ -80,7 +80,7 @@ public:
      * \param node = initial node
      * \return cumulative count of all subarcs reachable from this node
      */
-    flt_type sort_arcs(Node *node, const std::string &curr_prefix, std::map<std::string, flt_type> &freqs);
+    flt_type sort_arcs(Node *node, const std::string &curr_prefix, const std::map<std::string, flt_type> &freqs);
 
     void assign_scores(const std::map<std::string, flt_type> &vocab);
 

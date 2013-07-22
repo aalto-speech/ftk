@@ -106,6 +106,7 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> vocab;
     map<string, flt_type> freqs;
     map<string, flt_type> words;
+    map<string, flt_type> unit_words;
 
     cerr << "Reading vocabulary " << vocab_in_fname << endl;
     int retval = Unigrams::read_vocab(vocab_in_fname, vocab, maxlen);
@@ -134,8 +135,18 @@ int main(int argc, char* argv[]) {
     else
         gg.set_segmentation_method(viterbi);
 
+    // Optimize vocabulary
+    cerr << "optimizing vocabulary" << endl;
+    unit_words = words;
+    for (auto it = unit_words.begin(); it != unit_words.end(); ++it)
+        it->second = 1.0;
+    gg.resegment_words(unit_words, vocab, freqs);
+    StringSet ss(vocab);
+    ss.sort_arcs(&ss.root_node, "", freqs);
+
+    cerr << "iterating.." << endl;
     for (int i=0; i<num_iterations; i++) {
-        flt_type segwords_cost = gg.resegment_words(words, vocab, freqs);
+        flt_type segwords_cost = gg.resegment_words(words, ss, freqs);
         cerr << "cost from resegment_words: " << segwords_cost << endl;
         flt_type densum = gg.get_sum(freqs);
         flt_type cost = gg.get_cost(freqs, densum);
@@ -143,6 +154,7 @@ int main(int argc, char* argv[]) {
         vocab = freqs;
         gg.freqs_to_logprobs(vocab, densum);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
+        ss.assign_scores(vocab);
     }
 
     Unigrams::write_vocab(vocab_out_fname, vocab);

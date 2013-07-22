@@ -162,7 +162,7 @@ StringSet::sort_arcs(Node *node, bool log_domain)
 
 
 flt_type
-StringSet::sort_arcs(Node *node, const string &curr_prefix, map<string, flt_type> &freqs)
+StringSet::sort_arcs(Node *node, const string &curr_prefix, const map<string, flt_type> &freqs)
 {
     flt_type total = 0.0;
     StringSet::Arc *arc = node->first_arc;
@@ -170,10 +170,11 @@ StringSet::sort_arcs(Node *node, const string &curr_prefix, map<string, flt_type
     if (arc == NULL) return 0.0;
 
     while (arc != NULL) {
-        flt_type cumsum = sort_arcs(arc->target_node);
         string curr_str(curr_prefix + arc->letter);
+        flt_type cumsum = sort_arcs(arc->target_node, curr_str, freqs);
+
         if (arc->factor.length() > 0)
-            cumsum += freqs[curr_str];
+            cumsum += freqs.at(curr_str);
         total += cumsum;
         letters.insert( pair<flt_type, Arc*>(cumsum, arc) );
         arc = arc->sibling_arc;
@@ -181,7 +182,7 @@ StringSet::sort_arcs(Node *node, const string &curr_prefix, map<string, flt_type
 
     Arc* prev_arc = NULL;
     Arc* curr_arc = NULL;
-    for (auto it = letters.rbegin(); it != letters.rend(); ++it) {
+    for (auto it = letters.begin(); it != letters.end(); ++it) {
         curr_arc = it->second;
         curr_arc->sibling_arc = prev_arc;
         prev_arc = curr_arc;
