@@ -38,7 +38,7 @@ void fetest :: viterbiChecks(const map<string, flt_type> &vocab,
         CPPUNIT_ASSERT_EQUAL( correct_path[i], result_path[i] );
 
     result_path.clear();
-    StringSet<flt_type> ssvocab(vocab);
+    StringSet ssvocab(vocab);
     result_lp = viterbi(ssvocab, sentence, result_path);
     CPPUNIT_ASSERT_EQUAL( correct_path.size(), result_path.size() );
     CPPUNIT_ASSERT_EQUAL( correct_lp, result_lp );
@@ -332,7 +332,7 @@ void fetest :: FactorGraphTest1 (void)
     FactorGraph fg("halojaa", start_end, vocab, 7);
     CPPUNIT_ASSERT_EQUAL(5, (int)fg.nodes.size());
 
-    StringSet<flt_type> ssvocab(vocab);
+    StringSet ssvocab(vocab);
     FactorGraph ssfg("halojaa", start_end, ssvocab);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 }
@@ -350,7 +350,7 @@ void fetest :: FactorGraphTest2 (void)
     FactorGraph fg("halojaa", start_end, vocab, 7);
     CPPUNIT_ASSERT_EQUAL(5, (int)fg.nodes.size());
 
-    StringSet<flt_type> ssvocab(vocab);
+    StringSet ssvocab(vocab);
     FactorGraph ssfg("halojaa", start_end, ssvocab);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 }
@@ -367,7 +367,7 @@ void fetest :: FactorGraphTest3 (void)
     FactorGraph fg("halojaa", start_end, vocab, 3);
     CPPUNIT_ASSERT_EQUAL(0, (int)fg.nodes.size());
 
-    StringSet<flt_type> ssvocab(vocab);
+    StringSet ssvocab(vocab);
     FactorGraph ssfg("halojaa", start_end, ssvocab);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 }
@@ -398,7 +398,7 @@ void fetest :: FactorGraphTest4 (void)
     FactorGraph fg("kaupungistuminen", start_end, vocab, 6);
     CPPUNIT_ASSERT_EQUAL(23, (int)fg.nodes.size());
 
-    StringSet<flt_type> ssvocab(vocab);
+    StringSet ssvocab(vocab);
     FactorGraph ssfg("kaupungistuminen", start_end, ssvocab);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 

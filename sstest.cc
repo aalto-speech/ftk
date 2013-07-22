@@ -22,7 +22,7 @@ void sstest :: tearDown (void)
 // Basic add & get
 void sstest :: StringSetTest1 (void)
 {
-    StringSet<flt_type> ss;
+    StringSet ss;
     string factor("hei");
     ss.add(factor, -1.0);
     CPPUNIT_ASSERT_EQUAL ( -1.0, ss.get_score(factor) );
@@ -52,7 +52,7 @@ void sstest :: StringSetTest1 (void)
 // Add multiple strings
 void sstest :: StringSetTest2 (void)
 {
-    StringSet<flt_type> ss;
+    StringSet ss;
     ss.add("hei", -1.0);
     ss.add("heippa", -2.0);
     ss.add("heh", -3.0);
@@ -87,7 +87,7 @@ void sstest :: StringSetTest2 (void)
 // Add and remove
 void sstest :: StringSetTest3 (void)
 {
-    StringSet<flt_type> ss;
+    StringSet ss;
     ss.add("hei", -1.0);
     ss.add("heippa", -2.0);
     ss.add("heh", -3.0);
@@ -117,7 +117,7 @@ void sstest :: StringSetTest3 (void)
 // Add, remove and add back
 void sstest :: StringSetTest4 (void)
 {
-    StringSet<flt_type> ss;
+    StringSet ss;
     ss.add("hei", -1.0);
     ss.add("heippa", -2.0);
     ss.add("heh", -3.0);
@@ -132,14 +132,14 @@ void sstest :: StringSetTest4 (void)
 // Check that arcs are sorted by their cumulative counts in each node
 void sstest :: StringSetTest5 (void)
 {
-    StringSet<flt_type> ss;
+    StringSet ss;
     ss.add("joo", -0.5);
     ss.add("heippa", -1.5);
     ss.add("hei", -1.0);
     ss.add("heh", -2.0);
 
-    StringSet<flt_type>::Node *node = &ss.root_node;
-    StringSet<flt_type>::Arc *arc = node->first_arc;
+    StringSet::Node *node = &ss.root_node;
+    StringSet::Arc *arc = node->first_arc;
     CPPUNIT_ASSERT_EQUAL ( 'j', arc->letter );
     arc = arc->sibling_arc;
     CPPUNIT_ASSERT_EQUAL ( 'h', arc->letter );

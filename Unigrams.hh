@@ -12,9 +12,9 @@ class Unigrams {
 public:
 
     Unigrams() { this->segf = viterbi; }
-    Unigrams(flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) : segf(segf) {}
+    Unigrams(flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) : segf(segf) {}
 
-    void set_segmentation_method(flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) {
+    void set_segmentation_method(flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) {
         this->segf = segf;
     }
 
@@ -83,7 +83,7 @@ public:
                           const std::map<std::string, flt_type> &vocab,
                           std::map<std::string, std::map<std::string, flt_type> > &backpointers);
 
-    void hypo_removal(StringSet<flt_type> &vocab,
+    void hypo_removal(StringSet &vocab,
                       const std::string &subword,
                       const std::map<std::string, std::map<std::string, flt_type> > &backpointers,
                       std::map<std::string, std::map<std::string, flt_type> > &backpointers_to_remove,
@@ -91,7 +91,7 @@ public:
                       std::map<std::string, flt_type> &freq_diffs);
 
 private:
-    flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);
+    flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);
 };
 
 #endif /* UNIGRAMS */

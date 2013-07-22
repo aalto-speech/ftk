@@ -25,17 +25,17 @@ FactorGraph::create_nodes(const string &text, const map<string, flt_type> &vocab
 
 
 void
-FactorGraph::create_nodes(const string &text, const StringSet<flt_type> &vocab,
+FactorGraph::create_nodes(const string &text, const StringSet &vocab,
                           vector<unordered_set<unsigned int> > &incoming)
 {
     nodes.push_back(Node(0,0));
     for (unsigned int i=0; i<text.length(); i++) {
         if (incoming[i].size() == 0) continue;
 
-        const StringSet<flt_type>::Node *node = &vocab.root_node;
+        const StringSet::Node *node = &vocab.root_node;
         for (unsigned int j=i; j<text.length(); j++) {
 
-            StringSet<flt_type>::Arc *arc = vocab.find_arc(text[j], node);
+            StringSet::Arc *arc = vocab.find_arc(text[j], node);
 
             if (arc == NULL) break;
             node = arc->target_node;
@@ -121,7 +121,7 @@ FactorGraph::set_text(const string &text,
 void
 FactorGraph::set_text(const string &text,
                       const string &start_end_symbol,
-                      const StringSet<flt_type> &vocab)
+                      const StringSet &vocab)
 {
     this->text.assign(text);
     this->start_end_symbol.assign(start_end_symbol);
@@ -154,7 +154,7 @@ FactorGraph::FactorGraph(const string &text,
 
 FactorGraph::FactorGraph(const string &text,
                          const string &start_end_symbol,
-                         const StringSet<flt_type> &vocab)
+                         const StringSet &vocab)
 {
     set_text(text, start_end_symbol, vocab);
 }

@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
     assert_single_chars(vocab, all_chars, one_char_min_lp);
 
     string start_end_symbol("*");
-    StringSet<flt_type> ss_vocab(vocab);
+    StringSet ss_vocab(vocab);
     MultiStringFactorGraph msfg(start_end_symbol);
     vocab[start_end_symbol] = 0.0;
 

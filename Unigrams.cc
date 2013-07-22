@@ -79,7 +79,7 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
                           map<string, flt_type> &new_freqs)
 {
     new_freqs.clear();
-    StringSet<flt_type> stringset_vocab(vocab);
+    StringSet stringset_vocab(vocab);
     flt_type ll = 0.0;
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
@@ -108,8 +108,8 @@ Unigrams::resegment_words_w_diff(const map<string, flt_type> &words,
                                  map<string, map<string, flt_type> > &diffs)
 {
     new_freqs.clear();
-    StringSet<flt_type> morphset_vocab(vocab);
-    StringSet<flt_type> hypo_vocab(vocab);
+    StringSet morphset_vocab(vocab);
+    StringSet hypo_vocab(vocab);
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
@@ -357,7 +357,7 @@ Unigrams::get_backpointers(const map<string, flt_type> &words,
                            map<string, map<string, flt_type> > &backpointers)
 {
     backpointers.clear();
-    StringSet<flt_type> stringset_vocab(vocab);
+    StringSet stringset_vocab(vocab);
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
@@ -378,7 +378,7 @@ Unigrams::get_backpointers(const map<string, flt_type> &words,
 
 // Hypothesizes removal and gives out updated freqs
 void
-Unigrams::hypo_removal(StringSet<flt_type> &vocab,
+Unigrams::hypo_removal(StringSet &vocab,
                        const string &subword,
                        const map<string, map<string, flt_type> > &backpointers,
                        map<string, map<string, flt_type> > &backpointers_to_remove,

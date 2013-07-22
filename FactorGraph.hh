@@ -50,13 +50,13 @@ public:
     FactorGraph(const std::string &text, const std::string &start_end_symbol,
                 const std::map<std::string, flt_type> &vocab, int maxlen);
     FactorGraph(const std::string &text, const std::string &start_end_symbol,
-                const StringSet<flt_type> &vocab);
+                const StringSet &vocab);
     ~FactorGraph();
 
     void set_text(const std::string &text, const std::string &start_end_symbol,
                   const std::map<std::string, flt_type> &vocab, int maxlen);
     void set_text(const std::string &text, const std::string &start_end_symbol,
-                  const StringSet<flt_type> &vocab);
+                  const StringSet &vocab);
     void get_factor(const Node &node, std::string &nstr) const
     { if (node.len == 0) nstr.assign(start_end_symbol);
       else nstr.assign(this->text, node.start_pos, node.len); }
@@ -84,7 +84,7 @@ private:
     // Constructor helpers
     void create_nodes(const std::string &text, const std::map<std::string, flt_type> &vocab,
                       int maxlen, std::vector<std::unordered_set<unsigned int> > &incoming);
-    void create_nodes(const std::string &text, const StringSet<flt_type> &vocab,
+    void create_nodes(const std::string &text, const StringSet &vocab,
                       std::vector<std::unordered_set<unsigned int> > &incoming);
     void prune_and_create_arcs(std::vector<std::unordered_set<unsigned int> > &incoming);
     // Helper for enumerating paths

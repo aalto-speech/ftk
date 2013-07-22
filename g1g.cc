@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
             map<string, flt_type> freq_diffs;
             map<string, map<string, flt_type> > backpointers_to_remove;
             map<string, map<string, flt_type> > backpointers_to_add;
-            StringSet<flt_type> stringset_vocab(vocab);
+            StringSet stringset_vocab(vocab);
             gg.hypo_removal(stringset_vocab, removal_scores[i].first, backpointers,
                             backpointers_to_remove, backpointers_to_add, freq_diffs);
 

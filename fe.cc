@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
     string out_fname;
     int maxlen;
     map<string, flt_type> vocab;
-    StringSet<flt_type> *ss_vocab = NULL;
+    StringSet *ss_vocab = NULL;
     transitions_t transitions;
     string start_end_symbol("*");
     bool enable_posterior_decoding = false;
@@ -103,14 +103,14 @@ int main(int argc, char* argv[]) {
         }
         cerr << "\t" << "size: " << vocab.size() << endl;
         cerr << "\t" << "maximum string length: " << maxlen << endl;
-        ss_vocab = new StringSet<flt_type>(vocab);
+        ss_vocab = new StringSet(vocab);
     }
 
     if (trans_fname != NULL) {
         cerr << "Reading transitions " << trans_fname << endl;
         int retval = Bigrams::read_transitions(transitions, trans_fname);
         Bigrams::trans_to_vocab(transitions, vocab);
-        ss_vocab = new StringSet<flt_type>(vocab);
+        ss_vocab = new StringSet(vocab);
         if (retval < 0) {
             cerr << "something went wrong reading transitions" << endl;
             exit(0);

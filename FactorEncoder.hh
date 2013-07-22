@@ -18,12 +18,12 @@ flt_type viterbi(const std::map<std::string, flt_type> &vocab,
                  std::vector<std::string> &best_path,
                  bool reverse=true);
 
-flt_type viterbi(const StringSet<flt_type> &vocab,
+flt_type viterbi(const StringSet &vocab,
                  const std::string &text,
                  std::vector<std::string> &best_path,
                  bool reverse=true);
 
-flt_type viterbi(const StringSet<flt_type> &vocab,
+flt_type viterbi(const StringSet &vocab,
                  const std::string &text,
                  std::map<std::string, flt_type> &stats);
 
@@ -37,23 +37,23 @@ class Token {
         Token(const Token& orig) { this->source=orig.source; this->cost=orig.cost; };
 };
 
-void forward(const StringSet<flt_type> &vocab,
+void forward(const StringSet &vocab,
              const std::string &text,
              std::vector<std::vector<Token> > &search,
              std::vector<flt_type> &fw);
 
-void backward(const StringSet<flt_type> &vocab,
+void backward(const StringSet &vocab,
               const std::string &text,
               const std::vector<std::vector<Token> > &search,
               const std::vector<flt_type> &fw,
               std::vector<flt_type> &bw,
               std::map<std::string, flt_type> &stats);
 
-flt_type forward_backward(const StringSet<flt_type> &vocab,
+flt_type forward_backward(const StringSet &vocab,
                           const std::string &text,
                           std::map<std::string, flt_type> &stats);
 
-flt_type forward_backward(const StringSet<flt_type> &vocab,
+flt_type forward_backward(const StringSet &vocab,
                           const std::string &text,
                           std::map<std::string, flt_type> &stats,
                           std::vector<flt_type> &post_scores);

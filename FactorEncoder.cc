@@ -62,7 +62,7 @@ flt_type viterbi(const map<string, flt_type> &vocab,
 }
 
 
-flt_type viterbi(const StringSet<flt_type> &vocab,
+flt_type viterbi(const StringSet &vocab,
                  const string &text,
                  vector<string> &best_path,
                  bool reverse)
@@ -74,10 +74,10 @@ flt_type viterbi(const StringSet<flt_type> &vocab,
     for (int i=0; i<text.length(); i++) {
 
         // Iterate all factors starting from this position
-        const StringSet<flt_type>::Node *node = &vocab.root_node;
+        const StringSet::Node *node = &vocab.root_node;
         for (int j=i; j<text.length(); j++) {
 
-            StringSet<flt_type>::Arc *arc = vocab.find_arc(text[j], node);
+            StringSet::Arc *arc = vocab.find_arc(text[j], node);
 
             if (arc == NULL) break;
             node = arc->target_node;
@@ -112,7 +112,7 @@ flt_type viterbi(const StringSet<flt_type> &vocab,
 }
 
 
-flt_type viterbi(const StringSet<flt_type> &vocab,
+flt_type viterbi(const StringSet &vocab,
                  const string &text,
                  map<string, flt_type> &stats)
 {
@@ -125,7 +125,7 @@ flt_type viterbi(const StringSet<flt_type> &vocab,
 }
 
 
-void forward(const StringSet<flt_type> &vocab,
+void forward(const StringSet &vocab,
              const string &text,
              vector<vector<Token> > &search,
              vector<flt_type> &fw)
@@ -142,10 +142,10 @@ void forward(const StringSet<flt_type> &vocab,
         }
 
         // Iterate all factors starting from this position
-        const StringSet<flt_type>::Node *node = &vocab.root_node;
+        const StringSet::Node *node = &vocab.root_node;
         for (int j=i; j<text.length(); j++) {
 
-            StringSet<flt_type>::Arc *arc = vocab.find_arc(text[j], node);
+            StringSet::Arc *arc = vocab.find_arc(text[j], node);
 
             if (arc == NULL) break;
             node = arc->target_node;
@@ -170,7 +170,7 @@ void forward(const StringSet<flt_type> &vocab,
         fw[len-1] = add_log_domain_probs(fw[len-1], search[len-1][j].cost);
 }
 
-void backward(const StringSet<flt_type> &vocab,
+void backward(const StringSet &vocab,
               const string &text,
               const vector<vector<Token> > &search,
               const vector<flt_type> &fw,
@@ -194,7 +194,7 @@ void backward(const StringSet<flt_type> &vocab,
 }
 
 
-flt_type forward_backward(const StringSet<flt_type> &vocab,
+flt_type forward_backward(const StringSet &vocab,
                           const string &text,
                           map<string, flt_type> &stats)
 {
@@ -214,7 +214,7 @@ flt_type forward_backward(const StringSet<flt_type> &vocab,
 }
 
 
-flt_type forward_backward(const StringSet<flt_type> &vocab,
+flt_type forward_backward(const StringSet &vocab,
                           const string &text,
                           map<string, flt_type> &stats,
                           vector<flt_type> &bw)
@@ -239,7 +239,7 @@ flt_type forward_backward(const map<string, flt_type> &vocab,
                           const string &text,
                           map<string, flt_type> &stats)
 {
-    StringSet<flt_type> stringset_vocab(vocab);
+    StringSet stringset_vocab(vocab);
     return forward_backward(stringset_vocab, text, stats);
 }
 

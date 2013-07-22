@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
     assert_single_chars(vocab, all_chars, one_char_min_lp);
 
     string start_end_symbol("*");
-    StringSet<flt_type> ss_vocab(vocab);
+    StringSet ss_vocab(vocab);
     map<string, FactorGraph*> fg_words;
     MultiStringFactorGraph msfg(start_end_symbol);
     msfg.read(msfg_fname);
