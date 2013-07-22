@@ -75,6 +75,13 @@ public:
      */
     flt_type sort_arcs(Node *node, bool log_domain = true);
 
+    /** Recursively sorts arcs in this node and each subnode,
+     *  in descending order according to cumulative counts
+     * \param node = initial node
+     * \return cumulative count of all subarcs reachable from this node
+     */
+    flt_type sort_arcs(Node *node, const std::string &curr_prefix, std::map<std::string, flt_type> &freqs);
+
     void assign_scores(const std::map<std::string, flt_type> &vocab);
 
     Node root_node; //!< The root of the string tree

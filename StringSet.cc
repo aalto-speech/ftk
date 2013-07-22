@@ -161,6 +161,37 @@ StringSet::sort_arcs(Node *node, bool log_domain)
 }
 
 
+flt_type
+StringSet::sort_arcs(Node *node, const string &curr_prefix, map<string, flt_type> &freqs)
+{
+    flt_type total = 0.0;
+    StringSet::Arc *arc = node->first_arc;
+    multimap<flt_type, Arc*> letters;
+    if (arc == NULL) return 0.0;
+
+    while (arc != NULL) {
+        flt_type cumsum = sort_arcs(arc->target_node);
+        string curr_str(curr_prefix + arc->letter);
+        if (arc->factor.length() > 0)
+            cumsum += freqs[curr_str];
+        total += cumsum;
+        letters.insert( pair<flt_type, Arc*>(cumsum, arc) );
+        arc = arc->sibling_arc;
+    }
+
+    Arc* prev_arc = NULL;
+    Arc* curr_arc = NULL;
+    for (auto it = letters.rbegin(); it != letters.rend(); ++it) {
+        curr_arc = it->second;
+        curr_arc->sibling_arc = prev_arc;
+        prev_arc = curr_arc;
+    }
+    node->first_arc = curr_arc;
+
+    return total;
+}
+
+
 void
 StringSet::assign_scores(const std::map<std::string, flt_type> &vocab)
 {
