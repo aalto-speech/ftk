@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> freqs;
 
     cerr << "Reading vocabulary " << vocab_fname << endl;
-    int retval = read_vocab(vocab_fname, vocab, maxlen);
+    int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen);
     if (retval < 0) {
         cerr << "something went wrong reading vocabulary" << endl;
         exit(0);
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
             all_chars[it->first] = 0.0;
 
     cerr << "Reading word list " << wordlist_fname << endl;
-    retval = read_vocab(wordlist_fname, words, word_maxlen);
+    retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen);
     if (retval < 0) {
         cerr << "something went wrong reading word list" << endl;
         exit(0);

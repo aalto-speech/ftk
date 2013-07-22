@@ -12,17 +12,6 @@
 
 
 // 1-GRAM
-int read_vocab(std::string fname,
-               std::map<std::string, flt_type> &vocab,
-               int &maxlen);
-
-int write_vocab(std::string fname,
-                const std::map<std::string, flt_type> &vocab);
-
-void sort_vocab(const std::map<std::string, flt_type> &vocab,
-                std::vector<std::pair<std::string, flt_type> > &sorted_vocab,
-                bool descending=true);
-
 flt_type viterbi(const std::map<std::string, flt_type> &vocab,
                  int maxlen,
                  const std::string &text,

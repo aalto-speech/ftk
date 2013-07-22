@@ -4,8 +4,8 @@
 #include <thread>
 
 #include "io.hh"
+#include "Unigrams.hh"
 #include "Bigrams.hh"
-#include "FactorEncoder.hh"
 
 using namespace std;
 
@@ -296,7 +296,7 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
                              map<string, FactorGraph*> &fg_words)
 {
     vector<pair<string, flt_type> > sorted_stats;
-    sort_vocab(unigram_stats, sorted_stats, false);
+    Unigrams::sort_vocab(unigram_stats, sorted_stats, false);
     vector<string> to_remove;
     for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
         if (it->first.length() < 3) continue;
@@ -324,7 +324,7 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
                              MultiStringFactorGraph &msfg)
 {
     vector<pair<string, flt_type> > sorted_stats;
-    sort_vocab(unigram_stats, sorted_stats, false);
+    Unigrams::sort_vocab(unigram_stats, sorted_stats, false);
     vector<string> to_remove;
     for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
         if (it->first.length() < 3) continue;

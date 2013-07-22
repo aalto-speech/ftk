@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> words;
 
     cerr << "Reading vocabulary " << vocab_in_fname << endl;
-    int retval = read_vocab(vocab_in_fname, vocab, maxlen);
+    int retval = Unigrams::read_vocab(vocab_in_fname, vocab, maxlen);
     if (retval < 0) {
         cerr << "something went wrong reading vocabulary" << endl;
         exit(0);
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
             all_chars[it->first] = 0.0;
 
     cerr << "Reading word list " << wordlist_fname << endl;
-    retval = read_vocab(wordlist_fname, words, word_maxlen);
+    retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen);
     if (retval < 0) {
         cerr << "something went wrong reading word list" << endl;
         exit(0);
@@ -145,7 +145,7 @@ int main(int argc, char* argv[]) {
         assert_single_chars(vocab, all_chars, one_char_min_lp);
     }
 
-    write_vocab(vocab_out_fname, vocab);
+    Unigrams::write_vocab(vocab_out_fname, vocab);
 
     exit(1);
 }

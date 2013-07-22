@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> words;
 
     cerr << "Reading vocabulary " << vocab_fname << endl;
-    int retval = read_vocab(vocab_fname, vocab, maxlen);
+    int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen);
     if (retval < 0) {
         cerr << "something went wrong reading vocabulary" << endl;
         exit(0);
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
             all_chars[it->first] = 0.0;
 
     cerr << "Reading word list " << wordlist_fname << endl;
-    retval = read_vocab(wordlist_fname, words, word_maxlen);
+    retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen);
     if (retval < 0) {
         cerr << "something went wrong reading word list" << endl;
         exit(0);
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
             if (vocab.size() % 5000 == 0) {
                 ostringstream vocabfname;
                 vocabfname << "iter" << itern << "_" << vocab.size() << ".vocab";
-                write_vocab(vocabfname.str(), vocab);
+                Unigrams::write_vocab(vocabfname.str(), vocab);
             }
 
             if (n_removals >= max_removals_per_iter) break;
@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
 
         ostringstream vocabfname;
         vocabfname << "iter" << itern << ".vocab";
-        write_vocab(vocabfname.str(), vocab);
+        Unigrams::write_vocab(vocabfname.str(), vocab);
 
         itern++;
         threshold -= threshold_decrease;

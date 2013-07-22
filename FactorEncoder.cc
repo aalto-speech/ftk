@@ -1,75 +1,13 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <fstream>
-#include <iostream>
 #include <set>
-#include <sstream>
 #include <stdexcept>
 #include <queue>
 
 #include "FactorEncoder.hh"
 
 using namespace std;
-
-
-int read_vocab(string fname,
-               map<string, flt_type> &vocab,
-               int &maxlen)
-{
-    ifstream vocabfile(fname);
-    if (!vocabfile) return -1;
-
-    string line;
-    flt_type count;
-    maxlen = -1;
-    while (getline(vocabfile, line)) {
-        stringstream ss(line);
-        string word;
-        ss >> count;
-        ss >> word;
-        vocab[word] = count;
-        maxlen = max(maxlen, int(word.length()));
-    }
-    vocabfile.close();
-
-    return vocab.size();
-}
-
-
-int write_vocab(string fname,
-                const map<string, flt_type> &vocab)
-{
-    ofstream vocabfile(fname);
-    if (!vocabfile) return -1;
-
-    vector<pair<string, flt_type> > sorted_vocab;
-    sort_vocab(vocab, sorted_vocab);
-    for (unsigned int i=0; i<sorted_vocab.size(); i++)
-        vocabfile << sorted_vocab[i].second << " " << sorted_vocab[i].first << endl;
-    vocabfile.close();
-
-    return vocab.size();
-}
-
-
-bool descending_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return (i.second > j.second); }
-bool ascending_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return (i.second < j.second); }
-
-void sort_vocab(const map<string, flt_type> &vocab,
-                vector<pair<string, flt_type> > &sorted_vocab,
-                bool descending)
-{
-    sorted_vocab.clear();
-    for (auto it = vocab.cbegin(); it != vocab.cend(); it++) {
-        pair<string, flt_type> curr_pair(it->first, it->second);
-        sorted_vocab.push_back(curr_pair);
-    }
-    if (descending)
-        sort(sorted_vocab.begin(), sorted_vocab.end(), descending_sort);
-    else
-        sort(sorted_vocab.begin(), sorted_vocab.end(), ascending_sort);
-}
 
 
 flt_type viterbi(const map<string, flt_type> &vocab,

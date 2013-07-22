@@ -15,6 +15,7 @@
 #include "StringSet.hh"
 #include "FactorGraph.hh"
 #include "FactorEncoder.hh"
+#include "Unigrams.hh"
 #include "Bigrams.hh"
 
 using namespace std;
@@ -93,7 +94,7 @@ int main(int argc, char* argv[]) {
 
     if (vocab_fname != NULL) {
         cerr << "Reading vocabulary " << vocab_fname << endl;
-        int retval = read_vocab(vocab_fname, vocab, maxlen);
+        int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen);
         if (retval < 0) {
             cerr << "something went wrong reading vocabulary" << endl;
             exit(0);

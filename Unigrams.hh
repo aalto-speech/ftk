@@ -6,6 +6,7 @@
 
 #include "defs.hh"
 #include "StringSet.hh"
+#include "FactorEncoder.hh"
 
 class Unigrams {
 public:
@@ -16,6 +17,17 @@ public:
     void set_segmentation_method(flt_type (*segf)(const StringSet<flt_type> &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) {
         this->segf = segf;
     }
+
+    static int read_vocab(std::string fname,
+                          std::map<std::string, flt_type> &vocab,
+                          int &maxlen);
+
+    static int write_vocab(std::string fname,
+                           const std::map<std::string, flt_type> &vocab);
+
+    static void sort_vocab(const std::map<std::string, flt_type> &vocab,
+                           std::vector<std::pair<std::string, flt_type> > &sorted_vocab,
+                           bool descending=true);
 
     flt_type resegment_words(const std::map<std::string, flt_type> &words,
                              const std::map<std::string, flt_type> &vocab,
