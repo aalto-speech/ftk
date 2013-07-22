@@ -117,11 +117,7 @@ StringSet::insert(char letter,
 
     // Update the existing arc if factor was set
     else if (factor.length() > 0) {
-        if (arc->factor.length() > 0) {
-            cerr << "ERROR: StringSet::insert(): trying to redefine factor " << factor << endl;
-            exit(1);
-        }
-        arc->factor = factor;
+        if (arc->factor.length() == 0) arc->factor = factor;
         arc->cost = cost;
     }
 
@@ -162,4 +158,18 @@ StringSet::sort_arcs(Node *node, bool log_domain)
     node->first_arc = curr_arc;
 
     return total;
+}
+
+
+void
+StringSet::assign_scores(const std::map<std::string, flt_type> &vocab)
+{
+    for (auto it = vocab.begin(); it != vocab.end(); ++it) {
+        string factor(it->first);
+        Node *node = &root_node;
+        int i=0;
+        for (; i < (int)factor.length()-1; i++)
+            node = insert(factor[i], "" , 0.0, node);
+        insert(factor[i], factor, it->second, node);
+    }
 }

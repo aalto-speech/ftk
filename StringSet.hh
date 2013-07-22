@@ -75,6 +75,8 @@ public:
      */
     flt_type sort_arcs(Node *node, bool log_domain = true);
 
+    void assign_scores(const std::map<std::string, flt_type> &vocab);
+
     Node root_node; //!< The root of the string tree
     int max_factor_length; //!< The length of the longest factor in the set
 
