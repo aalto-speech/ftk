@@ -129,8 +129,30 @@ void sstest :: StringSetTest4 (void)
     CPPUNIT_ASSERT_EQUAL ( -4.0, ss.get_score("hei") );
 }
 
-
+// Check that arcs are sorted by their cumulative counts in each node
 void sstest :: StringSetTest5 (void)
 {
+    StringSet<flt_type> ss;
+    ss.add("joo", -0.5);
+    ss.add("heippa", -1.5);
+    ss.add("hei", -1.0);
+    ss.add("heh", -2.0);
 
+    StringSet<flt_type>::Node *node = &ss.root_node;
+    StringSet<flt_type>::Arc *arc = node->first_arc;
+    CPPUNIT_ASSERT_EQUAL ( 'j', arc->letter );
+    arc = arc->sibling_arc;
+    CPPUNIT_ASSERT_EQUAL ( 'h', arc->letter );
+    CPPUNIT_ASSERT ( arc->sibling_arc == NULL );
+
+    node = arc->target_node;
+    arc = node->first_arc;
+    CPPUNIT_ASSERT_EQUAL ( 'e', arc->letter );
+    node = arc->target_node;
+
+    arc = node->first_arc;
+    CPPUNIT_ASSERT_EQUAL ( 'i', arc->letter );
+    arc = arc->sibling_arc;
+    CPPUNIT_ASSERT_EQUAL ( 'h', arc->letter );
+    CPPUNIT_ASSERT ( arc->sibling_arc == NULL );
 }
