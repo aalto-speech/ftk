@@ -41,19 +41,8 @@ public:
 
     /** Default constructor. */
     StringSet() : max_factor_length(0) { }
-
-    StringSet(const std::map<std::string, flt_type> &vocab) {
-        max_factor_length = 0;
-        for (auto it = vocab.cbegin(); it !=vocab.cend(); ++it)
-            add(it->first, it->second);
-    }
-
-    ~StringSet() {
-        for (unsigned int i=0; i<nodes.size(); i++)
-            delete nodes[i];
-        for (unsigned int i=0; i<arcs.size(); i++)
-            delete arcs[i];
-    }
+    StringSet(const std::map<std::string, flt_type> &vocab);
+    ~StringSet();
 
     /** Find an arc with the given letter from the given node.
      * \param letter = the letter to search
@@ -78,6 +67,14 @@ public:
      */
     flt_type remove(const std::string &factor);
 
+    /** Recursively sorts arcs in this node and each subnode,
+     *  in descending order according to cumulative counts
+     * \param node = initial node
+     * \param log_domain = if the scores are in log domain (add scores in log domain, otherwise just +)
+     * \return cumulative count of all subarcs reachable from this node
+     */
+    flt_type sort_arcs(Node *node, bool log_domain = true);
+
     Node root_node; //!< The root of the string tree
     int max_factor_length; //!< The length of the longest factor in the set
 
@@ -90,14 +87,6 @@ private:
      * \return pointer to the created or existing node
      */
     Node* insert(char letter, const std::string &factor, flt_type cost, Node *node);
-
-    /** Recursively sorts arcs in each subnode reachable from this node,
-     *  in descending order according to cumulative counts
-     * \param node = initial node
-     * \param log_domain = if the scores are in log domain (add scores in log domain, otherwise just +)
-     * \return cumulative count of all subarcs reachable from this node
-     */
-    flt_type sort(Node *node, bool log_domain = true);
 
     // Just for destructor
     std::vector<Arc*> arcs;

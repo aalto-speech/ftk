@@ -2,9 +2,28 @@
 
 #include "StringSet.hh"
 
+using namespace std;
+
+
+StringSet::StringSet(const std::map<std::string, flt_type> &vocab) {
+    max_factor_length = 0;
+    for (auto it = vocab.cbegin(); it !=vocab.cend(); ++it)
+        add(it->first, it->second);
+    this->sort_arcs(&root_node);
+}
+
+
+StringSet::~StringSet() {
+    for (unsigned int i=0; i<nodes.size(); i++)
+        delete nodes[i];
+    for (unsigned int i=0; i<arcs.size(); i++)
+        delete arcs[i];
+}
+
 
 StringSet::Arc*
-StringSet::find_arc(char letter, const StringSet::Node *node) const
+StringSet::find_arc(char letter,
+                    const StringSet::Node *node) const
 {
     Arc *arc = node->first_arc;
     while (arc != NULL) {
@@ -16,7 +35,7 @@ StringSet::find_arc(char letter, const StringSet::Node *node) const
 
 
 bool
-StringSet::includes(const std::string &factor) const
+StringSet::includes(const string &factor) const
 {
     const StringSet::Node *node = &root_node;
     StringSet::Arc *arc = NULL;
@@ -31,22 +50,22 @@ StringSet::includes(const std::string &factor) const
 
 
 flt_type
-StringSet::get_score(const std::string &factor) const
+StringSet::get_score(const string &factor) const
 {
     const StringSet::Node *node = &root_node;
     StringSet::Arc *arc = NULL;
     for (unsigned int i=0; i<factor.length(); i++) {
         arc = find_arc(factor[i], node);
-        if (arc == NULL) throw std::string("could not find factor");
+        if (arc == NULL) throw string("could not find factor");
         node = arc->target_node;
     }
-    if (arc->factor.length() == 0) throw std::string("could not find factor");
+    if (arc->factor.length() == 0) throw string("could not find factor");
     return arc->cost;
 }
 
 
 void
-StringSet::add(const std::string &factor, flt_type cost)
+StringSet::add(const string &factor, flt_type cost)
 {
     // Create arcs
     Node *node = &root_node;
@@ -58,13 +77,13 @@ StringSet::add(const std::string &factor, flt_type cost)
 
 
 flt_type
-StringSet::remove(const std::string &factor)
+StringSet::remove(const string &factor)
 {
     StringSet::Node *node = &root_node;
     StringSet::Arc *arc = NULL;
     for (unsigned int i=0; i<factor.length(); i++) {
         arc = find_arc(factor[i], node);
-        if (arc == NULL) throw std::string("could not remove factor");
+        if (arc == NULL) throw string("could not remove factor");
         node = arc->target_node;
     }
     arc->factor.clear();
@@ -76,9 +95,9 @@ StringSet::remove(const std::string &factor)
 
 StringSet::Node*
 StringSet::insert(char letter,
-       const std::string &factor,
-       flt_type cost,
-       StringSet::Node *node)
+                  const string &factor,
+                  flt_type cost,
+                  StringSet::Node *node)
 {
     // Find a possible existing arc with the letter
     Arc *arc = node->first_arc;
@@ -99,8 +118,7 @@ StringSet::insert(char letter,
     // Update the existing arc if factor was set
     else if (factor.length() > 0) {
         if (arc->factor.length() > 0) {
-            std::cerr << "ERROR: StringSet::insert(): trying to redefine factor "
-                      << factor << std::endl;
+            cerr << "ERROR: StringSet::insert(): trying to redefine factor " << factor << endl;
             exit(1);
         }
         arc->factor = factor;
@@ -116,9 +134,32 @@ StringSet::insert(char letter,
 
 
 flt_type
-StringSet::sort(Node *node, bool log_domain)
+StringSet::sort_arcs(Node *node, bool log_domain)
 {
+    if (!log_domain) { throw string("Non-log-domain sort not implemented."); }
+
+    flt_type total = SMALL_LP;
     StringSet::Arc *arc = node->first_arc;
+    multimap<flt_type, Arc*> letters;
     if (arc == NULL) return SMALL_LP;
-    return 0;
+
+    while (arc != NULL) {
+        flt_type cumsum = sort_arcs(arc->target_node);
+        if (arc->factor.length() > 0)
+            cumsum = add_log_domain_probs(cumsum, arc->cost);
+        total = add_log_domain_probs(cumsum, total);
+        letters.insert( pair<flt_type, Arc*>(cumsum, arc) );
+        arc = arc->sibling_arc;
+    }
+
+    Arc* prev_arc = NULL;
+    Arc* curr_arc = NULL;
+    for (auto it = letters.begin(); it != letters.end(); ++it) {
+        curr_arc = it->second;
+        curr_arc->sibling_arc = prev_arc;
+        prev_arc = curr_arc;
+    }
+    node->first_arc = curr_arc;
+
+    return total;
 }

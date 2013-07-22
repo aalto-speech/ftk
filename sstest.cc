@@ -22,11 +22,12 @@ void sstest :: tearDown (void)
 // Basic add & get
 void sstest :: StringSetTest1 (void)
 {
-    StringSet ss;
-    string factor("hei");
-    ss.add(factor, -1.0);
-    CPPUNIT_ASSERT_EQUAL ( -1.0, ss.get_score(factor) );
-    CPPUNIT_ASSERT ( ss.includes(factor) );
+    map<string, flt_type> vocab;
+    vocab["hei"] = -1.0;
+    StringSet ss(vocab);
+
+    CPPUNIT_ASSERT_EQUAL ( -1.0, ss.get_score("hei") );
+    CPPUNIT_ASSERT ( ss.includes("hei") );
 
     bool throws = false;
     try {
@@ -52,12 +53,13 @@ void sstest :: StringSetTest1 (void)
 // Add multiple strings
 void sstest :: StringSetTest2 (void)
 {
-    StringSet ss;
-    ss.add("hei", -1.0);
-    ss.add("heippa", -2.0);
-    ss.add("heh", -3.0);
-    ss.add("hassua", -4.0);
-    ss.add("hassu", -5.0);
+    map<string, flt_type> vocab;
+    vocab["hei"] = -1.0;
+    vocab["heippa"] = -2.0;
+    vocab["heh"] = -3.0;
+    vocab["hassua"] = -4.0;
+    vocab["hassu"] = -5.0;
+    StringSet ss(vocab);
 
     CPPUNIT_ASSERT ( ss.includes("hei") );
     CPPUNIT_ASSERT ( ss.includes("heippa") );
@@ -87,10 +89,11 @@ void sstest :: StringSetTest2 (void)
 // Add and remove
 void sstest :: StringSetTest3 (void)
 {
-    StringSet ss;
-    ss.add("hei", -1.0);
-    ss.add("heippa", -2.0);
-    ss.add("heh", -3.0);
+    map<string, flt_type> vocab;
+    vocab["hei"] = -1.0;
+    vocab["heippa"] = -2.0;
+    vocab["heh"] = -3.0;
+    StringSet ss(vocab);
 
     CPPUNIT_ASSERT ( ss.includes("hei") );
     CPPUNIT_ASSERT ( ss.includes("heippa") );
@@ -117,10 +120,11 @@ void sstest :: StringSetTest3 (void)
 // Add, remove and add back
 void sstest :: StringSetTest4 (void)
 {
-    StringSet ss;
-    ss.add("hei", -1.0);
-    ss.add("heippa", -2.0);
-    ss.add("heh", -3.0);
+    map<string, flt_type> vocab;
+    vocab["hei"] = -1.0;
+    vocab["heippa"] = -2.0;
+    vocab["heh"] = -3.0;
+    StringSet ss(vocab);
 
     ss.remove("hei");
     ss.add("hei", -4.0);
@@ -133,10 +137,11 @@ void sstest :: StringSetTest4 (void)
 void sstest :: StringSetTest5 (void)
 {
     StringSet ss;
-    ss.add("joo", -0.5);
+    ss.add("joo", -0.25);
     ss.add("heippa", -1.5);
     ss.add("hei", -1.0);
     ss.add("heh", -2.0);
+    ss.sort_arcs(&ss.root_node);
 
     StringSet::Node *node = &ss.root_node;
     StringSet::Arc *arc = node->first_arc;
