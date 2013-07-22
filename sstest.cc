@@ -113,3 +113,24 @@ void sstest :: StringSetTest3 (void)
     }
     CPPUNIT_ASSERT( throws );
 }
+
+// Add, remove and add back
+void sstest :: StringSetTest4 (void)
+{
+    StringSet<flt_type> ss;
+    ss.add("hei", -1.0);
+    ss.add("heippa", -2.0);
+    ss.add("heh", -3.0);
+
+    ss.remove("hei");
+    ss.add("hei", -4.0);
+
+    CPPUNIT_ASSERT ( ss.includes("hei") );
+    CPPUNIT_ASSERT_EQUAL ( -4.0, ss.get_score("hei") );
+}
+
+
+void sstest :: StringSetTest5 (void)
+{
+
+}
