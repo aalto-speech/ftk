@@ -115,6 +115,36 @@ public:
       return arc;
   }
 
+  /** Checks if the string is in stringset */
+  bool
+  includes(const std::string &morph) const
+  {
+      const StringSet::Node *node = &root_node;
+      StringSet::Arc *arc = NULL;
+      for (unsigned int i=0; i<morph.length(); i++) {
+          arc = find_arc(morph[i], node);
+          if (arc == NULL) return false;
+          node = arc->target_node;
+      }
+      return true;
+  }
+
+  /** Get a score of a string in the stringset
+      Throws if string not in stringset */
+  T
+  get_score(const std::string &morph) const
+  {
+      const StringSet::Node *node = &root_node;
+      StringSet::Arc *arc = NULL;
+      for (unsigned int i=0; i<morph.length(); i++) {
+          arc = find_arc(morph[i], node);
+          if (arc == NULL) throw std::string("could not find morph");
+          node = arc->target_node;
+      }
+      return arc->cost;
+  }
+
+
   /** Add a new morph to the set */
   void
   add(const std::string &morph, T cost)
