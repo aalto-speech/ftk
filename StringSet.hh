@@ -21,12 +21,12 @@ public:
     /** Arc of a string tree. */
     class Arc {
     public:
-        Arc(char letter, std::string morph, Node *target_node, Arc *sibling_arc, T cost=0.0)
-            : letter(letter), morph(morph), target_node(target_node), cost(cost),
+        Arc(char letter, std::string factor, Node *target_node, Arc *sibling_arc, T cost=0.0)
+            : letter(letter), factor(factor), target_node(target_node), cost(cost),
               sibling_arc(sibling_arc) { }
 
-        char letter; //!< Letter of the morph
-        std::string morph; //!< Non-zero if complete morph
+        char letter; //!< Letter of the factor
+        std::string factor; //!< Non-zero if factor in vocabulary
         Node *target_node; //!< Target node
         T cost;
         Arc *sibling_arc; //!< Pointer to another arc from the source node.
@@ -41,10 +41,10 @@ public:
     };
 
     /** Default constructor. */
-    StringSet() : max_morph_length(0) { }
+    StringSet() : max_factor_length(0) { }
 
     StringSet(const std::map<std::string, T> &vocab) {
-        max_morph_length = 0;
+        max_factor_length = 0;
         for (auto it = vocab.cbegin(); it !=vocab.cend(); ++it)
             add(it->first, it->second);
     }
@@ -58,12 +58,12 @@ public:
 
     /** Insert a letter to a node (or follow an existing arc).
      * \param letter = a letter to insert to the node
-     * \param morph = a possible morph corresponding to this node (can be empty)
+     * \param factor = a possible factor corresponding to this node (can be empty)
      * \param node = a node to which the letter is inserted
      * \return pointer to the created or existing node
      */
     typename StringSet<T>::Node*
-    insert(char letter, const std::string &morph, T cost, StringSet<T>::Node *node)
+    insert(char letter, const std::string &factor, T cost, StringSet<T>::Node *node)
     {
         // Find a possible existing arc with the letter
         Arc *arc = node->first_arc;
@@ -75,26 +75,26 @@ public:
         // No existing arc: create a new arc
         if (arc == NULL) {
             Node *new_node = new Node(NULL);
-            node->first_arc = new Arc(letter, morph, new_node, node->first_arc, cost);
+            node->first_arc = new Arc(letter, factor, new_node, node->first_arc, cost);
             arc = node->first_arc;
             nodes.push_back(new_node);
             arcs.push_back(arc);
         }
 
-        // Update the existing arc if morph was set
-        else if (morph.length() > 0) {
-            if (arc->morph.length() > 0) {
-                std::cerr << "ERROR: StringSet::insert(): trying to redefine morph "
-                          << morph << std::endl;
+        // Update the existing arc if factor was set
+        else if (factor.length() > 0) {
+            if (arc->factor.length() > 0) {
+                std::cerr << "ERROR: StringSet::insert(): trying to redefine factor "
+                          << factor << std::endl;
                 exit(1);
             }
-            arc->morph = morph;
+            arc->factor = factor;
             arc->cost = cost;
         }
 
-        // Maintain the length of the longest morph
-        if ((int)morph.length() > max_morph_length)
-            max_morph_length = morph.length();
+        // Maintain the length of the longest factor
+        if ((int)factor.length() > max_factor_length)
+            max_factor_length = factor.length();
 
         return arc->target_node;
     }
@@ -117,12 +117,12 @@ public:
 
     /** Checks if the string is in stringset */
     bool
-    includes(const std::string &morph) const
+    includes(const std::string &factor) const
     {
         const StringSet::Node *node = &root_node;
         StringSet::Arc *arc = NULL;
-        for (unsigned int i=0; i<morph.length(); i++) {
-            arc = find_arc(morph[i], node);
+        for (unsigned int i=0; i<factor.length(); i++) {
+            arc = find_arc(factor[i], node);
             if (arc == NULL) return false;
             node = arc->target_node;
         }
@@ -132,53 +132,53 @@ public:
     /** Get a score of a string in the stringset
         Throws if string not in stringset */
     T
-    get_score(const std::string &morph) const
+    get_score(const std::string &factor) const
     {
         const StringSet::Node *node = &root_node;
         StringSet::Arc *arc = NULL;
-        for (unsigned int i=0; i<morph.length(); i++) {
-            arc = find_arc(morph[i], node);
-            if (arc == NULL) throw std::string("could not find morph");
+        for (unsigned int i=0; i<factor.length(); i++) {
+            arc = find_arc(factor[i], node);
+            if (arc == NULL) throw std::string("could not find factor");
             node = arc->target_node;
         }
         return arc->cost;
     }
 
 
-    /** Add a new morph to the set */
+    /** Add a new factor to the set */
     void
-    add(const std::string &morph, T cost)
+    add(const std::string &factor, T cost)
     {
         // Create arcs
         Node *node = &root_node;
         int i=0;
-        for (; i < (int)morph.length()-1; i++)
-            node = insert(morph[i], "" , 0.0, node);
-        insert(morph[i], morph, cost, node);
+        for (; i < (int)factor.length()-1; i++)
+            node = insert(factor[i], "" , 0.0, node);
+        insert(factor[i], factor, cost, node);
     }
 
-    /** Remove a morph from the set
-     * leaves the arc in tree, just nulls morph and cost
+    /** Remove a factor from the set
+     * leaves the arc in tree, just nulls factor and cost
      * \return cost
      */
     T
-    remove(const std::string &morph)
+    remove(const std::string &factor)
     {
         StringSet::Node *node = &root_node;
         StringSet::Arc *arc = NULL;
-        for (unsigned int i=0; i<morph.length(); i++) {
-            arc = find_arc(morph[i], node);
-            if (arc == NULL) throw std::string("could not remove morph");
+        for (unsigned int i=0; i<factor.length(); i++) {
+            arc = find_arc(factor[i], node);
+            if (arc == NULL) throw std::string("could not remove factor");
             node = arc->target_node;
         }
-        arc->morph.clear();
+        arc->factor.clear();
         T cost = arc->cost;
         arc->cost = 0.0;
         return cost;
     }
 
-    Node root_node; //!< The root of the morph tree
-    int max_morph_length; //!< The length of the longest morph in the set
+    Node root_node; //!< The root of the string tree
+    int max_factor_length; //!< The length of the longest factor in the set
 
 private:
     // Just for destructor

@@ -146,7 +146,7 @@ flt_type viterbi(const StringSet<flt_type> &vocab,
             node = arc->target_node;
 
             // Morph associated with this node
-            if (arc->morph.length() > 0) {
+            if (arc->factor.length() > 0) {
                 flt_type cost = arc->cost;
                 if (i>0) cost += search[i-1].cost;
 
@@ -238,7 +238,7 @@ void forward(const StringSet<flt_type> &vocab,
             node = arc->target_node;
 
             // Morph associated with this node
-            if (arc->morph.length() > 0) {
+            if (arc->factor.length() > 0) {
                 flt_type cost = arc->cost;
                 if (i>0) cost += fw[i-1];
 

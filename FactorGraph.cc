@@ -41,7 +41,7 @@ FactorGraph::create_nodes(const string &text, const StringSet<flt_type> &vocab,
             node = arc->target_node;
 
             // String associated with this node
-            if (arc->morph.length() > 0) {
+            if (arc->factor.length() > 0) {
                 nodes.push_back(Node(i, j+1-i));
                 incoming[j+1].insert(i);
             }
