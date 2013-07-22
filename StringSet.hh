@@ -126,6 +126,7 @@ public:
             if (arc == NULL) return false;
             node = arc->target_node;
         }
+        if (arc->factor.length() == 0) return false;
         return true;
     }
 
@@ -141,9 +142,9 @@ public:
             if (arc == NULL) throw std::string("could not find factor");
             node = arc->target_node;
         }
+        if (arc->factor.length() == 0) throw std::string("could not find factor");
         return arc->cost;
     }
-
 
     /** Add a new factor to the set */
     void
