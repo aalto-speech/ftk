@@ -241,7 +241,7 @@ int main(int argc, char* argv[]) {
         assert_single_chars(vocab, all_chars, one_char_min_lp);
         gg.resegment_words(words, vocab, freqs);
         curr_densum = gg.get_sum(freqs);
-        curr_cost = gg.get_cost(freqs, densum);
+        curr_cost = gg.get_cost(freqs, curr_densum);
 
         cerr << "subwords removed in this iteration: " << n_removals << endl;
         cerr << "subwords removed with cutoff this iteration: " << n_cutoff << endl;
