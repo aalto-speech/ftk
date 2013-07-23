@@ -29,6 +29,10 @@ public:
                            std::vector<std::pair<std::string, flt_type> > &sorted_vocab,
                            bool descending=true);
 
+    flt_type iterate(const std::map<std::string, flt_type> &words,
+                     std::map<std::string, flt_type> &vocab,
+                     unsigned int iterations = 1);
+
     flt_type resegment_words(const std::map<std::string, flt_type> &words,
                              const std::map<std::string, flt_type> &vocab,
                              std::map<std::string, flt_type> &new_freqs);
@@ -36,11 +40,6 @@ public:
     flt_type resegment_words(const std::map<std::string, flt_type> &words,
                              const StringSet &vocab,
                              std::map<std::string, flt_type> &new_freqs);
-
-    void resegment_words_w_diff(const std::map<std::string, flt_type> &words,
-                                const std::map<std::string, flt_type> &vocab,
-                                std::map<std::string, flt_type> &new_freqs,
-                                std::map<std::string, std::map<std::string, flt_type> > &diffs);
 
     static flt_type get_sum(const std::map<std::string, flt_type> &freqs);
 
@@ -70,16 +69,16 @@ public:
     int init_removal_candidates(int n_candidates,
                                 const std::map<std::string, flt_type> &words,
                                 const std::map<std::string, flt_type> &vocab,
-                                std::map<std::string, std::map<std::string, flt_type> > &diffs);
+                                std::set<std::string> &candidates);
 
     static int init_removal_candidates_by_random(int n_candidates,
                                                  const std::map<std::string, flt_type> &words,
                                                  const std::map<std::string, flt_type> &vocab,
-                                                 std::map<std::string, std::map<std::string, flt_type> > &diffs);
+                                                 std::set<std::string> &candidates);
 
     void rank_removal_candidates(const std::map<std::string, flt_type> &words,
                                  const std::map<std::string, flt_type> &vocab,
-                                 std::map<std::string, std::map<std::string, flt_type> > &diffs,
+                                 const std::set<std::string> &candidates,
                                  std::map<std::string, flt_type> &new_morph_freqs,
                                  std::vector<std::pair<std::string, flt_type> > &removal_scores);
 
