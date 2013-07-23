@@ -204,19 +204,17 @@ StringSet::prune(Node *node)
         if (unused && temp_arc->factor.length() == 0) {
             delete temp_arc->target_node;
             delete temp_arc;
-        } else {
-            arcs.push_back(temp_arc);
         }
+        else arcs.push_back(temp_arc);
     }
 
     node->first_arc = NULL;
-    for (int i=0; i<(int)arcs.size()-1; i++)
-        arcs[i]->sibling_arc = arcs[i+1];
     if (arcs.size() > 0) {
+        for (int i=0; i<(int)arcs.size()-1; i++)
+            arcs[i]->sibling_arc = arcs[i+1];
         arcs[arcs.size()-1]->sibling_arc = NULL;
         node->first_arc = arcs[0];
+        return false;
     }
-
-    if (arcs.size() > 0) return false;
     else return true;
 }
