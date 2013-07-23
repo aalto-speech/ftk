@@ -41,7 +41,9 @@ public:
 
     /** Default constructor. */
     StringSet() : max_factor_length(0) { }
-    StringSet(const std::map<std::string, flt_type> &vocab, bool log_domain=true);
+    StringSet(const std::map<std::string, flt_type> &vocab,
+              bool optimize=true,
+              bool log_domain=true);
     ~StringSet();
 
     /** Find an arc with the given letter from the given node.
