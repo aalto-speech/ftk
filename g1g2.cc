@@ -34,7 +34,6 @@ int main(int argc, char* argv[]) {
     int min_removals_per_iter = 0;
     int target_vocab_size = 50000;
     bool enable_forward_backward = false;
-    bool random_candidates = false;
     flt_type one_char_min_lp = -25.0;
     string vocab_fname;
     string wordlist_fname;
