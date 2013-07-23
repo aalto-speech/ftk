@@ -42,40 +42,40 @@ public:
                                 std::map<std::string, flt_type> &new_freqs,
                                 std::map<std::string, std::map<std::string, flt_type> > &diffs);
 
-    flt_type get_sum(const std::map<std::string, flt_type> &freqs);
+    static flt_type get_sum(const std::map<std::string, flt_type> &freqs);
 
-    flt_type get_sum(const std::map<std::string, flt_type> &freqs,
-                     const std::map<std::string, flt_type> &freq_diffs);
+    static flt_type get_sum(const std::map<std::string, flt_type> &freqs,
+                            const std::map<std::string, flt_type> &freq_diffs);
 
-    flt_type get_cost(const std::map<std::string, flt_type> &freqs,
-                      flt_type densum);
+    static flt_type get_cost(const std::map<std::string, flt_type> &freqs,
+                             flt_type densum);
 
-    flt_type get_cost(const std::map<std::string, flt_type> &freqs,
-                      const std::map<std::string, flt_type> &freq_diffs,
-                      flt_type densum);
+    static flt_type get_cost(const std::map<std::string, flt_type> &freqs,
+                             const std::map<std::string, flt_type> &freq_diffs,
+                             flt_type densum);
 
-    void apply_freq_diffs(std::map<std::string, flt_type> &freqs,
-                          const std::map<std::string, flt_type> &freq_diffs);
+    static void apply_freq_diffs(std::map<std::string, flt_type> &freqs,
+                                 const std::map<std::string, flt_type> &freq_diffs);
 
-    void apply_backpointer_changes(std::map<std::string, std::map<std::string, flt_type> > &backpointers,
-                                   const std::map<std::string, std::map<std::string, flt_type> > &bps_to_remove,
-                                   const std::map<std::string, std::map<std::string, flt_type> > &bps_to_add);
+    static void apply_backpointer_changes(std::map<std::string, std::map<std::string, flt_type> > &backpointers,
+                                          const std::map<std::string, std::map<std::string, flt_type> > &bps_to_remove,
+                                          const std::map<std::string, std::map<std::string, flt_type> > &bps_to_add);
 
-    void freqs_to_logprobs(std::map<std::string, flt_type> &vocab,
-                           flt_type densum);
+    static void freqs_to_logprobs(std::map<std::string, flt_type> &vocab,
+                                  flt_type densum);
 
-    int cutoff(std::map<std::string, flt_type> &vocab,
-               flt_type limit);
+    static int cutoff(std::map<std::string, flt_type> &vocab,
+                      flt_type limit);
 
     int init_removal_candidates(int n_candidates,
                                 const std::map<std::string, flt_type> &words,
                                 const std::map<std::string, flt_type> &vocab,
                                 std::map<std::string, std::map<std::string, flt_type> > &diffs);
 
-    int init_removal_candidates_by_random(int n_candidates,
-                                          const std::map<std::string, flt_type> &words,
-                                          const std::map<std::string, flt_type> &vocab,
-                                          std::map<std::string, std::map<std::string, flt_type> > &diffs);
+    static int init_removal_candidates_by_random(int n_candidates,
+                                                 const std::map<std::string, flt_type> &words,
+                                                 const std::map<std::string, flt_type> &vocab,
+                                                 std::map<std::string, std::map<std::string, flt_type> > &diffs);
 
     void rank_removal_candidates(const std::map<std::string, flt_type> &words,
                                  const std::map<std::string, flt_type> &vocab,
