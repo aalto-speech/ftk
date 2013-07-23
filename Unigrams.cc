@@ -135,13 +135,12 @@ Unigrams::resegment_words_w_diff(const map<string, flt_type> &words,
                                  map<string, map<string, flt_type> > &diffs)
 {
     new_freqs.clear();
-    StringSet morphset_vocab(vocab);
-    StringSet hypo_vocab(vocab);
+    StringSet ss_vocab(vocab);
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, flt_type> stats;
-        segf(morphset_vocab, worditer->first, stats);
+        segf(ss_vocab, worditer->first, stats);
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
@@ -158,10 +157,10 @@ Unigrams::resegment_words_w_diff(const map<string, flt_type> &words,
             // If wanting to hypothesize removal of this subword
             if (diffs.find(hypoiter->first) != diffs.end()) {
 
-                flt_type stored_value = hypo_vocab.remove(hypoiter->first);
+                flt_type stored_value = ss_vocab.remove(hypoiter->first);
                 map<string, flt_type> hypo_stats;
 
-                segf(hypo_vocab, worditer->first, hypo_stats);
+                segf(ss_vocab, worditer->first, hypo_stats);
 
                 if (hypo_stats.size() == 0) {
                     cerr << "warning, no hypo segmentation for word: " << worditer->first << endl;
@@ -173,7 +172,7 @@ Unigrams::resegment_words_w_diff(const map<string, flt_type> &words,
                 for (auto it = hypo_stats.cbegin(); it != hypo_stats.cend(); ++it)
                     diffs[hypoiter->first][it->first] += worditer->second * it->second;
 
-                hypo_vocab.add(hypoiter->first, stored_value);
+                ss_vocab.add(hypoiter->first, stored_value);
             }
         }
     }
