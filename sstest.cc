@@ -191,3 +191,33 @@ void sstest :: StringSetTest6 (void)
     CPPUNIT_ASSERT_EQUAL ( 'h', arc->letter );
     CPPUNIT_ASSERT ( arc->sibling_arc == NULL );
 }
+
+// Test pruning unused nodes and arcs.
+void sstest :: StringSetTest7 (void)
+{
+    StringSet ss;
+    ss.add("joo", 50);
+    ss.add("heippa", 10);
+    ss.add("hei", 10);
+    ss.add("heh", 15);
+    ss.optimize_arcs(&ss.root_node, false);
+
+    ss.remove("heippa");
+
+    StringSet::Node *node = &ss.root_node;
+    StringSet::Arc *arc = node->first_arc;
+    CPPUNIT_ASSERT_EQUAL ( 'j', arc->letter );
+    arc = arc->sibling_arc;
+    CPPUNIT_ASSERT_EQUAL ( 'h', arc->letter );
+    CPPUNIT_ASSERT ( arc->sibling_arc == NULL );
+
+    node = arc->target_node;
+    arc = node->first_arc;
+    CPPUNIT_ASSERT_EQUAL ( 'e', arc->letter );
+    node = arc->target_node;
+
+    arc = node->first_arc;
+    CPPUNIT_ASSERT_EQUAL ( 'i', arc->letter );
+    node = arc->target_node;
+    CPPUNIT_ASSERT ( node->first_arc == NULL );
+}
