@@ -5,11 +5,11 @@
 using namespace std;
 
 
-StringSet::StringSet(const std::map<std::string, flt_type> &vocab) {
+StringSet::StringSet(const std::map<std::string, flt_type> &vocab, bool log_domain) {
     max_factor_length = 0;
     for (auto it = vocab.cbegin(); it !=vocab.cend(); ++it)
         add(it->first, it->second);
-    this->sort_arcs(&root_node);
+    this->optimize_arcs(&root_node, log_domain);
 }
 
 
@@ -130,52 +130,23 @@ StringSet::insert(char letter,
 
 
 flt_type
-StringSet::sort_arcs(Node *node, bool log_domain)
+StringSet::optimize_arcs(Node *node, bool log_domain)
 {
-    if (!log_domain) { throw string("Non-log-domain sort not implemented."); }
-
-    flt_type total = SMALL_LP;
+    flt_type total = log_domain ? SMALL_LP : 0.0;
     StringSet::Arc *arc = node->first_arc;
     multimap<flt_type, Arc*> letters;
-    if (arc == NULL) return SMALL_LP;
 
     while (arc != NULL) {
-        flt_type cumsum = sort_arcs(arc->target_node);
-        if (arc->factor.length() > 0)
-            cumsum = add_log_domain_probs(cumsum, arc->cost);
-        total = add_log_domain_probs(cumsum, total);
-        letters.insert( pair<flt_type, Arc*>(cumsum, arc) );
-        arc = arc->sibling_arc;
-    }
-
-    Arc* prev_arc = NULL;
-    Arc* curr_arc = NULL;
-    for (auto it = letters.begin(); it != letters.end(); ++it) {
-        curr_arc = it->second;
-        curr_arc->sibling_arc = prev_arc;
-        prev_arc = curr_arc;
-    }
-    node->first_arc = curr_arc;
-
-    return total;
-}
-
-
-flt_type
-StringSet::sort_arcs(Node *node, const string &curr_prefix, const map<string, flt_type> &freqs)
-{
-    flt_type total = 0.0;
-    StringSet::Arc *arc = node->first_arc;
-    multimap<flt_type, Arc*> letters;
-    if (arc == NULL) return 0.0;
-
-    while (arc != NULL) {
-        string curr_str(curr_prefix + arc->letter);
-        flt_type cumsum = sort_arcs(arc->target_node, curr_str, freqs);
-
-        if (arc->factor.length() > 0)
-            cumsum += freqs.at(curr_str);
-        total += cumsum;
+        flt_type cumsum = optimize_arcs(arc->target_node, log_domain);
+        if (log_domain) {
+            if (arc->factor.length() > 0)
+                cumsum = add_log_domain_probs(cumsum, arc->cost);
+            total = add_log_domain_probs(cumsum, total);
+        } else {
+            if (arc->factor.length() > 0)
+                cumsum += arc->cost;
+            total += cumsum;
+        }
         letters.insert( pair<flt_type, Arc*>(cumsum, arc) );
         arc = arc->sibling_arc;
     }

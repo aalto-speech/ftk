@@ -141,8 +141,12 @@ int main(int argc, char* argv[]) {
     for (auto it = unit_words.begin(); it != unit_words.end(); ++it)
         it->second = 1.0;
     gg.resegment_words(unit_words, vocab, freqs);
-    StringSet ss(vocab);
-    ss.sort_arcs(&ss.root_node, "", freqs);
+    StringSet ss(freqs, false);
+    flt_type densum = gg.get_sum(freqs);
+    vocab = freqs;
+    gg.freqs_to_logprobs(vocab, densum);
+    assert_single_chars(vocab, all_chars, one_char_min_lp);
+    ss.assign_scores(vocab);
 
     cerr << "iterating.." << endl;
     for (int i=0; i<num_iterations; i++) {

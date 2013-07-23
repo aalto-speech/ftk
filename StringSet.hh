@@ -41,7 +41,7 @@ public:
 
     /** Default constructor. */
     StringSet() : max_factor_length(0) { }
-    StringSet(const std::map<std::string, flt_type> &vocab);
+    StringSet(const std::map<std::string, flt_type> &vocab, bool log_domain=true);
     ~StringSet();
 
     /** Find an arc with the given letter from the given node.
@@ -73,14 +73,7 @@ public:
      * \param log_domain = if the scores are in log domain (add scores in log domain, otherwise just +)
      * \return cumulative count of all subarcs reachable from this node
      */
-    flt_type sort_arcs(Node *node, bool log_domain = true);
-
-    /** Recursively sorts arcs in this node and each subnode,
-     *  in descending order according to cumulative counts
-     * \param node = initial node
-     * \return cumulative count of all subarcs reachable from this node
-     */
-    flt_type sort_arcs(Node *node, const std::string &curr_prefix, const std::map<std::string, flt_type> &freqs);
+    flt_type optimize_arcs(Node *node, bool log_domain = true);
 
     void assign_scores(const std::map<std::string, flt_type> &vocab);
 
