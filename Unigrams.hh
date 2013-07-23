@@ -63,13 +63,6 @@ public:
                                  std::map<std::string, flt_type> &new_morph_freqs,
                                  std::vector<std::pair<std::string, flt_type> > &removal_scores);
 
-    void hypo_removal(StringSet &vocab,
-                      const std::string &subword,
-                      const std::map<std::string, std::map<std::string, flt_type> > &backpointers,
-                      std::map<std::string, std::map<std::string, flt_type> > &backpointers_to_remove,
-                      std::map<std::string, std::map<std::string, flt_type> > &backpointers_to_add,
-                      std::map<std::string, flt_type> &freq_diffs);
-
 private:
     flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);
 };
