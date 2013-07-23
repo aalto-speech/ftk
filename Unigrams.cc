@@ -79,7 +79,7 @@ Unigrams::iterate(const std::map<std::string, flt_type> &words,
                   unsigned int iterations)
 {
     map<string, flt_type> freqs;
-    flt_type ll;
+    flt_type ll = 0.0;
 
     for (unsigned int i=0; i<iterations; i++) {
         resegment_words(words, vocab, freqs);
@@ -159,19 +159,6 @@ Unigrams::get_sum(const map<string, flt_type> &freqs)
 
 
 flt_type
-Unigrams::get_sum(const map<string, flt_type> &freqs,
-                  const map<string, flt_type> &freq_diffs)
-{
-    flt_type total = 0.0;
-    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter)
-        total += iter->second;
-    for (auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
-        total += iter->second;
-    return total;
-}
-
-
-flt_type
 Unigrams::get_cost(const map<string, flt_type> &freqs,
                    flt_type densum)
 {
@@ -183,55 +170,6 @@ Unigrams::get_cost(const map<string, flt_type> &freqs,
         if (!std::isnan(tmp)) total += tmp;
     }
     return total;
-}
-
-
-flt_type
-Unigrams::get_cost(const map<string, flt_type> &freqs,
-                   const map<string, flt_type> &freq_diffs,
-                   flt_type densum)
-{
-    flt_type total = 0.0;
-    flt_type tmp = 0.0;
-    densum = log(densum);
-    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
-        tmp = iter->second;
-        if (freq_diffs.find(iter->first) != freq_diffs.end())
-            tmp += freq_diffs.at(iter->first);
-        tmp = tmp * (log(tmp)-densum);
-        if (!std::isnan(tmp)) total += tmp;
-    }
-    return total;
-}
-
-
-void
-Unigrams::apply_freq_diffs(map<string, flt_type> &freqs,
-                           const map<string, flt_type> &freq_diffs)
-{
-    for (auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
-        freqs[iter->first] += iter->second;
-
-    // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
-    auto iter = freqs.begin();
-    while (iter != freqs.end()) {
-        if (iter->second <= 0.0) freqs.erase(iter++);
-        else ++iter;
-    }
-}
-
-
-void
-Unigrams::apply_backpointer_changes(map<string, map<string, flt_type> > &backpointers,
-                                    const map<string, map<string, flt_type> > &bps_to_remove,
-                                    const map<string, map<string, flt_type> > &bps_to_add)
-{
-    for (auto switer = bps_to_remove.cbegin(); switer != bps_to_remove.cend(); ++switer)
-        for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
-            backpointers[switer->first].erase(worditer->first);
-    for (auto switer = bps_to_add.cbegin(); switer != bps_to_add.cend(); ++switer)
-        for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
-            backpointers[switer->first][worditer->first] = worditer->second;
 }
 
 
@@ -282,31 +220,6 @@ Unigrams::init_removal_candidates(int n_candidates,
         const string &subword = it->first;
         if (subword.length() < 2) continue;
         candidates.insert(subword);
-        selected_candidates++;
-        if (selected_candidates >= n_candidates) break;
-    }
-
-    return selected_candidates;
-}
-
-
-// Select n_candidates number of subwords in the vocabulary as removal candidates
-// by random
-int
-Unigrams::init_removal_candidates_by_random(int n_candidates,
-                                            const map<string, flt_type> &words,
-                                            const map<string, flt_type> &vocab,
-                                            set<string> &candidates)
-{
-    vector<string> shuffled_vocab;
-    for (auto it = vocab.cbegin(); it != vocab.cend(); ++it)
-        shuffled_vocab.push_back(it->first);
-    random_shuffle(shuffled_vocab.begin(), shuffled_vocab.end());
-
-    int selected_candidates = 0;
-    for (auto it = shuffled_vocab.begin(); it != shuffled_vocab.end(); ++it) {
-        if (it->length() < 2) continue;
-        candidates.insert(*it);
         selected_candidates++;
         if (selected_candidates >= n_candidates) break;
     }
@@ -375,31 +288,6 @@ Unigrams::rank_removal_candidates(const map<string, flt_type> &words,
     }
 
     sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
-}
-
-
-void
-Unigrams::get_backpointers(const map<string, flt_type> &words,
-                           const map<string, flt_type> &vocab,
-                           map<string, map<string, flt_type> > &backpointers)
-{
-    backpointers.clear();
-    StringSet stringset_vocab(vocab);
-
-    for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
-
-        map<string, flt_type> stats;
-        segf(stringset_vocab, worditer->first, stats);
-
-        if (stats.size() == 0) {
-            cerr << "warning, no segmentation for word: " << worditer->first << endl;
-            exit(0);
-        }
-
-        // Store backpointers
-        for (auto it = stats.cbegin(); it != stats.cend(); ++it)
-            backpointers[it->first][worditer->first] += worditer->second * it->second;
-    }
 }
 
 
