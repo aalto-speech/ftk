@@ -5,11 +5,13 @@
 using namespace std;
 
 
-StringSet::StringSet(const std::map<std::string, flt_type> &vocab, bool log_domain) {
+StringSet::StringSet(const std::map<std::string, flt_type> &vocab,
+                     bool optimize,
+                     bool log_domain) {
     max_factor_length = 0;
     for (auto it = vocab.cbegin(); it !=vocab.cend(); ++it)
         add(it->first, it->second);
-    this->optimize_arcs(&root_node, log_domain);
+    if (optimize) this->optimize_arcs(&root_node, log_domain);
 }
 
 
