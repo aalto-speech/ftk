@@ -75,7 +75,13 @@ public:
      */
     flt_type optimize_arcs(Node *node, bool log_domain = true);
 
+    /** Assigns new scores to the StringSet
+     * \param vocab = vocabulary of values to assign
+     */
     void assign_scores(const std::map<std::string, flt_type> &vocab);
+
+    /** Prunes unused arcs and nodes */
+    void prune();
 
     Node root_node; //!< The root of the string tree
     int max_factor_length; //!< The length of the longest factor in the set
@@ -90,9 +96,10 @@ private:
      */
     Node* insert(char letter, const std::string &factor, flt_type cost, Node *node);
 
-    // Just for destructor
-    std::vector<Arc*> arcs;
-    std::vector<Node*> nodes;
+    /** Destructor helper, deletes all arcs and subnodes
+     * \param node = the source node
+     */
+    void clear(Node *node);
 
 };
 

@@ -14,10 +14,7 @@ StringSet::StringSet(const std::map<std::string, flt_type> &vocab, bool log_doma
 
 
 StringSet::~StringSet() {
-    for (unsigned int i=0; i<nodes.size(); i++)
-        delete nodes[i];
-    for (unsigned int i=0; i<arcs.size(); i++)
-        delete arcs[i];
+    clear(&root_node);
 }
 
 
@@ -111,8 +108,6 @@ StringSet::insert(char letter,
         Node *new_node = new Node(NULL);
         node->first_arc = new Arc(letter, factor, new_node, node->first_arc, cost);
         arc = node->first_arc;
-        nodes.push_back(new_node);
-        arcs.push_back(arc);
     }
 
     // Update the existing arc if factor was set
@@ -175,4 +170,27 @@ StringSet::assign_scores(const std::map<std::string, flt_type> &vocab)
             node = insert(factor[i], "" , 0.0, node);
         insert(factor[i], factor, it->second, node);
     }
+}
+
+
+void
+StringSet::clear(Node *node)
+{
+    StringSet::Arc *curr_arc = node->first_arc;
+    StringSet::Arc *temp_arc = NULL;
+
+    while (curr_arc != NULL) {
+        clear(curr_arc->target_node);
+        temp_arc = curr_arc;
+        curr_arc = curr_arc->sibling_arc;
+        if (temp_arc->target_node != NULL)
+            delete temp_arc->target_node;
+        delete temp_arc;
+    }
+}
+
+
+void
+StringSet::prune()
+{
 }
