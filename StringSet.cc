@@ -78,6 +78,7 @@ StringSet::remove(const string &factor)
 {
     StringSet::Node *node = &root_node;
     StringSet::Arc *arc = NULL;
+
     for (unsigned int i=0; i<factor.length(); i++) {
         arc = find_arc(factor[i], node);
         if (arc == NULL) throw string("could not remove factor");
@@ -183,14 +184,39 @@ StringSet::clear(Node *node)
         clear(curr_arc->target_node);
         temp_arc = curr_arc;
         curr_arc = curr_arc->sibling_arc;
-        if (temp_arc->target_node != NULL)
-            delete temp_arc->target_node;
+        delete temp_arc->target_node;
         delete temp_arc;
     }
 }
 
 
-void
-StringSet::prune()
+bool
+StringSet::prune(Node *node)
 {
+    StringSet::Arc *curr_arc = node->first_arc;
+    StringSet::Arc *temp_arc = NULL;
+
+    std::vector<StringSet::Arc*> arcs;
+    while (curr_arc != NULL) {
+        bool unused = prune(curr_arc->target_node);
+        temp_arc = curr_arc;
+        curr_arc = curr_arc->sibling_arc;
+        if (unused && temp_arc->factor.length() == 0) {
+            delete temp_arc->target_node;
+            delete temp_arc;
+        } else {
+            arcs.push_back(temp_arc);
+        }
+    }
+
+    node->first_arc = NULL;
+    for (int i=0; i<(int)arcs.size()-1; i++)
+        arcs[i]->sibling_arc = arcs[i+1];
+    if (arcs.size() > 0) {
+        arcs[arcs.size()-1]->sibling_arc = NULL;
+        node->first_arc = arcs[0];
+    }
+
+    if (arcs.size() > 0) return false;
+    else return true;
 }

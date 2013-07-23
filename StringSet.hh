@@ -81,7 +81,7 @@ public:
     void assign_scores(const std::map<std::string, flt_type> &vocab);
 
     /** Prunes unused arcs and nodes */
-    void prune();
+    void prune() { prune(&root_node); };
 
     Node root_node; //!< The root of the string tree
     int max_factor_length; //!< The length of the longest factor in the set
@@ -101,6 +101,11 @@ private:
      */
     void clear(Node *node);
 
+    /** Pruning helper, deletes all unused arcs and subnodes
+     * \param node = the source node
+     * \return true if all arcs and subnodes of node were unused and deleted
+     */
+    bool prune(Node *node);
 };
 
 

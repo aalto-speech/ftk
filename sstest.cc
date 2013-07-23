@@ -203,6 +203,7 @@ void sstest :: StringSetTest7 (void)
     ss.optimize_arcs(&ss.root_node, false);
 
     ss.remove("heippa");
+    ss.prune();
 
     StringSet::Node *node = &ss.root_node;
     StringSet::Arc *arc = node->first_arc;
