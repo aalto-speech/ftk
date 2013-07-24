@@ -159,7 +159,7 @@ void
 MultiStringFactorGraph::create_arc(msfg_node_idx_t src_node,
                                    msfg_node_idx_t tgt_node)
 {
-    Arc *arc = new Arc(src_node, tgt_node, 0.0);
+    Arc *arc = new Arc(src_node, tgt_node, NULL);
     nodes[src_node].outgoing.insert(arc);
     nodes[tgt_node].incoming.insert(arc);
 }

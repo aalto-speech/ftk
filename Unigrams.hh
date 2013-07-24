@@ -29,6 +29,10 @@ public:
                            std::vector<std::pair<std::string, flt_type> > &sorted_vocab,
                            bool descending=true);
 
+    flt_type iterate(const std::map<std::string, flt_type> &words,
+                     std::map<std::string, flt_type> &vocab,
+                     unsigned int iterations = 1);
+
     flt_type resegment_words(const std::map<std::string, flt_type> &words,
                              const std::map<std::string, flt_type> &vocab,
                              std::map<std::string, flt_type> &new_freqs);
@@ -37,29 +41,10 @@ public:
                              const StringSet &vocab,
                              std::map<std::string, flt_type> &new_freqs);
 
-    void resegment_words_w_diff(const std::map<std::string, flt_type> &words,
-                                const std::map<std::string, flt_type> &vocab,
-                                std::map<std::string, flt_type> &new_freqs,
-                                std::map<std::string, std::map<std::string, flt_type> > &diffs);
-
     static flt_type get_sum(const std::map<std::string, flt_type> &freqs);
 
-    static flt_type get_sum(const std::map<std::string, flt_type> &freqs,
-                            const std::map<std::string, flt_type> &freq_diffs);
-
     static flt_type get_cost(const std::map<std::string, flt_type> &freqs,
                              flt_type densum);
-
-    static flt_type get_cost(const std::map<std::string, flt_type> &freqs,
-                             const std::map<std::string, flt_type> &freq_diffs,
-                             flt_type densum);
-
-    static void apply_freq_diffs(std::map<std::string, flt_type> &freqs,
-                                 const std::map<std::string, flt_type> &freq_diffs);
-
-    static void apply_backpointer_changes(std::map<std::string, std::map<std::string, flt_type> > &backpointers,
-                                          const std::map<std::string, std::map<std::string, flt_type> > &bps_to_remove,
-                                          const std::map<std::string, std::map<std::string, flt_type> > &bps_to_add);
 
     static void freqs_to_logprobs(std::map<std::string, flt_type> &vocab,
                                   flt_type densum);
@@ -70,29 +55,13 @@ public:
     int init_removal_candidates(int n_candidates,
                                 const std::map<std::string, flt_type> &words,
                                 const std::map<std::string, flt_type> &vocab,
-                                std::map<std::string, std::map<std::string, flt_type> > &diffs);
-
-    static int init_removal_candidates_by_random(int n_candidates,
-                                                 const std::map<std::string, flt_type> &words,
-                                                 const std::map<std::string, flt_type> &vocab,
-                                                 std::map<std::string, std::map<std::string, flt_type> > &diffs);
+                                std::set<std::string> &candidates);
 
     void rank_removal_candidates(const std::map<std::string, flt_type> &words,
                                  const std::map<std::string, flt_type> &vocab,
-                                 std::map<std::string, std::map<std::string, flt_type> > &diffs,
+                                 const std::set<std::string> &candidates,
                                  std::map<std::string, flt_type> &new_morph_freqs,
                                  std::vector<std::pair<std::string, flt_type> > &removal_scores);
-
-    void get_backpointers(const std::map<std::string, flt_type> &words,
-                          const std::map<std::string, flt_type> &vocab,
-                          std::map<std::string, std::map<std::string, flt_type> > &backpointers);
-
-    void hypo_removal(StringSet &vocab,
-                      const std::string &subword,
-                      const std::map<std::string, std::map<std::string, flt_type> > &backpointers,
-                      std::map<std::string, std::map<std::string, flt_type> > &backpointers_to_remove,
-                      std::map<std::string, std::map<std::string, flt_type> > &backpointers_to_add,
-                      std::map<std::string, flt_type> &freq_diffs);
 
 private:
     flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);

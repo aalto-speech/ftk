@@ -19,15 +19,14 @@ static void update_trans_stats(const transitions_t &collected_stats,
                                transitions_t &trans_stats,
                                std::map<std::string, flt_type> &unigram_stats);
 
-static void collect_trans_stats(const transitions_t &transitions,
+static void collect_trans_stats(transitions_t &transitions,
                                 const std::map<std::string, flt_type> &words,
                                 std::map<std::string, FactorGraph*> &fg_words,
                                 transitions_t &trans_stats,
                                 std::map<std::string, flt_type> &unigram_stats,
                                 bool fb=true);
 
-static flt_type collect_trans_stats(const transitions_t &transitions,
-                                    const std::map<std::string, flt_type> &words,
+static flt_type collect_trans_stats(const std::map<std::string, flt_type> &words,
                                     MultiStringFactorGraph &msfg,
                                     transitions_t &trans_stats,
                                     std::map<std::string, flt_type> &unigram_stats,
@@ -42,15 +41,17 @@ static void threaded_backward(const MultiStringFactorGraph *msfg,
                               int thread_count,
                               flt_type *total_lp);
 
-static flt_type collect_trans_stats(const std::map<std::string, flt_type> &vocab,
-                                    const std::map<std::string, flt_type> &words,
-                                    MultiStringFactorGraph &msfg,
-                                    transitions_t &trans_stats,
-                                    std::map<std::string, flt_type> &unigram_stats,
-                                    bool fb=true);
+static flt_type collect_trans_stats_non_threaded(const std::map<std::string, flt_type> &words,
+                                                 MultiStringFactorGraph &msfg,
+                                                 transitions_t &trans_stats,
+                                                 std::map<std::string, flt_type> &unigram_stats,
+                                                 bool fb=true);
 
 static void normalize(transitions_t &trans_stats,
                       flt_type min_cost = SMALL_LP);
+
+static void copy_transitions(transitions_t &src,
+                             transitions_t &tgt);
 
 static void write_transitions(const transitions_t &transitions,
                               const std::string &filename);
@@ -88,7 +89,11 @@ static void reverse_transitions(const transitions_t &transitions,
 
 static void remove_string(const transitions_t &reverse_transitions,
                           const std::string &text,
-                          transitions_t &transitions);
+                          transitions_t &transitions,
+                          transitions_t &changes);
+
+static void restore_string(transitions_t &transitions,
+                           const transitions_t &changes);
 
 static void trans_to_vocab(const transitions_t &transitions,
                            std::map<std::string, flt_type> &vocab);

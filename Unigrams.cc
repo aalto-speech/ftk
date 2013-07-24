@@ -74,6 +74,26 @@ Unigrams::sort_vocab(const map<string, flt_type> &vocab,
 
 
 flt_type
+Unigrams::iterate(const std::map<std::string, flt_type> &words,
+                  std::map<std::string, flt_type> &vocab,
+                  unsigned int iterations)
+{
+    map<string, flt_type> freqs;
+    flt_type ll = 0.0;
+
+    for (unsigned int i=0; i<iterations; i++) {
+        resegment_words(words, vocab, freqs);
+        flt_type densum = get_sum(freqs);
+        ll = get_cost(freqs, densum);
+        vocab = freqs;
+        freqs_to_logprobs(vocab, densum);
+    }
+
+    return ll;
+}
+
+
+flt_type
 Unigrams::resegment_words(const map<string, flt_type> &words,
                           const map<string, flt_type> &vocab,
                           map<string, flt_type> &new_freqs)
@@ -128,75 +148,11 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
 }
 
 
-void
-Unigrams::resegment_words_w_diff(const map<string, flt_type> &words,
-                                 const map<string, flt_type> &vocab,
-                                 map<string, flt_type> &new_freqs,
-                                 map<string, map<string, flt_type> > &diffs)
-{
-    new_freqs.clear();
-    StringSet ss_vocab(vocab);
-
-    for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
-
-        map<string, flt_type> stats;
-        segf(ss_vocab, worditer->first, stats);
-
-        if (stats.size() == 0) {
-            cerr << "warning, no segmentation for word: " << worditer->first << endl;
-            exit(0);
-        }
-
-        // Update statistics
-        for (auto it = stats.cbegin(); it != stats.cend(); ++it)
-            new_freqs[it->first] += worditer->second * it->second;
-
-        // Hypothesize what the segmentation would be if some subword didn't exist
-        for (auto hypoiter = stats.cbegin(); hypoiter != stats.cend(); ++hypoiter) {
-
-            // If wanting to hypothesize removal of this subword
-            if (diffs.find(hypoiter->first) != diffs.end()) {
-
-                flt_type stored_value = ss_vocab.remove(hypoiter->first);
-                map<string, flt_type> hypo_stats;
-
-                segf(ss_vocab, worditer->first, hypo_stats);
-
-                if (hypo_stats.size() == 0) {
-                    cerr << "warning, no hypo segmentation for word: " << worditer->first << endl;
-                    exit(0);
-                }
-
-                for (auto it = stats.cbegin(); it != stats.cend(); ++it)
-                    diffs[hypoiter->first][it->first] -= worditer->second * it->second;
-                for (auto it = hypo_stats.cbegin(); it != hypo_stats.cend(); ++it)
-                    diffs[hypoiter->first][it->first] += worditer->second * it->second;
-
-                ss_vocab.add(hypoiter->first, stored_value);
-            }
-        }
-    }
-}
-
-
 flt_type
 Unigrams::get_sum(const map<string, flt_type> &freqs)
 {
     flt_type total = 0.0;
     for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter)
-        total += iter->second;
-    return total;
-}
-
-
-flt_type
-Unigrams::get_sum(const map<string, flt_type> &freqs,
-                  const map<string, flt_type> &freq_diffs)
-{
-    flt_type total = 0.0;
-    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter)
-        total += iter->second;
-    for (auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
         total += iter->second;
     return total;
 }
@@ -214,55 +170,6 @@ Unigrams::get_cost(const map<string, flt_type> &freqs,
         if (!std::isnan(tmp)) total += tmp;
     }
     return total;
-}
-
-
-flt_type
-Unigrams::get_cost(const map<string, flt_type> &freqs,
-                   const map<string, flt_type> &freq_diffs,
-                   flt_type densum)
-{
-    flt_type total = 0.0;
-    flt_type tmp = 0.0;
-    densum = log(densum);
-    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
-        tmp = iter->second;
-        if (freq_diffs.find(iter->first) != freq_diffs.end())
-            tmp += freq_diffs.at(iter->first);
-        tmp = tmp * (log(tmp)-densum);
-        if (!std::isnan(tmp)) total += tmp;
-    }
-    return total;
-}
-
-
-void
-Unigrams::apply_freq_diffs(map<string, flt_type> &freqs,
-                           const map<string, flt_type> &freq_diffs)
-{
-    for (auto iter = freq_diffs.cbegin(); iter != freq_diffs.cend(); ++iter)
-        freqs[iter->first] += iter->second;
-
-    // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
-    auto iter = freqs.begin();
-    while (iter != freqs.end()) {
-        if (iter->second <= 0.0) freqs.erase(iter++);
-        else ++iter;
-    }
-}
-
-
-void
-Unigrams::apply_backpointer_changes(map<string, map<string, flt_type> > &backpointers,
-                                    const map<string, map<string, flt_type> > &bps_to_remove,
-                                    const map<string, map<string, flt_type> > &bps_to_add)
-{
-    for (auto switer = bps_to_remove.cbegin(); switer != bps_to_remove.cend(); ++switer)
-        for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
-            backpointers[switer->first].erase(worditer->first);
-    for (auto switer = bps_to_add.cbegin(); switer != bps_to_add.cend(); ++switer)
-        for (auto worditer = switer->second.cbegin(); worditer != switer->second.cend(); ++worditer)
-            backpointers[switer->first][worditer->first] = worditer->second;
 }
 
 
@@ -300,7 +207,7 @@ int
 Unigrams::init_removal_candidates(int n_candidates,
                                   const map<string, flt_type> &words,
                                   const map<string, flt_type> &vocab,
-                                  map<string, map<string, flt_type> > &diffs)
+                                  set<string> &candidates)
 {
     map<string, flt_type> new_morph_freqs;
     resegment_words(words, vocab, new_morph_freqs);
@@ -312,34 +219,7 @@ Unigrams::init_removal_candidates(int n_candidates,
     for (auto it = sorted_vocab.cbegin(); it != sorted_vocab.cend(); ++it) {
         const string &subword = it->first;
         if (subword.length() < 2) continue;
-        map<string, flt_type> emptymap;
-        diffs[subword] = emptymap;
-        selected_candidates++;
-        if (selected_candidates >= n_candidates) break;
-    }
-
-    return selected_candidates;
-}
-
-
-// Select n_candidates number of subwords in the vocabulary as removal candidates
-// by random
-int
-Unigrams::init_removal_candidates_by_random(int n_candidates,
-                                            const map<string, flt_type> &words,
-                                            const map<string, flt_type> &vocab,
-                                            map<string, map<string, flt_type> > &diffs)
-{
-    vector<string> shuffled_vocab;
-    for (auto it = vocab.cbegin(); it != vocab.cend(); ++it)
-        shuffled_vocab.push_back(it->first);
-    random_shuffle(shuffled_vocab.begin(), shuffled_vocab.end());
-
-    int selected_candidates = 0;
-    for (auto it = shuffled_vocab.begin(); it != shuffled_vocab.end(); ++it) {
-        if (it->length() < 2) continue;
-        map<string, flt_type> emptymap;
-        diffs[*it] = emptymap;
+        candidates.insert(subword);
         selected_candidates++;
         if (selected_candidates >= n_candidates) break;
     }
@@ -355,95 +235,57 @@ bool rank_desc_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return 
 void
 Unigrams::rank_removal_candidates(const map<string, flt_type> &words,
                                   const map<string, flt_type> &vocab,
-                                  map<string, map<string, flt_type> > &diffs,
-                                  map<string, flt_type> &new_morph_freqs,
+                                  const set<string> &candidates,
+                                  map<string, flt_type> &new_freqs,
                                   vector<pair<string, flt_type> > &removal_scores)
 {
-    new_morph_freqs.clear();
+    new_freqs.clear();
     removal_scores.clear();
 
-    resegment_words_w_diff(words, vocab, new_morph_freqs, diffs);
-    flt_type densum = get_sum(new_morph_freqs);
-    flt_type cost = get_cost(new_morph_freqs, densum);
-
-    for (auto iter = diffs.begin(); iter != diffs.end(); ++iter) {
-        flt_type hypo_densum = get_sum(new_morph_freqs, iter->second);
-        flt_type hypo_cost = get_cost(new_morph_freqs, iter->second, hypo_densum);
-        pair<string, flt_type> removal_score = make_pair(iter->first, hypo_cost-cost);
-        removal_scores.push_back(removal_score);
-    }
-
-    sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
-}
-
-
-void
-Unigrams::get_backpointers(const map<string, flt_type> &words,
-                           const map<string, flt_type> &vocab,
-                           map<string, map<string, flt_type> > &backpointers)
-{
-    backpointers.clear();
-    StringSet stringset_vocab(vocab);
+    StringSet ss_vocab(vocab);
+    map<string, flt_type> diffs;
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, flt_type> stats;
-        segf(stringset_vocab, worditer->first, stats);
+        flt_type orig_score = segf(ss_vocab, worditer->first, stats);
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
             exit(0);
         }
 
-        // Store backpointers
+        // Update statistics
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
-            backpointers[it->first][worditer->first] += worditer->second * it->second;
-    }
-}
+            new_freqs[it->first] += worditer->second * it->second;
 
+        // Hypothesize what the segmentation would be if some subword didn't exist
+        for (auto hypoiter = stats.cbegin(); hypoiter != stats.cend(); ++hypoiter) {
 
-// Hypothesizes removal and gives out updated freqs
-void
-Unigrams::hypo_removal(StringSet &vocab,
-                       const string &subword,
-                       const map<string, map<string, flt_type> > &backpointers,
-                       map<string, map<string, flt_type> > &backpointers_to_remove,
-                       map<string, map<string, flt_type> > &backpointers_to_add,
-                       map<string, flt_type> &freq_diffs)
-{
-    backpointers_to_remove.clear();
-    backpointers_to_add.clear();
-    freq_diffs.clear();
+            // If wanting to hypothesize removal of this subword
+            if (candidates.find(hypoiter->first) != candidates.end()) {
 
-    for (auto worditer = backpointers.at(subword).cbegin(); worditer != backpointers.at(subword).cend(); ++worditer) {
+                flt_type stored_value = ss_vocab.remove(hypoiter->first);
+                map<string, flt_type> hypo_stats;
 
-        map<string, flt_type> stats;
-        segf(vocab, worditer->first, stats);
+                flt_type hypo_score = segf(ss_vocab, worditer->first, hypo_stats);
 
-        map<string, flt_type> hypo_stats;
-        flt_type stored_value = vocab.remove(subword);
-        segf(vocab, worditer->first, hypo_stats);
-        vocab.add(subword, stored_value);
+                if (hypo_stats.size() == 0) {
+                    cerr << "warning, no hypo segmentation for word: " << worditer->first << endl;
+                    exit(0);
+                }
 
-        if (stats.size() == 0) {
-            cerr << "warning, no segmentation for word: " << worditer->first << endl;
-            exit(0);
-        }
+                diffs[hypoiter->first] += worditer->second * (hypo_score-orig_score);
 
-        if (hypo_stats.size() == 0) {
-            cerr << "warning, no hypo segmentation for word: " << worditer->first << endl;
-            exit(0);
-        }
-
-        // Collect frequency differences
-        // Collect backpointer changes
-        for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
-            freq_diffs[it->first] -= worditer->second * it->second;
-            backpointers_to_remove[it->first][worditer->first] = worditer->second * it->second;
-        }
-        for (auto it = hypo_stats.cbegin(); it != hypo_stats.cend(); ++it) {
-            freq_diffs[it->first] += worditer->second * it->second;
-            backpointers_to_add[it->first][worditer->first] = worditer->second * it->second;
+                ss_vocab.add(hypoiter->first, stored_value);
+            }
         }
     }
+
+    for (auto iter = diffs.begin(); iter != diffs.end(); ++iter) {
+        pair<string, flt_type> removal_score = make_pair(iter->first, iter->second);
+        removal_scores.push_back(removal_score);
+    }
+
+    sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
 }

@@ -1,11 +1,11 @@
 
 cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-sign-compare -Wno-unused-variable -Wno-unused-function
 #cxxflags = -O0 -gddb -std=gnu++0x -Wall
-#cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-sign-compare
+#cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-sign-compare -Wno-unused-variable -Wno-unused-function
 
 ##################################################
 
-progs = fe substrings init g1g g1g2 g2g segposts iterate cmsfg ll
+progs = fe substrings init g1g g2g segposts iterate cmsfg ll
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
 srcs = io.cc StringSet.cc FactorGraph.cc MSFG.cc FactorEncoder.cc Unigrams.cc Bigrams.cc

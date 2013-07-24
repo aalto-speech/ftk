@@ -175,7 +175,8 @@ int main(int argc, char* argv[]) {
     flt_type lp = 0.0;
 
     // Initial segmentation using unigram model
-    lp = Bigrams::collect_trans_stats(vocab, words, msfg, trans_stats, unigram_stats);
+    assign_scores(vocab, msfg);
+    lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats);
 
     // Unigram cost with word end markers
     densum = ug.get_sum(unigram_stats);
@@ -191,16 +192,18 @@ int main(int argc, char* argv[]) {
     int co_removed = Bigrams::cutoff(unigram_stats, cutoff_value, transitions, msfg);
     cerr << "\tremoved by cutoff: " << co_removed << endl;
 
+    assign_scores(transitions, msfg);
+
     // Re-estimate using bigram stats
     for (int i=0; i<iter_amount; i++) {
 
-        flt_type lp = Bigrams::collect_trans_stats(transitions, words, msfg, trans_stats, unigram_stats);
+        flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats);
         int vocab_size = unigram_stats.size();
         cerr << "bigram cost: " << lp << endl;
         cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
         cerr << "\tvocab size: " << vocab_size << endl;
 
-        transitions = trans_stats;
+        Bigrams::copy_transitions(trans_stats, transitions);
         if (least_common > 0) {
             int curr_least_common = least_common + ((vocab_size-least_common) % 1000);
             int lc_removed = Bigrams::remove_least_common(unigram_stats, curr_least_common, transitions, msfg);
