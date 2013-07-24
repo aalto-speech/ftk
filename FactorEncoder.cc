@@ -727,7 +727,7 @@ forward_backward(const map<string, flt_type> &words,
                  const std::set<std::string> &words_to_fb)
 {
     transitions_t stats;
-    flt_type total_lp = 0;
+    flt_type total_lp = 0.0;
 
     for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit)
         total_lp += words.at(*wit) * forward_backward(msfg, *wit, stats);
