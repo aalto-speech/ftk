@@ -76,8 +76,7 @@ Bigrams::threaded_backward(const MultiStringFactorGraph *msfg,
 
 
 flt_type
-Bigrams::collect_trans_stats(transitions_t &transitions,
-                             const map<string, flt_type> &words,
+Bigrams::collect_trans_stats(const map<string, flt_type> &words,
                              MultiStringFactorGraph &msfg,
                              transitions_t &trans_stats,
                              map<string, flt_type> &unigram_stats,
@@ -122,12 +121,11 @@ Bigrams::collect_trans_stats(transitions_t &transitions,
 
 
 flt_type
-Bigrams::collect_trans_stats(map<string, flt_type> &vocab,
-                             const map<string, flt_type> &words,
-                             MultiStringFactorGraph &msfg,
-                             transitions_t &trans_stats,
-                             map<string, flt_type> &unigram_stats,
-                             bool fb)
+Bigrams::collect_trans_stats_non_threaded(const map<string, flt_type> &words,
+                                          MultiStringFactorGraph &msfg,
+                                          transitions_t &trans_stats,
+                                          map<string, flt_type> &unigram_stats,
+                                          bool fb)
 {
     trans_stats.clear();
     unigram_stats.clear();
@@ -172,29 +170,14 @@ Bigrams::normalize(transitions_t &trans_stats,
 }
 
 
-// NOTE: assumes that tgt has at least all the elements as in src
-//       removes all elements not found in src
+// NOTE: assumes that tgt has the same elements as in src
 void
 Bigrams::copy_transitions(transitions_t &src,
                           transitions_t &tgt)
 {
-    for (auto trsrcit = tgt.begin(); trsrcit != tgt.end(); ) {
-        if (src.find(trsrcit->first) == src.end()) {
-            tgt.erase(trsrcit++);
-        }
-        else {
-            for (auto trtgtit = trsrcit->second.begin(); trtgtit != trsrcit->second.end(); ) {
-                if (src.at(trsrcit->first).find(trtgtit->first) == src.at(trsrcit->first).end()) {
-                    tgt[trsrcit->first].erase(trtgtit++);
-                }
-                else {
-                    trtgtit->second = src[trsrcit->first][trtgtit->first];
-                    ++trtgtit;
-                }
-            }
-            ++trsrcit;
-        }
-    }
+    for (auto trsrcit = tgt.begin(); trsrcit != tgt.end(); ++trsrcit)
+        for (auto trtgtit = trsrcit->second.begin(); trtgtit != trsrcit->second.end(); ++trtgtit)
+            trtgtit->second = src[trsrcit->first][trtgtit->first];
 }
 
 
@@ -403,22 +386,38 @@ Bigrams::reverse_transitions(const transitions_t &transitions,
 void
 Bigrams::remove_string(const transitions_t &reverse_transitions,
                        const std::string &text,
-                       transitions_t &transitions)
+                       transitions_t &transitions,
+                       transitions_t &changes)
 {
-    for (auto it = transitions[text].begin(); it != transitions[text].begin(); ++it)
-        it->second = SMALL_LP;
+    changes.clear();
 
-    // FIXME: is there a better way to calculate the normalizer
-    for (auto contit = reverse_transitions.at(text).begin(); contit != reverse_transitions.at(text).end(); ++contit) {
-        flt_type normalizer = MIN_FLOAT;
-        for (auto it = transitions[contit->first].begin(); it != transitions[contit->first].end(); ++it) {
-            if (it->first == text) { it->second = SMALL_LP; continue; }
-            if (normalizer == MIN_FLOAT) normalizer = it->second;
-            else normalizer = add_log_domain_probs(normalizer, it->second);
-        }
-        for (auto it = transitions[contit->first].begin(); it != transitions[contit->first].end(); ++it)
-            it->second -= normalizer;
+    for (auto it = transitions[text].begin(); it != transitions[text].begin(); ++it) {
+        changes[text][it->first] = it->second;
+        it->second = SMALL_LP;
     }
+
+    for (auto contit = reverse_transitions.at(text).begin(); contit != reverse_transitions.at(text).end(); ++contit) {
+
+        changes[contit->first][text] = transitions[contit->first][text];
+        flt_type renormalizer = sub_log_domain_probs(0, transitions[contit->first][text]);
+
+        for (auto it = transitions[contit->first].begin(); it != transitions[contit->first].end(); ++it) {
+            changes[contit->first][it->first] = it->second;
+            it->second += renormalizer;
+        }
+
+        transitions[contit->first][text] = SMALL_LP;
+    }
+}
+
+
+void
+Bigrams::restore_string(transitions_t &transitions,
+                        const transitions_t &changes)
+{
+    for (auto srcit = changes.cbegin(); srcit != changes.cend(); ++srcit)
+        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
+            transitions[srcit->first][tgtit->first] = tgtit->second;
 }
 
 
@@ -441,14 +440,13 @@ Bigrams::get_backpointers(const MultiStringFactorGraph &msfg,
 
 void
 Bigrams::augment_affected_strings(const transitions_t &reverse_transitions,
-                                  const std::map<std::string, std::set<std::string> > &backpointers,
-                                  const std::string &factor,
-                                  std::set<std::string> &strings)
+                                  const map<string, set<string> > &backpointers,
+                                  const string &factor,
+                                  set<string> &strings)
 {
     for (auto it = reverse_transitions.at(factor).begin(); it != reverse_transitions.at(factor).end(); ++it) {
         if (it->first.length() < 2) continue;
         for (auto fit = backpointers.at(it->first).begin(); fit != backpointers.at(it->first).end(); ++fit)
             strings.insert(*fit);
     }
-
 }

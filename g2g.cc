@@ -176,7 +176,7 @@ int main(int argc, char* argv[]) {
 
     // Initial segmentation using unigram model
     assign_scores(vocab, msfg);
-    lp = Bigrams::collect_trans_stats(vocab, words, msfg, trans_stats, unigram_stats);
+    lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats);
 
     // Unigram cost with word end markers
     densum = ug.get_sum(unigram_stats);
@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
     // Re-estimate using bigram stats
     for (int i=0; i<iter_amount; i++) {
 
-        flt_type lp = Bigrams::collect_trans_stats(transitions, words, msfg, trans_stats, unigram_stats);
+        flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats);
         int vocab_size = unigram_stats.size();
         cerr << "bigram cost: " << lp << endl;
         cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
