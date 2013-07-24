@@ -16,8 +16,8 @@ public:
     class Arc {
     public:
         Arc(unsigned int source_node, unsigned int target_node,
-            double cost=MIN_FLOAT)
-        : source_node(source_node), target_node(target_node), cost(0.0) {}
+            flt_type *cost=NULL)
+        : source_node(source_node), target_node(target_node), cost(cost) {}
         bool operator==(Arc& rhs) const {
             if (source_node != rhs.source_node) return false;
             if (target_node != rhs.target_node) return false;
@@ -32,7 +32,7 @@ public:
         }
         msfg_node_idx_t source_node;
         msfg_node_idx_t target_node;
-        flt_type cost;
+        flt_type *cost;
     };
 
     /** Node of a multi string factor graph. */

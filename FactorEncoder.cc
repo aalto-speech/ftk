@@ -536,29 +536,29 @@ flt_type posterior_decode(const transitions_t &transitions,
 
 
 void
-score_arcs(const transitions_t &transitions,
-           MultiStringFactorGraph &msfg)
+assign_scores(transitions_t &transitions,
+              MultiStringFactorGraph &msfg)
 {
     for (auto it = msfg.factor_node_map.begin(); it != msfg.factor_node_map.end(); ++it) {
 
-        const std::map<std::string, flt_type> &curr_transitions = transitions.at(it->first);
+        std::map<std::string, flt_type> &curr_transitions = transitions.at(it->first);
 
         for (auto ndit = it->second.begin(); ndit != it->second.end(); ++ndit) {
             MultiStringFactorGraph::Node &node = msfg.nodes[*ndit];
             for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc)
-                (**arc).cost = curr_transitions.at(msfg.nodes[(**arc).target_node].factor);
+                (**arc).cost = &curr_transitions.at(msfg.nodes[(**arc).target_node].factor);
         }
     }
 }
 
 
 void
-score_arcs(const map<string, flt_type> &vocab,
-           MultiStringFactorGraph &msfg)
+assign_scores(map<string, flt_type> &vocab,
+              MultiStringFactorGraph &msfg)
 {
     for (auto it = msfg.factor_node_map.begin(); it != msfg.factor_node_map.end(); ++it) {
 
-        flt_type curr_score = vocab.at(it->first);
+        flt_type *curr_score = &(vocab.at(it->first));
 
         for (auto ndit = it->second.begin(); ndit != it->second.end(); ++ndit) {
             MultiStringFactorGraph::Node &node = msfg.nodes[*ndit];
@@ -580,7 +580,7 @@ forward(MultiStringFactorGraph &msfg,
         MultiStringFactorGraph::Node &node = msfg.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
             int tgt_node = (**arc).target_node;
-            flt_type cost = fw[i] + (**arc).cost;
+            flt_type cost = fw[i] + *(**arc).cost;
             if (fw[tgt_node] == MIN_FLOAT) fw[tgt_node] = cost;
             else fw[tgt_node] = add_log_domain_probs(fw[tgt_node], cost);
         }
@@ -589,28 +589,7 @@ forward(MultiStringFactorGraph &msfg,
 
 
 void
-forward(const transitions_t &transitions,
-        MultiStringFactorGraph &msfg,
-        vector<flt_type> &fw)
-{
-    score_arcs(transitions, msfg);
-    forward(msfg, fw);
-}
-
-
-void
-forward(const map<string, flt_type> &vocab,
-        MultiStringFactorGraph &msfg,
-        vector<flt_type> &fw)
-{
-    score_arcs(vocab, msfg);
-    forward(msfg, fw);
-}
-
-
-void
-forward(const transitions_t &transitions,
-        const std::string &text,
+forward(const std::string &text,
         MultiStringFactorGraph &msfg,
         std::map<msfg_node_idx_t, flt_type> &fw)
 {
@@ -620,11 +599,9 @@ forward(const transitions_t &transitions,
     for (auto ndit = arcs.begin(); ndit != arcs.end(); ++ndit) {
 
         MultiStringFactorGraph::Node &node = msfg.nodes[ndit->first];
-        const map<string, flt_type> &curr_transitions = transitions.at(node.factor);
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
             int tgt_node = (**arc).target_node;
-            (**arc).cost = curr_transitions.at(msfg.nodes[tgt_node].factor);
-            flt_type cost = fw[ndit->first] + (**arc).cost;
+            flt_type cost = fw[ndit->first] + *(**arc).cost;
             if (fw.find(tgt_node) == fw.end()) fw[tgt_node] = cost;
             else fw[tgt_node] = add_log_domain_probs(fw[tgt_node], cost);
         }
@@ -653,7 +630,7 @@ backward(const MultiStringFactorGraph &msfg,
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
             int src_node = (**arc).source_node;
             if (fw[src_node] == MIN_FLOAT) continue;
-            flt_type curr_cost = (**arc).cost + fw[src_node] - fw[i] + bw[i];
+            flt_type curr_cost = *(**arc).cost + fw[src_node] - fw[i] + bw[i];
             stats[msfg.nodes.at(src_node).factor][node.factor] += text_weight * exp(curr_cost);
             if (bw.find(src_node) == bw.end()) {
                 bw[src_node] = curr_cost;
@@ -689,7 +666,7 @@ backward(const MultiStringFactorGraph &msfg,
 
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
             int src_node = (**arc).source_node;
-            flt_type curr_cost = (**arc).cost + fw.at(src_node) - fw.at(i) + bw[i];
+            flt_type curr_cost = *(**arc).cost + fw.at(src_node) - fw.at(i) + bw[i];
             stats[msfg.nodes.at(src_node).factor][node.factor] += text_weight * exp(curr_cost);
             if (bw.find(src_node) == bw.end()) {
                 bw[src_node] = curr_cost;
@@ -707,8 +684,7 @@ backward(const MultiStringFactorGraph &msfg,
 
 
 flt_type
-forward_backward(const transitions_t &transitions,
-                 MultiStringFactorGraph &msfg,
+forward_backward(MultiStringFactorGraph &msfg,
                  transitions_t &stats,
                  map<string, flt_type> &word_freqs)
 {
@@ -717,7 +693,7 @@ forward_backward(const transitions_t &transitions,
     vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
     fw[0] = 0.0;
 
-    forward(transitions, msfg, fw);
+    forward(msfg, fw);
     flt_type total_lp = 0.0;
     for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
         flt_type lp = backward(msfg, it->first, fw, stats);
@@ -729,8 +705,7 @@ forward_backward(const transitions_t &transitions,
 
 
 flt_type
-forward_backward(const transitions_t &transitions,
-                 MultiStringFactorGraph &msfg,
+forward_backward(MultiStringFactorGraph &msfg,
                  const string &text,
                  transitions_t &stats)
 {
@@ -739,7 +714,7 @@ forward_backward(const transitions_t &transitions,
     map<msfg_node_idx_t, flt_type> fw;
     fw[0] = 0.0;
 
-    forward(transitions, text, msfg, fw);
+    forward(text, msfg, fw);
     backward(msfg, text, fw, stats);
 
     return fw[msfg.string_end_nodes[text]];
@@ -747,8 +722,7 @@ forward_backward(const transitions_t &transitions,
 
 
 flt_type
-forward_backward(const transitions_t &transitions,
-                 const map<string, flt_type> &words,
+forward_backward(const map<string, flt_type> &words,
                  MultiStringFactorGraph &msfg,
                  const std::set<std::string> &words_to_fb)
 {
@@ -756,7 +730,7 @@ forward_backward(const transitions_t &transitions,
     flt_type total_lp = 0;
 
     for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit)
-        total_lp += words.at(*wit) * forward_backward(transitions, msfg, *wit, stats);
+        total_lp += words.at(*wit) * forward_backward(msfg, *wit, stats);
 
     return total_lp;
 }

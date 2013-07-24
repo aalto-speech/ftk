@@ -27,7 +27,7 @@ Bigrams::update_trans_stats(const transitions_t &collected_stats,
 
 
 void
-Bigrams::collect_trans_stats(const transitions_t &transitions,
+Bigrams::collect_trans_stats(transitions_t &transitions,
                              const map<string, flt_type> &words,
                              map<string, FactorGraph*> &fg_words,
                              transitions_t &trans_stats,
@@ -76,7 +76,7 @@ Bigrams::threaded_backward(const MultiStringFactorGraph *msfg,
 
 
 flt_type
-Bigrams::collect_trans_stats(const transitions_t &transitions,
+Bigrams::collect_trans_stats(transitions_t &transitions,
                              const map<string, flt_type> &words,
                              MultiStringFactorGraph &msfg,
                              transitions_t &trans_stats,
@@ -90,7 +90,7 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
     vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
     fw[0] = 0.0;
 
-    forward(transitions, msfg, fw);
+    forward(msfg, fw);
 
     flt_type total_lp = 0.0;
 
@@ -122,7 +122,7 @@ Bigrams::collect_trans_stats(const transitions_t &transitions,
 
 
 flt_type
-Bigrams::collect_trans_stats(const map<string, flt_type> &vocab,
+Bigrams::collect_trans_stats(map<string, flt_type> &vocab,
                              const map<string, flt_type> &words,
                              MultiStringFactorGraph &msfg,
                              transitions_t &trans_stats,
@@ -135,7 +135,7 @@ Bigrams::collect_trans_stats(const map<string, flt_type> &vocab,
     vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
     fw[0] = 0.0;
 
-    forward(vocab, msfg, fw);
+    forward(msfg, fw);
     flt_type total_lp = 0.0;
 
     transitions_t word_stats;
@@ -167,6 +167,32 @@ Bigrams::normalize(transitions_t &trans_stats,
                 exit(0);
             }
             if (tgtit->second < min_cost) tgtit->second = min_cost;
+        }
+    }
+}
+
+
+// NOTE: assumes that tgt has at least all the elements as in src
+//       removes all elements not found in src
+void
+Bigrams::copy_transitions(transitions_t &src,
+                          transitions_t &tgt)
+{
+    for (auto trsrcit = tgt.begin(); trsrcit != tgt.end(); ) {
+        if (src.find(trsrcit->first) == src.end()) {
+            tgt.erase(trsrcit++);
+        }
+        else {
+            for (auto trtgtit = trsrcit->second.begin(); trtgtit != trsrcit->second.end(); ) {
+                if (src.at(trsrcit->first).find(trtgtit->first) == src.at(trsrcit->first).end()) {
+                    tgt[trsrcit->first].erase(trtgtit++);
+                }
+                else {
+                    trtgtit->second = src[trsrcit->first][trtgtit->first];
+                    ++trtgtit;
+                }
+            }
+            ++trsrcit;
         }
     }
 }
@@ -337,7 +363,6 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
 
     for (int i=0; i<to_remove.size(); i++)
         msfg.remove_arcs(to_remove[i]);
-    msfg.prune_unreachable();
 
     return to_remove.size();
 }

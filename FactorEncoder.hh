@@ -112,29 +112,19 @@ flt_type posterior_decode(const transitions_t &transitions,
 // MultiStringFactorGraph implementations
 
 // Scores each arc in the MSFG with bigram scores
-void score_arcs(const transitions_t &transitions,
-                MultiStringFactorGraph &msfg);
+void assign_scores(transitions_t &transitions,
+                   MultiStringFactorGraph &msfg);
 
 // Scores each arc in the MSFG with unigram scores
-void score_arcs(const std::map<std::string, flt_type> &vocab,
-                MultiStringFactorGraph &msfg);
+void assign_scores(std::map<std::string, flt_type> &vocab,
+                   MultiStringFactorGraph &msfg);
 
-// Basic forward pass, assumes prescored arcs in msfg
+// Basic forward pass for all strings
 void forward(MultiStringFactorGraph &msfg,
              std::vector<flt_type> &fw);
 
-// Normal forward pass for all paths with bigram scores
-void forward(const transitions_t &transitions,
-             MultiStringFactorGraph &msfg,
-             std::vector<flt_type> &fw);
-
-// Forward pass for all paths using unigram stats
-void forward(const std::map<std::string, flt_type> &vocab,
-             MultiStringFactorGraph &msfg,
-             std::vector<flt_type> &fw);
-
 // Forward pass for only one string
-void forward(const transitions_t &transitions,
+void forward(transitions_t &transitions,
              const std::string &text,
              MultiStringFactorGraph &msfg,
              std::map<msfg_node_idx_t, flt_type> &fw);
@@ -155,20 +145,17 @@ flt_type backward(const MultiStringFactorGraph &msfg,
                   flt_type text_weight = 1.0);
 
 // Forward-backward for all strings
-flt_type forward_backward(const transitions_t &transitions,
-                          MultiStringFactorGraph &msfg,
+flt_type forward_backward(MultiStringFactorGraph &msfg,
                           transitions_t &stats,
                           std::map<std::string, flt_type> &word_freqs);
 
 // Forward-backward for one string
-flt_type forward_backward(const transitions_t &transitions,
-                          MultiStringFactorGraph &msfg,
+flt_type forward_backward(MultiStringFactorGraph &msfg,
                           const std::string &text,
                           transitions_t &stats);
 
 // Forward-backward for selected strings, don't collect stats
-flt_type forward_backward(const transitions_t &transitions,
-                          const std::map<std::string, flt_type> &words,
+flt_type forward_backward(const std::map<std::string, flt_type> &words,
                           MultiStringFactorGraph &msfg,
                           const std::set<std::string> &selected_words);
 
