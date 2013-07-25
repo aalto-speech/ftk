@@ -612,12 +612,38 @@ forward(const std::string &text,
 
 
 flt_type
+forward(const map<string, flt_type> &words,
+        const MultiStringFactorGraph &msfg,
+        const std::set<std::string> &words_to_fb,
+        bool full_forward_pass)
+{
+    flt_type total_lp = 0.0;
+
+    if (full_forward_pass) {
+        std::vector<flt_type> fw;
+        forward(msfg, fw);
+        for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit)
+            total_lp += words.at(*wit) * fw.at(msfg.string_end_nodes.at(*wit));
+    }
+    else {
+        for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit) {
+            std::map<msfg_node_idx_t, flt_type> fw;
+            total_lp += words.at(*wit) * forward(*wit, msfg, fw);
+        }
+    }
+
+    return total_lp;
+}
+
+
+flt_type
 likelihood(const std::string &text,
            const MultiStringFactorGraph &msfg)
 {
     std::map<msfg_node_idx_t, flt_type> fw;
     int text_end_node = msfg.string_end_nodes.at(text);
     set<int> nodes_to_process; nodes_to_process.insert(text_end_node);
+    fw[text_end_node] = 0.0;
 
     while(nodes_to_process.size() > 0) {
 
@@ -641,25 +667,26 @@ likelihood(const std::string &text,
 
 
 flt_type
-forward(const map<string, flt_type> &words,
-        const MultiStringFactorGraph &msfg,
-        const std::set<std::string> &words_to_fb,
-        bool full_forward_pass)
+likelihood(const std::map<std::string, flt_type> &words,
+           const std::set<std::string> &selected_words,
+           const MultiStringFactorGraph &msfg)
 {
     flt_type total_lp = 0.0;
 
-    if (full_forward_pass) {
-        std::vector<flt_type> fw;
-        forward(msfg, fw);
-        for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit)
-            total_lp += words.at(*wit) * fw.at(msfg.string_end_nodes.at(*wit));
-    }
-    else {
-        for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit) {
-            std::map<msfg_node_idx_t, flt_type> fw;
-            total_lp += words.at(*wit) * forward(*wit, msfg, fw);
-        }
-    }
+    for (auto it = selected_words.cbegin(); it != selected_words.cend(); ++it)
+        total_lp += words.at(*it) * likelihood(*it, msfg);
+
+    return total_lp;
+}
+
+flt_type
+likelihood(const std::map<std::string, flt_type> &words,
+           const MultiStringFactorGraph &msfg)
+{
+    flt_type total_lp = 0.0;
+
+    for (auto it = words.cbegin(); it != words.cend(); ++it)
+        total_lp += it->second * likelihood(it->first, msfg);
 
     return total_lp;
 }
