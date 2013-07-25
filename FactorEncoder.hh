@@ -120,22 +120,22 @@ void assign_scores(std::map<std::string, flt_type> &vocab,
                    MultiStringFactorGraph &msfg);
 
 // Basic forward pass for all strings
-void forward(MultiStringFactorGraph &msfg,
+void forward(const MultiStringFactorGraph &msfg,
              std::vector<flt_type> &fw);
 
 // Forward pass for only one string
 flt_type forward(const std::string &text,
-                 MultiStringFactorGraph &msfg,
+                 const MultiStringFactorGraph &msfg,
                  std::map<msfg_node_idx_t, flt_type> &fw);
 
 // Compute likelihood of one string
 // Same result as for forward pass, but done backwards for efficiency
 flt_type likelihood(const std::string &text,
-                    MultiStringFactorGraph &msfg);
+                    const MultiStringFactorGraph &msfg);
 
 // Forward for selected strings, don't collect stats
 flt_type forward(const std::map<std::string, flt_type> &words,
-                 MultiStringFactorGraph &msfg,
+                 const MultiStringFactorGraph &msfg,
                  const std::set<std::string> &selected_words,
                  bool full_forward_pass = false);
 
@@ -155,12 +155,12 @@ flt_type backward(const MultiStringFactorGraph &msfg,
                   flt_type text_weight = 1.0);
 
 // Forward-backward for all strings
-flt_type forward_backward(MultiStringFactorGraph &msfg,
+flt_type forward_backward(const MultiStringFactorGraph &msfg,
                           transitions_t &stats,
                           std::map<std::string, flt_type> &word_freqs);
 
 // Forward-backward for one string
-flt_type forward_backward(MultiStringFactorGraph &msfg,
+flt_type forward_backward(const MultiStringFactorGraph &msfg,
                           const std::string &text,
                           transitions_t &stats);
 

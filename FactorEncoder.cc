@@ -570,14 +570,14 @@ assign_scores(map<string, flt_type> &vocab,
 
 
 void
-forward(MultiStringFactorGraph &msfg,
+forward(const MultiStringFactorGraph &msfg,
         std::vector<flt_type> &fw)
 {
     for (int i=0; i<msfg.nodes.size(); i++) {
 
         if (fw[i] == MIN_FLOAT) continue;
 
-        MultiStringFactorGraph::Node &node = msfg.nodes[i];
+        const MultiStringFactorGraph::Node &node = msfg.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
             int tgt_node = (**arc).target_node;
             flt_type cost = fw[i] + *(**arc).cost;
@@ -590,7 +590,7 @@ forward(MultiStringFactorGraph &msfg,
 
 flt_type
 forward(const std::string &text,
-        MultiStringFactorGraph &msfg,
+        const MultiStringFactorGraph &msfg,
         std::map<msfg_node_idx_t, flt_type> &fw)
 {
     map<msfg_node_idx_t, vector<MultiStringFactorGraph::Arc*> > arcs;
@@ -598,7 +598,7 @@ forward(const std::string &text,
 
     for (auto ndit = arcs.begin(); ndit != arcs.end(); ++ndit) {
 
-        MultiStringFactorGraph::Node &node = msfg.nodes[ndit->first];
+        const MultiStringFactorGraph::Node &node = msfg.nodes[ndit->first];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
             int tgt_node = (**arc).target_node;
             flt_type cost = fw[ndit->first] + *(**arc).cost;
@@ -613,7 +613,7 @@ forward(const std::string &text,
 
 flt_type
 likelihood(const std::string &text,
-           MultiStringFactorGraph &msfg)
+           const MultiStringFactorGraph &msfg)
 {
     std::map<msfg_node_idx_t, flt_type> fw;
     int text_end_node = msfg.string_end_nodes.at(text);
@@ -642,7 +642,7 @@ likelihood(const std::string &text,
 
 flt_type
 forward(const map<string, flt_type> &words,
-        MultiStringFactorGraph &msfg,
+        const MultiStringFactorGraph &msfg,
         const std::set<std::string> &words_to_fb,
         bool full_forward_pass)
 {
@@ -740,7 +740,7 @@ backward(const MultiStringFactorGraph &msfg,
 
 
 flt_type
-forward_backward(MultiStringFactorGraph &msfg,
+forward_backward(const MultiStringFactorGraph &msfg,
                  transitions_t &stats,
                  map<string, flt_type> &word_freqs)
 {
@@ -761,7 +761,7 @@ forward_backward(MultiStringFactorGraph &msfg,
 
 
 flt_type
-forward_backward(MultiStringFactorGraph &msfg,
+forward_backward(const MultiStringFactorGraph &msfg,
                  const string &text,
                  transitions_t &stats)
 {
@@ -773,5 +773,5 @@ forward_backward(MultiStringFactorGraph &msfg,
     forward(text, msfg, fw);
     backward(msfg, text, fw, stats);
 
-    return fw[msfg.string_end_nodes[text]];
+    return fw[msfg.string_end_nodes.at(text)];
 }
