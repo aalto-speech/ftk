@@ -124,10 +124,15 @@ void forward(MultiStringFactorGraph &msfg,
              std::vector<flt_type> &fw);
 
 // Forward pass for only one string
-void forward(transitions_t &transitions,
-             const std::string &text,
-             MultiStringFactorGraph &msfg,
-             std::map<msfg_node_idx_t, flt_type> &fw);
+flt_type forward(const std::string &text,
+                 MultiStringFactorGraph &msfg,
+                 std::map<msfg_node_idx_t, flt_type> &fw);
+
+// Forward for selected strings, don't collect stats
+flt_type forward(const std::map<std::string, flt_type> &words,
+                 MultiStringFactorGraph &msfg,
+                 const std::set<std::string> &selected_words,
+                 bool full_forward_pass = false);
 
 // Backward pass for one string given forward scores
 flt_type backward(const MultiStringFactorGraph &msfg,
@@ -153,12 +158,6 @@ flt_type forward_backward(MultiStringFactorGraph &msfg,
 flt_type forward_backward(MultiStringFactorGraph &msfg,
                           const std::string &text,
                           transitions_t &stats);
-
-// Forward-backward for selected strings, don't collect stats
-flt_type forward_backward(const std::map<std::string, flt_type> &words,
-                          MultiStringFactorGraph &msfg,
-                          const std::set<std::string> &selected_words,
-                          bool full_forward_pass = false);
 
 
 #endif /* FACTOR_ENCODER */
