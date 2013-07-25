@@ -612,6 +612,35 @@ forward(const std::string &text,
 
 
 flt_type
+likelihood(const std::string &text,
+           MultiStringFactorGraph &msfg)
+{
+    std::map<msfg_node_idx_t, flt_type> fw;
+    int text_end_node = msfg.string_end_nodes.at(text);
+    set<int> nodes_to_process; nodes_to_process.insert(text_end_node);
+
+    while(nodes_to_process.size() > 0) {
+
+        int i = *(nodes_to_process.rbegin());
+
+        const MultiStringFactorGraph::Node &node = msfg.nodes[i];
+
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
+            int src_node = (**arc).source_node;
+            flt_type cost = fw[i] + *(**arc).cost;
+            if (fw.find(src_node) == fw.end()) fw[src_node] = cost;
+            else fw[src_node] = add_log_domain_probs(fw[src_node], cost);
+            nodes_to_process.insert(src_node);
+        }
+
+        nodes_to_process.erase(i);
+    }
+
+    return fw.at(0);
+}
+
+
+flt_type
 forward(const map<string, flt_type> &words,
         MultiStringFactorGraph &msfg,
         const std::set<std::string> &words_to_fb,

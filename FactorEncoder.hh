@@ -128,6 +128,11 @@ flt_type forward(const std::string &text,
                  MultiStringFactorGraph &msfg,
                  std::map<msfg_node_idx_t, flt_type> &fw);
 
+// Compute likelihood of one string
+// Same result as for forward pass, but done backwards for efficiency
+flt_type likelihood(const std::string &text,
+                    MultiStringFactorGraph &msfg);
+
 // Forward for selected strings, don't collect stats
 flt_type forward(const std::map<std::string, flt_type> &words,
                  MultiStringFactorGraph &msfg,
