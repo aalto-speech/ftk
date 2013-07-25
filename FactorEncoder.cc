@@ -724,13 +724,22 @@ forward_backward(MultiStringFactorGraph &msfg,
 flt_type
 forward_backward(const map<string, flt_type> &words,
                  MultiStringFactorGraph &msfg,
-                 const std::set<std::string> &words_to_fb)
+                 const std::set<std::string> &words_to_fb,
+                 bool full_forward_pass)
 {
     transitions_t stats;
     flt_type total_lp = 0.0;
 
-    for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit)
-        total_lp += words.at(*wit) * forward_backward(msfg, *wit, stats);
+    if (full_forward_pass) {
+        std::vector<flt_type> fw;
+        forward(msfg, fw);
+        for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit)
+            total_lp += words.at(*wit) * backward(msfg, *wit, fw, stats);
+    }
+    else {
+        for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit)
+            total_lp += words.at(*wit) * forward_backward(msfg, *wit, stats);
+    }
 
     return total_lp;
 }
