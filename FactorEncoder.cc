@@ -679,6 +679,7 @@ likelihood(const std::map<std::string, flt_type> &words,
     return total_lp;
 }
 
+
 flt_type
 likelihood(const std::map<std::string, flt_type> &words,
            const MultiStringFactorGraph &msfg)
@@ -763,7 +764,6 @@ backward(const MultiStringFactorGraph &msfg,
 
     return fw.at(msfg.string_end_nodes.at(text));
 }
-
 
 
 flt_type

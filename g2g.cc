@@ -153,15 +153,9 @@ int main(int argc, char* argv[]) {
         cerr << "\tvocab size: " << unigram_stats.size() << endl;
 
         // Get removal candidates based on unigram stats
-        cerr << "\titializing removals .." << endl;
-        vector<pair<string, flt_type> > sorted_stats;
-        Unigrams::sort_vocab(unigram_stats, sorted_stats, false);
+        cerr << "\tinitializing removals .." << endl;
         map<string, flt_type> candidates;
-        for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
-            if (it->first.length() < 2) continue;
-            candidates[it->first] = 0.0;
-            if (candidates.size() >= n_candidates_per_iter) break;
-        }
+        Bigrams::init_removal_candidates(n_candidates_per_iter, unigram_stats, candidates);
 
         // Score all candidates
         cerr << "\tranking removals .." << endl;

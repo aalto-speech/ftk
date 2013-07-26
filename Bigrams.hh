@@ -106,6 +106,10 @@ static void get_backpointers(const MultiStringFactorGraph &msfg,
 static void remove_transitions(std::vector<std::string> &to_remove,
                                transitions_t &transitions);
 
+static int init_removal_candidates(int n_candidates,
+                                   const std::map<std::string, flt_type> &unigram_stats,
+                                   std::map<std::string, flt_type> &candidates);
+
 private:
 
 };

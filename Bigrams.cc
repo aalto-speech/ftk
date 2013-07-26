@@ -449,3 +449,21 @@ Bigrams::get_backpointers(const MultiStringFactorGraph &msfg,
         }
     }
 }
+
+
+int
+Bigrams::init_removal_candidates(int n_candidates,
+                                 const map<string, flt_type> &unigram_stats,
+                                 map<string, flt_type> &candidates)
+{
+    vector<pair<string, flt_type> > sorted_stats;
+    Unigrams::sort_vocab(unigram_stats, sorted_stats, false);
+
+    for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
+        if (it->first.length() < 2) continue;
+        candidates[it->first] = 0.0;
+        if (candidates.size() >= n_candidates) break;
+    }
+
+    return candidates.size();
+}
