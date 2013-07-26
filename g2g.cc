@@ -116,7 +116,6 @@ int main(int argc, char* argv[]) {
     transitions_t transitions;
     transitions_t trans_stats;
     map<string, flt_type> unigram_stats;
-    flt_type lp = 0.0;
 
     cerr << "Reading initial transitions " << initial_transitions_fname << endl;
     int retval = Bigrams::read_transitions(transitions, initial_transitions_fname);
