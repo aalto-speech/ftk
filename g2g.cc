@@ -19,17 +19,6 @@
 using namespace std;
 
 
-void
-assert_single_chars(map<string, flt_type> &vocab,
-                    const map<string, flt_type> &chars,
-                    flt_type val)
-{
-    for (auto it = chars.cbegin(); it != chars.cend(); ++it)
-        if (vocab.find(it->first) == vocab.end())
-            vocab[it->first] = val;
-}
-
-
 int main(int argc, char* argv[]) {
 
     float cutoff_value = 0.0;
@@ -37,7 +26,7 @@ int main(int argc, char* argv[]) {
     int max_removals_per_iter = 5000;
     int target_vocab_size = 30000;
     flt_type one_char_min_lp = -25.0;
-    string vocab_fname;
+    string initial_transitions_fname;
     string wordlist_fname;
     string msfg_fname;
     string transition_fname;
@@ -49,7 +38,6 @@ int main(int argc, char* argv[]) {
     struct poptOption po[] = {
         {"candidates", 'c', POPT_ARG_INT, &n_candidates_per_iter, 11002, NULL, "Number of candidate subwords to try to remove per iteration"},
         {"max_removals", 'a', POPT_ARG_INT, &max_removals_per_iter, 11003, NULL, "Maximum number of removals per iteration"},
-        {"cutoff", 'u', POPT_ARG_FLOAT, &cutoff_value, 11001, NULL, "Cutoff value for each iteration"},
         {"vocab_size", 'g', POPT_ARG_INT, &target_vocab_size, 11007, NULL, "Target vocabulary size (stopping criterion)"},
         POPT_AUTOHELP
         {NULL}
@@ -84,7 +72,7 @@ int main(int argc, char* argv[]) {
 
     // Handle ARG part of command line
     if (poptPeekArg(pc) != NULL)
-        vocab_fname.assign((char*)poptGetArg(pc));
+        initial_transitions_fname.assign((char*)poptGetArg(pc));
     else {
         cerr << "Initial vocabulary file not set" << endl;
         exit(1);
@@ -111,32 +99,31 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    cerr << "parameters, initial vocabulary: " << vocab_fname << endl;
+    cerr << "parameters, initial transitions: " << initial_transitions_fname << endl;
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
     cerr << "parameters, msfg: " << msfg_fname << endl;
     cerr << "parameters, transitions: " << transition_fname << endl;
     cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
     cerr << "parameters, removals per iteration: " << max_removals_per_iter << endl;
-    cerr << "parameters, cutoff: " << setprecision(15) << cutoff_value << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
 
     int maxlen, word_maxlen;
+    string start_end_symbol("*");
     map<string, flt_type> all_chars;
-    map<string, flt_type> vocab;
     map<string, flt_type> freqs;
     map<string, flt_type> words;
+    MultiStringFactorGraph msfg(start_end_symbol);
+    transitions_t transitions;
+    transitions_t trans_stats;
+    map<string, flt_type> unigram_stats;
+    flt_type lp = 0.0;
 
-    cerr << "Reading vocabulary " << vocab_fname << endl;
-    int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen);
+    cerr << "Reading initial transitions " << initial_transitions_fname << endl;
+    int retval = Bigrams::read_transitions(transitions, initial_transitions_fname);
     if (retval < 0) {
-        cerr << "something went wrong reading vocabulary" << endl;
+        cerr << "something went wrong reading transitions" << endl;
         exit(0);
     }
-    cerr << "\t" << "size: " << vocab.size() << endl;
-    cerr << "\t" << "maximum string length: " << maxlen << endl;
-    for (auto it = vocab.cbegin(); it != vocab.end(); ++it)
-        if (it->first.length() == 1)
-            all_chars[it->first] = 0.0;
 
     cerr << "Reading word list " << wordlist_fname << endl;
     retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen);
@@ -147,54 +134,11 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "wordlist size: " << words.size() << endl;
     cerr << "\t" << "maximum word length: " << word_maxlen << endl;
 
-    Unigrams ug;
-    ug.set_segmentation_method(forward_backward);
-
-    cerr << "Initial cutoff" << endl;
-    ug.resegment_words(words, vocab, freqs);
-    flt_type densum = ug.get_sum(freqs);
-    flt_type cost = ug.get_cost(freqs, densum);
-    cerr << "unigram cost without word end symbols: " << cost << endl;
-
-    ug.cutoff(freqs, (flt_type)cutoff_value);
-    cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
-    vocab = freqs;
-    densum = ug.get_sum(vocab);
-    ug.freqs_to_logprobs(vocab, densum);
-    assert_single_chars(vocab, all_chars, one_char_min_lp);
-
-    string start_end_symbol("*");
-    StringSet ss_vocab(vocab);
-    map<string, FactorGraph*> fg_words;
-    MultiStringFactorGraph msfg(start_end_symbol);
+    cerr << "Reading msfg " << msfg_fname << endl;
     msfg.read(msfg_fname);
-    transitions_t transitions;
-    transitions_t trans_stats;
-    map<string, flt_type> unigram_stats;
-    vocab[start_end_symbol] = 0.0;
-    flt_type lp = 0.0;
-
-    // Initial segmentation using unigram model
-    assign_scores(vocab, msfg);
-    lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats);
-
-    // Unigram cost with word end markers
-    densum = ug.get_sum(unigram_stats);
-    cost = ug.get_cost(unigram_stats, densum);
-    cerr << "unigram cost with word end symbols: " << cost << endl;
-
-    // Initial bigram cost
-    transitions = trans_stats;
-    Bigrams::normalize(transitions);
-    cerr << "bigram cost: " << lp << endl;
-    cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
-    cerr << "\tvocab size: " << unigram_stats.size() << endl;
-    int co_removed = Bigrams::cutoff(unigram_stats, cutoff_value, transitions, msfg);
-    cerr << "\tremoved by cutoff: " << co_removed << endl;
 
     assign_scores(transitions, msfg);
 
-    // Re-estimate using bigram stats
     int iteration = 1;
     while (true) {
 
