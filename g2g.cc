@@ -32,10 +32,10 @@ assert_single_chars(map<string, flt_type> &vocab,
 
 int main(int argc, char* argv[]) {
 
-    int iter_amount = 10;
-    int least_common = 0;
-    int target_vocab_size = 30000;
     float cutoff_value = 0.0;
+    int n_candidates_per_iter = 5000;
+    int max_removals_per_iter = 5000;
+    int target_vocab_size = 30000;
     flt_type one_char_min_lp = -25.0;
     string vocab_fname;
     string wordlist_fname;
@@ -47,10 +47,10 @@ int main(int argc, char* argv[]) {
     // http://privatemisc.blogspot.fi/2012/12/popt-basic-example.html
     poptContext pc;
     struct poptOption po[] = {
-        {"iter", 'i', POPT_ARG_INT, &iter_amount, 11001, NULL, "How many iterations"},
-        {"least-common", 'l', POPT_ARG_INT, &least_common, 11001, NULL, "Remove least common strings"},
-        {"vocab_size", 'g', POPT_ARG_INT, &target_vocab_size, 11007, NULL, "Target vocabulary size (stopping criterion)"},
+        {"candidates", 'c', POPT_ARG_INT, &n_candidates_per_iter, 11002, NULL, "Number of candidate subwords to try to remove per iteration"},
+        {"max_removals", 'a', POPT_ARG_INT, &max_removals_per_iter, 11003, NULL, "Maximum number of removals per iteration"},
         {"cutoff", 'u', POPT_ARG_FLOAT, &cutoff_value, 11001, NULL, "Cutoff value for each iteration"},
+        {"vocab_size", 'g', POPT_ARG_INT, &target_vocab_size, 11007, NULL, "Target vocabulary size (stopping criterion)"},
         POPT_AUTOHELP
         {NULL}
     };
@@ -115,10 +115,10 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
     cerr << "parameters, msfg: " << msfg_fname << endl;
     cerr << "parameters, transitions: " << transition_fname << endl;
+    cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
+    cerr << "parameters, removals per iteration: " << max_removals_per_iter << endl;
     cerr << "parameters, cutoff: " << setprecision(15) << cutoff_value << endl;
-    cerr << "parameters, iterations: " << iter_amount << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
-    cerr << "parameters, least common subwords to remove: " << least_common << endl;
 
     int maxlen, word_maxlen;
     map<string, flt_type> all_chars;
@@ -195,30 +195,70 @@ int main(int argc, char* argv[]) {
     assign_scores(transitions, msfg);
 
     // Re-estimate using bigram stats
-    for (int i=0; i<iter_amount; i++) {
+    int iteration = 1;
+    while (true) {
+
+        cerr << "Iteration " << iteration << endl;
 
         flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats);
-        int vocab_size = unigram_stats.size();
-        cerr << "bigram cost: " << lp << endl;
-        cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
-        cerr << "\tvocab size: " << vocab_size << endl;
-
         Bigrams::copy_transitions(trans_stats, transitions);
-        if (least_common > 0) {
-            int curr_least_common = least_common + ((vocab_size-least_common) % 1000);
-            int lc_removed = Bigrams::remove_least_common(unigram_stats, curr_least_common, transitions, msfg);
-            cerr << "\tremoved " << lc_removed << " least common subwords" << endl;
-        }
         Bigrams::normalize(transitions);
-        vocab_size = unigram_stats.size();
+
+        cerr << "\tbigram cost: " << lp << endl;
+        cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
+        cerr << "\tvocab size: " << unigram_stats.size() << endl;
+
+        // Get removal candidates based on unigram stats
+        cerr << "\titializing removals .." << endl;
+        vector<pair<string, flt_type> > sorted_stats;
+        Unigrams::sort_vocab(unigram_stats, sorted_stats, false);
+        map<string, flt_type> candidates;
+        for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
+            if (it->first.length() < 2) continue;
+            candidates[it->first] = 0.0;
+            if (candidates.size() >= n_candidates_per_iter) break;
+        }
+
+        // Score all candidates
+        cerr << "\tranking removals .." << endl;
+        map<string, set<string> > backpointers;
+        Bigrams::get_backpointers(msfg, backpointers, 1);
+        transitions_t reverse;
+        Bigrams::reverse_transitions(transitions, reverse);
+        int cidx = 0;
+        for (auto it = candidates.begin(); it != candidates.end(); ++it) {
+            transitions_t changes;
+            set<string> words_to_resegment = backpointers.at(it->first);
+            flt_type orig_score = likelihood(words, words_to_resegment, msfg);
+            flt_type context_score = Bigrams::remove_string(reverse, it->first,
+                                                            unigram_stats, transitions, changes);
+            flt_type hypo_score = likelihood(words, words_to_resegment, msfg);
+            it->second = hypo_score-orig_score + context_score;
+            Bigrams::restore_string(transitions, changes);
+            if (cidx % 1000 == 0) cout << "\tcandidate " << cidx << endl;
+            cidx++;
+        }
+
+        // Remove least significant subwords
+        vector<pair<string, flt_type> > sorted_scores;
+        Unigrams::sort_vocab(candidates, sorted_scores, true);
+        vector<string> to_remove;
+        for (auto it = sorted_scores.begin(); it != sorted_scores.end(); ++it) {
+            to_remove.push_back(it->first);
+            if (to_remove.size() >= max_removals_per_iter) break;
+        }
+        Bigrams::remove_transitions(to_remove, transitions);
+        for (int i=0; i<to_remove.size(); i++)
+            msfg.remove_arcs(to_remove[i]);
 
         // Write temp transitions
         ostringstream transitions_temp;
-        transitions_temp << "transitions.iter" << i+1 << ".bz2";
+        transitions_temp << "transitions.iter" << iteration << ".bz2";
         cerr << "\twriting to: " << transitions_temp.str() << endl;
         Bigrams::write_transitions(transitions, transitions_temp.str());
 
-        if  (vocab_size < target_vocab_size) break;
+        if  (unigram_stats.size() <= target_vocab_size) break;
+        iteration++;
     }
 
     // Write transitions
