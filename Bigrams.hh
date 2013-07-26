@@ -110,11 +110,10 @@ static void augment_affected_strings(const transitions_t &reverse_transitions,
                                      flt_type floor_lp=-10.0,
                                      unsigned int minlen=2);
 
-
-private:
-
 static void remove_transitions(std::vector<std::string> &to_remove,
                                transitions_t &transitions);
+
+private:
 
 };
 
