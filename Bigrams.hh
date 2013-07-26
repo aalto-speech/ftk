@@ -103,13 +103,6 @@ static void get_backpointers(const MultiStringFactorGraph &msfg,
                              std::map<std::string, std::set<std::string> > &backpointers,
                              unsigned int minlen=2);
 
-static void augment_affected_strings(const transitions_t &reverse_transitions,
-                                     const std::map<std::string, std::set<std::string> > &backpointers,
-                                     const std::string &factor,
-                                     std::set<std::string> &strings,
-                                     flt_type floor_lp=-10.0,
-                                     unsigned int minlen=2);
-
 static void remove_transitions(std::vector<std::string> &to_remove,
                                transitions_t &transitions);
 

@@ -449,20 +449,3 @@ Bigrams::get_backpointers(const MultiStringFactorGraph &msfg,
         }
     }
 }
-
-
-void
-Bigrams::augment_affected_strings(const transitions_t &reverse_transitions,
-                                  const map<string, set<string> > &backpointers,
-                                  const string &factor,
-                                  set<string> &strings,
-                                  flt_type floor_lp,
-                                  unsigned int minlen)
-{
-    for (auto it = reverse_transitions.at(factor).begin(); it != reverse_transitions.at(factor).end(); ++it) {
-        if (it->first.length() < minlen) continue;
-        if (it->second < floor_lp) continue;
-        for (auto fit = backpointers.at(it->first).begin(); fit != backpointers.at(it->first).end(); ++fit)
-            strings.insert(*fit);
-    }
-}
