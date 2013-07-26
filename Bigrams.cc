@@ -467,3 +467,31 @@ Bigrams::init_removal_candidates(int n_candidates,
 
     return candidates.size();
 }
+
+
+void
+Bigrams::rank_removal_candidates(const map<string, flt_type> &words,
+                                 const MultiStringFactorGraph &msfg,
+                                 const map<string, flt_type> &unigram_stats,
+                                 transitions_t &transitions,
+                                 map<std::string, flt_type> &candidates)
+{
+    map<string, set<string> > backpointers;
+    Bigrams::get_backpointers(msfg, backpointers, 1);
+    transitions_t reverse;
+    Bigrams::reverse_transitions(transitions, reverse);
+
+    int cidx = 0;
+    for (auto it = candidates.begin(); it != candidates.end(); ++it) {
+        transitions_t changes;
+        set<string> words_to_resegment = backpointers.at(it->first);
+        flt_type orig_score = likelihood(words, words_to_resegment, msfg);
+        flt_type context_score = Bigrams::remove_string(reverse, it->first,
+                                                        unigram_stats, transitions, changes);
+        flt_type hypo_score = likelihood(words, words_to_resegment, msfg);
+        it->second = hypo_score-orig_score + context_score;
+        Bigrams::restore_string(transitions, changes);
+        if (cidx % 1000 == 0) cout << "\tcandidate " << cidx << endl;
+        cidx++;
+    }
+}

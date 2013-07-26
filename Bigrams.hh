@@ -110,6 +110,12 @@ static int init_removal_candidates(int n_candidates,
                                    const std::map<std::string, flt_type> &unigram_stats,
                                    std::map<std::string, flt_type> &candidates);
 
+static void rank_removal_candidates(const std::map<std::string, flt_type> &words,
+                                    const MultiStringFactorGraph &msfg,
+                                    const std::map<std::string, flt_type> &unigram_stats,
+                                    transitions_t &transitions,
+                                    std::map<std::string, flt_type> &candidates);
+
 private:
 
 };

@@ -159,23 +159,7 @@ int main(int argc, char* argv[]) {
 
         // Score all candidates
         cerr << "\tranking removals .." << endl;
-        map<string, set<string> > backpointers;
-        Bigrams::get_backpointers(msfg, backpointers, 1);
-        transitions_t reverse;
-        Bigrams::reverse_transitions(transitions, reverse);
-        int cidx = 0;
-        for (auto it = candidates.begin(); it != candidates.end(); ++it) {
-            transitions_t changes;
-            set<string> words_to_resegment = backpointers.at(it->first);
-            flt_type orig_score = likelihood(words, words_to_resegment, msfg);
-            flt_type context_score = Bigrams::remove_string(reverse, it->first,
-                                                            unigram_stats, transitions, changes);
-            flt_type hypo_score = likelihood(words, words_to_resegment, msfg);
-            it->second = hypo_score-orig_score + context_score;
-            Bigrams::restore_string(transitions, changes);
-            if (cidx % 1000 == 0) cout << "\tcandidate " << cidx << endl;
-            cidx++;
-        }
+        Bigrams::rank_removal_candidates(words, msfg, unigram_stats, transitions, candidates);
 
         // Remove least significant subwords
         vector<pair<string, flt_type> > sorted_scores;
