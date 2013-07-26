@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
     };
 
     pc = poptGetContext(NULL, argc, (const char **)argv, po, 0);
-    poptSetOtherOptionHelp(pc, "[INITIAL VOCABULARY] [WORDLIST] [MSFG_IN] [TRANSITIONS]");
+    poptSetOtherOptionHelp(pc, "[INITIAL TRANSITIONS] [WORDLIST] [MSFG_IN] [TRANSITIONS]");
 
     int val;
     while ((val = poptGetNextOpt(pc)) >= 0)
@@ -139,6 +139,7 @@ int main(int argc, char* argv[]) {
 
     assign_scores(transitions, msfg);
 
+    std::cerr << std::setprecision(15);
     int iteration = 1;
     while (true) {
 
