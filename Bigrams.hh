@@ -87,10 +87,11 @@ static int transition_count(const transitions_t &transitions);
 static void reverse_transitions(const transitions_t &transitions,
                                 transitions_t &reverse_transitions);
 
-static void remove_string(const transitions_t &reverse_transitions,
-                          const std::string &text,
-                          transitions_t &transitions,
-                          transitions_t &changes);
+static flt_type remove_string(const transitions_t &reverse_transitions,
+                              const std::string &text,
+                              const std::map<std::string, flt_type> &unigram_stats,
+                              transitions_t &transitions,
+                              transitions_t &changes);
 
 static void restore_string(transitions_t &transitions,
                            const transitions_t &changes);

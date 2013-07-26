@@ -383,13 +383,15 @@ Bigrams::reverse_transitions(const transitions_t &transitions,
 }
 
 
-void
+flt_type
 Bigrams::remove_string(const transitions_t &reverse_transitions,
-                       const std::string &text,
+                       const string &text,
+                       const map<string, flt_type> &unigram_stats,
                        transitions_t &transitions,
                        transitions_t &changes)
 {
     changes.clear();
+    flt_type total_ll_diff = 0.0;
 
     for (auto it = transitions[text].begin(); it != transitions[text].begin(); ++it) {
         changes[text][it->first] = it->second;
@@ -400,14 +402,25 @@ Bigrams::remove_string(const transitions_t &reverse_transitions,
 
         changes[contit->first][text] = transitions[contit->first][text];
         flt_type renormalizer = sub_log_domain_probs(0, transitions[contit->first][text]);
+        flt_type ll_diff = 0.0;
 
         for (auto it = transitions[contit->first].begin(); it != transitions[contit->first].end(); ++it) {
-            changes[contit->first][it->first] = it->second;
-            it->second += renormalizer;
+            if (it->first != text) {
+                flt_type count = unigram_stats.at(contit->first) * exp(it->second);
+                changes[contit->first][it->first] = it->second;
+                ll_diff -= count * it->second;
+                it->second -= renormalizer;
+                ll_diff += count * it->second;
+            }
         }
 
+        changes[contit->first][text] = transitions[contit->first][text];
         transitions[contit->first][text] = SMALL_LP;
+
+        total_ll_diff += ll_diff;
     }
+
+    return total_ll_diff;
 }
 
 
