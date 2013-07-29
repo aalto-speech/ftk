@@ -254,6 +254,14 @@ Bigrams::remove_transitions(vector<string> &to_remove,
     for (auto srcit = transitions.begin(); srcit != transitions.end();)
         if (srcit->second.size() == 0) transitions.erase(srcit++);
         else ++srcit;
+
+    for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit) {
+        flt_type normalizer = 0.0;
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+            normalizer = add_log_domain_probs(normalizer, tgtit->second);
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+            tgtit->second -= normalizer;
+    }
 }
 
 
