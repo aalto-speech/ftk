@@ -136,6 +136,16 @@ int main(int argc, char* argv[]) {
     cerr << "Reading msfg " << msfg_fname << endl;
     msfg.read(msfg_fname);
 
+    if (transitions.size() < msfg.string_end_nodes.size()) {
+        vector<string> to_remove;
+        cerr << "Pruning " << msfg.factor_node_map.size()-transitions.size() << " unused transitions from msfg." << endl;
+        for (auto it = msfg.factor_node_map.begin(); it != msfg.factor_node_map.end(); ++it)
+            if (transitions.find(it->first) == transitions.end())
+                to_remove.push_back(it->first);
+        for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
+            msfg.remove_arcs(*it);
+    }
+
     assign_scores(transitions, msfg);
 
     std::cerr << std::setprecision(15);
@@ -170,8 +180,8 @@ int main(int argc, char* argv[]) {
             if (to_remove.size() >= max_removals_per_iter) break;
         }
         Bigrams::remove_transitions(to_remove, transitions);
-        for (int i=0; i<to_remove.size(); i++)
-            msfg.remove_arcs(to_remove[i]);
+        for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
+            msfg.remove_arcs(*it);
 
         // Write temp transitions
         ostringstream transitions_temp;
