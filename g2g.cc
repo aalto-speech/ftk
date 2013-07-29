@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 
     float cutoff_value = 0.0;
     int n_candidates_per_iter = 5000;
-    int max_removals_per_iter = 5000;
+    int removals_per_iter = 5000;
     int target_vocab_size = 30000;
     flt_type one_char_min_lp = -25.0;
     string initial_transitions_fname;
@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
     poptContext pc;
     struct poptOption po[] = {
         {"candidates", 'c', POPT_ARG_INT, &n_candidates_per_iter, 11002, NULL, "Number of candidate subwords to try to remove per iteration"},
-        {"max_removals", 'a', POPT_ARG_INT, &max_removals_per_iter, 11003, NULL, "Maximum number of removals per iteration"},
+        {"removals", 'r', POPT_ARG_INT, &removals_per_iter, 11003, NULL, "Number of removals per iteration"},
         {"vocab_size", 'g', POPT_ARG_INT, &target_vocab_size, 11007, NULL, "Target vocabulary size (stopping criterion)"},
         POPT_AUTOHELP
         {NULL}
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, msfg: " << msfg_fname << endl;
     cerr << "parameters, transitions: " << transition_fname << endl;
     cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
-    cerr << "parameters, removals per iteration: " << max_removals_per_iter << endl;
+    cerr << "parameters, removals per iteration: " << removals_per_iter << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
 
     int maxlen, word_maxlen;
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
 
         cerr << "\tbigram cost: " << lp << endl;
         cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
-        cerr << "\tvocab size: " << unigram_stats.size() << endl;
+        cerr << "\tvocab size: " << transitions.size() << endl;
 
         // Get removal candidates based on unigram stats
         cerr << "\tinitializing removals .." << endl;
@@ -177,7 +177,10 @@ int main(int argc, char* argv[]) {
         vector<string> to_remove;
         for (auto it = sorted_scores.begin(); it != sorted_scores.end(); ++it) {
             to_remove.push_back(it->first);
-            if (to_remove.size() >= max_removals_per_iter) break;
+            if (iteration == 1) {
+                if ((to_remove.size() >= transitions.size() % 1000) && (to_remove.size() > 0)) break;
+            }
+            else if (to_remove.size() >= removals_per_iter) break;
         }
         Bigrams::remove_transitions(to_remove, transitions);
         for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
@@ -189,7 +192,7 @@ int main(int argc, char* argv[]) {
         cerr << "\twriting to: " << transitions_temp.str() << endl;
         Bigrams::write_transitions(transitions, transitions_temp.str());
 
-        if  (unigram_stats.size() <= target_vocab_size) break;
+        if  (transitions.size() <= target_vocab_size) break;
         iteration++;
     }
 
