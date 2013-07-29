@@ -417,7 +417,6 @@ Bigrams::rank_removal_candidates(const map<string, flt_type> &words,
     transitions_t reverse;
     Bigrams::reverse_transitions(transitions, reverse);
 
-    int cidx = 0;
     for (auto it = candidates.begin(); it != candidates.end(); ++it) {
         transitions_t changes;
         set<string> words_to_resegment = backpointers.at(it->first);
@@ -427,7 +426,5 @@ Bigrams::rank_removal_candidates(const map<string, flt_type> &words,
         flt_type hypo_score = likelihood(words, words_to_resegment, msfg);
         it->second = hypo_score-orig_score + context_score;
         Bigrams::restore_string(transitions, changes);
-        if (cidx % 1000 == 0) cout << "\tcandidate " << cidx << endl;
-        cidx++;
     }
 }
