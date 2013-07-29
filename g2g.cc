@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
     cerr << "Reading msfg " << msfg_fname << endl;
     msfg.read(msfg_fname);
 
-    if (transitions.size() < msfg.string_end_nodes.size()) {
+    if (transitions.size() < msfg.factor_node_map.size()) {
         vector<string> to_remove;
         cerr << "Pruning " << msfg.factor_node_map.size()-transitions.size() << " unused transitions from msfg." << endl;
         for (auto it = msfg.factor_node_map.begin(); it != msfg.factor_node_map.end(); ++it)
