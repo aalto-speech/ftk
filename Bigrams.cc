@@ -256,9 +256,10 @@ Bigrams::remove_transitions(vector<string> &to_remove,
         else ++srcit;
 
     for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit) {
-        flt_type normalizer = 0.0;
+        flt_type normalizer = MIN_FLOAT;
         for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
-            normalizer = add_log_domain_probs(normalizer, tgtit->second);
+            if (normalizer == MIN_FLOAT) normalizer = tgtit->second;
+            else normalizer = add_log_domain_probs(normalizer, tgtit->second);
         for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
             tgtit->second -= normalizer;
     }
