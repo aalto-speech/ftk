@@ -2,7 +2,6 @@
 #include <cmath>
 #include <fstream>
 #include <sstream>
-#include <thread>
 
 #include "io.hh"
 #include "Unigrams.hh"
@@ -48,84 +47,12 @@ Bigrams::collect_trans_stats(transitions_t &transitions,
 }
 
 
-void
-Bigrams::threaded_backward(const MultiStringFactorGraph *msfg,
-                           const std::vector<flt_type> *fw,
-                           const map<string, flt_type> *words,
-                           transitions_t *trans_stats,
-                           int thread_index,
-                           int thread_count,
-                           flt_type *total_lp)
-{
-    *total_lp = 0.0;
-
-    auto it = msfg->string_end_nodes.begin();
-    for (int i=0; i<thread_index; i++)
-        it++;
-
-    while (true) {
-        flt_type lp = backward(*msfg, it->first, *fw, *trans_stats, words->at(it->first));
-        (*total_lp) += words->at(it->first) * lp;
-        for (int i=0; i<thread_count; i++) {
-            it++;
-            if (it == msfg->string_end_nodes.end()) break;
-        }
-        if (it == msfg->string_end_nodes.end()) break;
-    }
-}
-
-
 flt_type
 Bigrams::collect_trans_stats(const map<string, flt_type> &words,
                              MultiStringFactorGraph &msfg,
                              transitions_t &trans_stats,
                              map<string, flt_type> &unigram_stats,
-                             bool fb,
-                             bool threaded)
-{
-    trans_stats.clear();
-    unigram_stats.clear();
-
-    vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
-    fw[0] = 0.0;
-
-    forward(msfg, fw);
-
-    flt_type total_lp = 0.0;
-
-    if (!threaded) {
-        for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
-            transitions_t word_stats;
-            flt_type lp = backward(msfg, it->first, fw, word_stats);
-            total_lp += words.at(it->first) * lp;
-            update_trans_stats(word_stats, words.at(it->first), trans_stats, unigram_stats);
-        }
-        return total_lp;
-    }
-
-    vector<transitions_t> thread_stats(NUM_THREADS);
-    vector<flt_type> total_lps(NUM_THREADS);
-    thread thrs[NUM_THREADS];
-
-    for (int i=0; i<NUM_THREADS; i++)
-        thrs[i] = thread(threaded_backward, &msfg, &fw, &words, &(thread_stats[i]), i, NUM_THREADS, &(total_lps[i]));
-
-    for (int i=0; i<NUM_THREADS; i++) {
-        thrs[i].join();
-        total_lp += total_lps[i];
-        update_trans_stats(thread_stats[i], 1.0, trans_stats, unigram_stats);
-    }
-
-    return total_lp;
-}
-
-
-flt_type
-Bigrams::collect_trans_stats_non_threaded(const map<string, flt_type> &words,
-                                          MultiStringFactorGraph &msfg,
-                                          transitions_t &trans_stats,
-                                          map<string, flt_type> &unigram_stats,
-                                          bool fb)
+                             bool fb)
 {
     trans_stats.clear();
     unigram_stats.clear();

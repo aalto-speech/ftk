@@ -17,8 +17,6 @@ typedef std::map<std::string, std::map<std::string, flt_type> > transitions_t;
 static flt_type SMALL_LP = -100.0;
 static flt_type MIN_FLOAT = -std::numeric_limits<flt_type>::max();
 
-static int NUM_THREADS = 4;
-
 // Return log(X+Y) where a=log(X) b=log(Y)
 static flt_type add_log_domain_probs(flt_type a, flt_type b) {
 

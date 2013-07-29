@@ -30,22 +30,7 @@ static flt_type collect_trans_stats(const std::map<std::string, flt_type> &words
                                     MultiStringFactorGraph &msfg,
                                     transitions_t &trans_stats,
                                     std::map<std::string, flt_type> &unigram_stats,
-                                    bool fb=true,
-                                    bool threaded=true);
-
-static void threaded_backward(const MultiStringFactorGraph *msfg,
-                              const std::vector<flt_type> *fw,
-                              const std::map<std::string, flt_type> *words,
-                              transitions_t *trans_stats,
-                              int thread_index,
-                              int thread_count,
-                              flt_type *total_lp);
-
-static flt_type collect_trans_stats_non_threaded(const std::map<std::string, flt_type> &words,
-                                                 MultiStringFactorGraph &msfg,
-                                                 transitions_t &trans_stats,
-                                                 std::map<std::string, flt_type> &unigram_stats,
-                                                 bool fb=true);
+                                    bool fb=true);
 
 static void normalize(transitions_t &trans_stats,
                       flt_type min_cost = SMALL_LP);
