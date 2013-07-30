@@ -39,7 +39,8 @@ static void copy_transitions(transitions_t &src,
                              transitions_t &tgt);
 
 static void write_transitions(const transitions_t &transitions,
-                              const std::string &filename);
+                              const std::string &filename,
+                              bool count_style=false);
 
 static int read_transitions(transitions_t &transitions,
                             const std::string &filename);

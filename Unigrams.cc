@@ -38,7 +38,8 @@ Unigrams::read_vocab(string fname,
 
 int
 Unigrams::write_vocab(string fname,
-                      const map<string, flt_type> &vocab)
+                      const map<string, flt_type> &vocab,
+                      bool count_style)
 {
     ofstream vocabfile(fname);
     if (!vocabfile) return -1;
@@ -46,7 +47,10 @@ Unigrams::write_vocab(string fname,
     vector<pair<string, flt_type> > sorted_vocab;
     sort_vocab(vocab, sorted_vocab);
     for (unsigned int i=0; i<sorted_vocab.size(); i++)
-        vocabfile << sorted_vocab[i].second << " " << sorted_vocab[i].first << endl;
+        if (count_style)
+            vocabfile << sorted_vocab[i].first << "\t" << sorted_vocab[i].second << endl;
+        else
+            vocabfile << sorted_vocab[i].second << " " << sorted_vocab[i].first << endl;
     vocabfile.close();
 
     return vocab.size();

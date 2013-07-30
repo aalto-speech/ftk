@@ -111,13 +111,17 @@ Bigrams::copy_transitions(transitions_t &src,
 
 void
 Bigrams::write_transitions(const transitions_t &transitions,
-                           const string &filename)
+                           const string &filename,
+                           bool count_style)
 {
     io::Stream transfile(filename, "w");
 
     for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
         for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
-            fprintf(transfile.file, "%s %s %f\n", srcit->first.c_str(), tgtit->first.c_str(), tgtit->second);
+            if (count_style)
+                fprintf(transfile.file, "%s %s\t%f\n", srcit->first.c_str(), tgtit->first.c_str(), tgtit->second);
+            else
+                fprintf(transfile.file, "%s %s %f\n", srcit->first.c_str(), tgtit->first.c_str(), tgtit->second);
 
     transfile.close();
 }

@@ -23,7 +23,8 @@ public:
                           int &maxlen);
 
     static int write_vocab(std::string fname,
-                           const std::map<std::string, flt_type> &vocab);
+                           const std::map<std::string, flt_type> &vocab,
+                           bool count_style=false);
 
     static void sort_vocab(const std::map<std::string, flt_type> &vocab,
                            std::vector<std::pair<std::string, flt_type> > &sorted_vocab,
