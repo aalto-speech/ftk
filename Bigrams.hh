@@ -84,6 +84,9 @@ static void restore_string(transitions_t &transitions,
 static void trans_to_vocab(const transitions_t &transitions,
                            std::map<std::string, flt_type> &vocab);
 
+static flt_type score(const transitions_t &transitions,
+                      std::vector<std::string> &path);
+
 static void get_backpointers(const MultiStringFactorGraph &msfg,
                              std::map<std::string, std::set<std::string> > &backpointers,
                              unsigned int minlen=2);

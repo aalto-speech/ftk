@@ -2,6 +2,7 @@
 #include <cmath>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 #include "io.hh"
 #include "Unigrams.hh"
@@ -305,6 +306,25 @@ Bigrams::trans_to_vocab(const transitions_t &transitions,
     vocab.clear();
     for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
         vocab[srcit->first] = 0.0;
+}
+
+
+flt_type
+Bigrams::score(const transitions_t &transitions,
+               std::vector<std::string> &path)
+{
+    flt_type ll = 0.0;
+
+    for (int i=0; i<path.size()-1; i++) {
+        try {
+            ll += transitions.at(path[i]).at(path[i+1]);
+        }
+        catch (std::out_of_range &oor) {
+            ll += SMALL_LP;
+        }
+    }
+
+    return ll;
 }
 
 
