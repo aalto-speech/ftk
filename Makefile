@@ -5,7 +5,7 @@ cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-sign-compare -Wno-unused-va
 
 ##################################################
 
-progs = fe substrings init g1g g2g g2gr segposts iterate cmsfg ll
+progs = fe substrings init g1g g2g g2gr segposts iterate cmsfg ll counts
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
 srcs = io.cc StringSet.cc FactorGraph.cc MSFG.cc FactorEncoder.cc Unigrams.cc Bigrams.cc
