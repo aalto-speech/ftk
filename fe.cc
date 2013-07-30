@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
     StringSet *ss_vocab = NULL;
     transitions_t transitions;
     string start_end_symbol("*");
+    flt_type one_char_min_lp = -25.0;
     bool enable_posterior_decoding = false;
 
     poptContext pc;
@@ -135,6 +136,13 @@ int main(int argc, char* argv[]) {
 
         linebuffer[strlen(linebuffer)-1] = '\0';
         string line(linebuffer);
+
+        for (int i=0; i<line.size(); i++) {
+            string currchr {line[i]};
+            if (!ss_vocab->includes(currchr))
+                ss_vocab->add(currchr, one_char_min_lp);
+        }
+
         vector<string> best_path;
         if (vocab_fname != NULL)
             if (enable_posterior_decoding)
