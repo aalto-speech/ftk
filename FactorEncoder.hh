@@ -175,5 +175,10 @@ flt_type forward_backward(const MultiStringFactorGraph &msfg,
                           const std::string &text,
                           transitions_t &stats);
 
+// Viterbi for one string
+flt_type viterbi(const MultiStringFactorGraph &msfg,
+                 const std::string &text,
+                 std::vector<std::string> &best_path);
+
 
 #endif /* FACTOR_ENCODER */

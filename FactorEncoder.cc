@@ -312,7 +312,7 @@ flt_type viterbi(const transitions_t &transitions,
 
 void forward(const transitions_t &transitions,
              FactorGraph &text,
-             std::vector<flt_type> &fw)
+             vector<flt_type> &fw)
 {
     for (int i=0; i<text.nodes.size(); i++) {
 
@@ -541,7 +541,7 @@ assign_scores(transitions_t &transitions,
 {
     for (auto it = msfg.factor_node_map.begin(); it != msfg.factor_node_map.end(); ++it) {
 
-        std::map<std::string, flt_type> &curr_transitions = transitions.at(it->first);
+        map<string, flt_type> &curr_transitions = transitions.at(it->first);
 
         for (auto ndit = it->second.begin(); ndit != it->second.end(); ++ndit) {
             MultiStringFactorGraph::Node &node = msfg.nodes[*ndit];
@@ -571,7 +571,7 @@ assign_scores(map<string, flt_type> &vocab,
 
 void
 forward(const MultiStringFactorGraph &msfg,
-        std::vector<flt_type> &fw)
+        vector<flt_type> &fw)
 {
     for (int i=0; i<msfg.nodes.size(); i++) {
 
@@ -589,9 +589,9 @@ forward(const MultiStringFactorGraph &msfg,
 
 
 flt_type
-forward(const std::string &text,
+forward(const string &text,
         const MultiStringFactorGraph &msfg,
-        std::map<msfg_node_idx_t, flt_type> &fw)
+        map<msfg_node_idx_t, flt_type> &fw)
 {
     map<msfg_node_idx_t, vector<MultiStringFactorGraph::Arc*> > arcs;
     msfg.collect_arcs(text, arcs);
@@ -614,20 +614,20 @@ forward(const std::string &text,
 flt_type
 forward(const map<string, flt_type> &words,
         const MultiStringFactorGraph &msfg,
-        const std::set<std::string> &words_to_fb,
+        const set<string> &words_to_fb,
         bool full_forward_pass)
 {
     flt_type total_lp = 0.0;
 
     if (full_forward_pass) {
-        std::vector<flt_type> fw;
+        vector<flt_type> fw;
         forward(msfg, fw);
         for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit)
             total_lp += words.at(*wit) * fw.at(msfg.string_end_nodes.at(*wit));
     }
     else {
         for (auto wit = words_to_fb.cbegin(); wit != words_to_fb.cend(); ++wit) {
-            std::map<msfg_node_idx_t, flt_type> fw;
+            map<msfg_node_idx_t, flt_type> fw;
             total_lp += words.at(*wit) * forward(*wit, msfg, fw);
         }
     }
@@ -637,10 +637,10 @@ forward(const map<string, flt_type> &words,
 
 
 flt_type
-likelihood(const std::string &text,
+likelihood(const string &text,
            const MultiStringFactorGraph &msfg)
 {
-    std::map<msfg_node_idx_t, flt_type> fw;
+    map<msfg_node_idx_t, flt_type> fw;
     int text_end_node = msfg.string_end_nodes.at(text);
     set<int> nodes_to_process; nodes_to_process.insert(text_end_node);
     fw[text_end_node] = 0.0;
@@ -667,8 +667,8 @@ likelihood(const std::string &text,
 
 
 flt_type
-likelihood(const std::map<std::string, flt_type> &words,
-           const std::set<std::string> &selected_words,
+likelihood(const map<string, flt_type> &words,
+           const set<string> &selected_words,
            const MultiStringFactorGraph &msfg)
 {
     flt_type total_lp = 0.0;
@@ -681,7 +681,7 @@ likelihood(const std::map<std::string, flt_type> &words,
 
 
 flt_type
-likelihood(const std::map<std::string, flt_type> &words,
+likelihood(const map<string, flt_type> &words,
            const MultiStringFactorGraph &msfg)
 {
     flt_type total_lp = 0.0;
@@ -801,4 +801,47 @@ forward_backward(const MultiStringFactorGraph &msfg,
     backward(msfg, text, fw, stats);
 
     return fw[msfg.string_end_nodes.at(text)];
+}
+
+
+flt_type
+viterbi(const MultiStringFactorGraph &msfg,
+        const string &text,
+        vector<string> &best_path)
+{
+    map<msfg_node_idx_t, flt_type> scores;
+    map<msfg_node_idx_t, msfg_node_idx_t> sources;
+    int text_end_node = msfg.string_end_nodes.at(text);
+    set<int> nodes_to_process; nodes_to_process.insert(text_end_node);
+    scores[text_end_node] = 0.0;
+
+    while(nodes_to_process.size() > 0) {
+
+        int i = *(nodes_to_process.rbegin());
+
+        const MultiStringFactorGraph::Node &node = msfg.nodes[i];
+
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
+            int src_node = (**arc).source_node;
+            flt_type cost = scores[i] + *(**arc).cost;
+            if (scores.find(src_node) == scores.end() || (cost > scores[src_node])) {
+                scores[src_node] = cost;
+                sources[src_node] = i;
+            }
+            nodes_to_process.insert(src_node);
+        }
+
+        nodes_to_process.erase(i);
+    }
+
+    best_path.clear();
+
+    msfg_node_idx_t curr_node = 0;
+    while (true) {
+        best_path.push_back(msfg.nodes[curr_node].factor);
+        if (curr_node == text_end_node) break;
+        curr_node = sources[curr_node];
+    }
+
+    return scores.at(0);
 }
