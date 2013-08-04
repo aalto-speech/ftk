@@ -103,6 +103,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, transitions: " << transition_fname << endl;
     cerr << "parameters, removals per iteration: " << removals_per_iter << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
+    cerr << "parameters, floor lp: " << SMALL_LP << endl;
 
     int maxlen, word_maxlen;
     string start_end_symbol("*");
@@ -159,6 +160,12 @@ int main(int argc, char* argv[]) {
         cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
         cerr << "\tvocab size: " << transitions.size() << endl;
 
+        // Write temp transitions
+        ostringstream transitions_temp;
+        transitions_temp << "transitions.iter" << iteration << ".bz2";
+        cerr << "\twriting to: " << transitions_temp.str() << endl;
+        Bigrams::write_transitions(transitions, transitions_temp.str());
+
         cerr << "\tinitializing removals .." << endl;
         map<string, flt_type> removals;
         if (iteration == 1) {
@@ -176,12 +183,6 @@ int main(int argc, char* argv[]) {
         Bigrams::remove_transitions(to_remove, transitions);
         for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
             msfg.remove_arcs(*it);
-
-        // Write temp transitions
-        ostringstream transitions_temp;
-        transitions_temp << "transitions.iter" << iteration << ".bz2";
-        cerr << "\twriting to: " << transitions_temp.str() << endl;
-        Bigrams::write_transitions(transitions, transitions_temp.str());
 
         if  (transitions.size() <= target_vocab_size) break;
         iteration++;
