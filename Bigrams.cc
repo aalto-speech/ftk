@@ -85,14 +85,22 @@ Bigrams::normalize(transitions_t &trans_stats,
             normalizer += tgtit->second;
         normalizer = log(normalizer);
 
+        bool renormalization_needed = false;
         for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
-
             tgtit->second = log(tgtit->second) - normalizer;
-            if (!std::isfinite(tgtit->second)) {
-                cerr << "transition " << srcit->first << " " << tgtit->first << " value " << tgtit->second << endl;
-                exit(0);
+            if (tgtit->second < min_cost) {
+                tgtit->second = min_cost;
+                renormalization_needed = true;
             }
-            if (tgtit->second < min_cost) tgtit->second = min_cost;
+        }
+
+        if (renormalization_needed) {
+            normalizer = MIN_FLOAT;
+            for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+                if (normalizer == MIN_FLOAT) normalizer = tgtit->second;
+                else normalizer = add_log_domain_probs(normalizer, tgtit->second);
+            for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+                tgtit->second -= normalizer;
         }
     }
 }
