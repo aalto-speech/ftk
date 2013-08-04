@@ -106,6 +106,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
     cerr << "parameters, removals per iteration: " << removals_per_iter << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
+    cerr << "parameters, floor lp: " << FLOOR_LP << endl;
 
     int maxlen, word_maxlen;
     string start_end_symbol("*");

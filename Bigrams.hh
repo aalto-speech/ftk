@@ -33,7 +33,7 @@ static flt_type collect_trans_stats(const std::map<std::string, flt_type> &words
                                     bool fb=true);
 
 static void normalize(transitions_t &trans_stats,
-                      flt_type min_cost = SMALL_LP);
+                      flt_type min_cost = FLOOR_LP);
 
 static void copy_transitions(transitions_t &src,
                              transitions_t &tgt);
