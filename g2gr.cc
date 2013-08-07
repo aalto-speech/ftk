@@ -168,9 +168,8 @@ int main(int argc, char* argv[]) {
 
         cerr << "\tinitializing removals .." << endl;
         map<string, flt_type> removals;
-        if (iteration == 1) {
+        if (iteration == 1 && transitions.size() % 1000 != 0) {
             int first_iter_removals = transitions.size() % 1000;
-            if (first_iter_removals == 0) first_iter_removals += 1000;
             Bigrams::init_removal_candidates(first_iter_removals, unigram_stats, removals);
         }
         else
