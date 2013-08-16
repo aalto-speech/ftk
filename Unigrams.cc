@@ -7,6 +7,7 @@
 
 #include "FactorEncoder.hh"
 #include "Unigrams.hh"
+#include "io.hh"
 
 using namespace std;
 
@@ -102,26 +103,8 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
                           const map<string, flt_type> &vocab,
                           map<string, flt_type> &new_freqs)
 {
-    new_freqs.clear();
     StringSet stringset_vocab(vocab);
-    flt_type ll = 0.0;
-
-    for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
-
-        map<string, flt_type> stats;
-        ll += worditer->second * segf(stringset_vocab, worditer->first, stats);
-
-        if (stats.size() == 0) {
-            cerr << "warning, no segmentation for word: " << worditer->first << endl;
-            exit(0);
-        }
-
-        // Update statistics
-        for (auto it = stats.begin(); it != stats.end(); ++it)
-            new_freqs[it->first] += worditer->second * it->second;
-    }
-
-    return ll;
+    return resegment_words(words, stringset_vocab, new_freqs);
 }
 
 
@@ -148,6 +131,49 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
             new_freqs[it->first] += worditer->second * it->second;
     }
 
+    return ll;
+}
+
+
+flt_type
+Unigrams::resegment_data(string fname,
+                         const map<string, flt_type> &vocab,
+                         map<string, flt_type> &new_freqs)
+{
+    StringSet stringset_vocab(vocab);
+    return resegment_data(fname, stringset_vocab, new_freqs);
+}
+
+
+flt_type
+Unigrams::resegment_data(string fname,
+                         const StringSet &vocab,
+                         map<string, flt_type> &new_freqs)
+{
+    new_freqs.clear();
+    flt_type ll = 0.0;
+
+    io::Stream datafile(fname, "r");
+    char mystring[5000];
+
+    while (fgets(mystring, 5000, datafile.file)) {
+        string cppstr(mystring);
+        trim(cppstr, '\n');
+
+        map<string, flt_type> stats;
+        ll += segf(vocab, cppstr, stats);
+
+        if (stats.size() == 0) {
+            cerr << "warning, no segmentation for line: " << cppstr << endl;
+            exit(0);
+        }
+
+        // Update statistics
+        for (auto it = stats.begin(); it != stats.end(); ++it)
+            new_freqs[it->first] += it->second;
+    }
+
+    datafile.close();
     return ll;
 }
 

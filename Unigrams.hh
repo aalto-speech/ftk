@@ -42,6 +42,14 @@ public:
                              const StringSet &vocab,
                              std::map<std::string, flt_type> &new_freqs);
 
+    flt_type resegment_data(std::string fname,
+                            const std::map<std::string, flt_type> &vocab,
+                            std::map<std::string, flt_type> &new_freqs);
+
+    flt_type resegment_data(std::string fname,
+                            const StringSet &vocab,
+                            std::map<std::string, flt_type> &new_freqs);
+
     static flt_type get_sum(const std::map<std::string, flt_type> &freqs);
 
     static flt_type get_cost(const std::map<std::string, flt_type> &freqs,
