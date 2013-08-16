@@ -20,26 +20,35 @@ static flt_type MIN_FLOAT = -std::numeric_limits<flt_type>::max();
 
 // Return log(X+Y) where a=log(X) b=log(Y)
 static flt_type add_log_domain_probs(flt_type a, flt_type b) {
-
-    if (b>a) {
-        flt_type tmp = b;
-        b = a;
-        a = tmp;
+    flt_type delta = a - b;
+    if (delta > 0) {
+      b = a;
+      delta = -delta;
     }
-
-    return a + log(1 + exp(b - a));
+    return b + log1p(exp(delta));
 }
 
 // Return log(X-Y) where a=log(X) b=log(Y)
 static flt_type sub_log_domain_probs(flt_type a, flt_type b) {
-
-    if (b>a) {
-        flt_type tmp = b;
-        b = a;
-        a = tmp;
+    flt_type delta = b - a;
+    if (delta > 0) {
+      fprintf(stderr, "invalid call to sub_log_domain_probs, a should be bigger than b (a=%f,b=%f)\n",a,b);
+      exit(1);
     }
-
-    return a + log(1 - exp(b - a));
+    return a + log1p(-exp(delta));
 }
 
+static void trim(std::string &str, char to_trim)
+{
+    std::string::size_type pos = str.find_last_not_of(to_trim);
+    if(pos != std::string::npos) {
+        str.erase(pos + 1);
+        pos = str.find_first_not_of(to_trim);
+        if(pos != std::string::npos) str.erase(0, pos);
+    }
+    else str.erase(str.begin(), str.end());
+}
+
+
 #endif /* PROJECT_DEFS */
+
