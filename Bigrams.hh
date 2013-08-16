@@ -73,14 +73,19 @@ static int transition_count(const transitions_t &transitions);
 static void reverse_transitions(const transitions_t &transitions,
                                 transitions_t &reverse_transitions);
 
-static flt_type remove_string(const transitions_t &reverse_transitions,
-                              const std::string &text,
-                              const std::map<std::string, flt_type> &unigram_stats,
-                              transitions_t &transitions,
-                              transitions_t &changes);
+static flt_type disable_string(const transitions_t &reverse_transitions,
+                               const std::string &text,
+                               const std::map<std::string, flt_type> &unigram_stats,
+                               transitions_t &transitions,
+                               transitions_t &changes);
 
 static void restore_string(transitions_t &transitions,
                            const transitions_t &changes);
+
+static flt_type disable_transition(const std::map<std::string, flt_type> &unigram_stats,
+                                   const transitions_t &to_remove,
+                                   transitions_t &transitions,
+                                   transitions_t &changes);
 
 static void trans_to_vocab(const transitions_t &transitions,
                            std::map<std::string, flt_type> &vocab);

@@ -352,11 +352,11 @@ Bigrams::reverse_transitions(const transitions_t &transitions,
 
 
 flt_type
-Bigrams::remove_string(const transitions_t &reverse_transitions,
-                       const string &text,
-                       const map<string, flt_type> &unigram_stats,
-                       transitions_t &transitions,
-                       transitions_t &changes)
+Bigrams::disable_string(const transitions_t &reverse_transitions,
+                        const string &text,
+                        const map<string, flt_type> &unigram_stats,
+                        transitions_t &transitions,
+                        transitions_t &changes)
 {
     changes.clear();
     flt_type total_ll_diff = 0.0;
@@ -389,6 +389,41 @@ Bigrams::remove_string(const transitions_t &reverse_transitions,
     }
 
     return total_ll_diff;
+}
+
+
+flt_type
+Bigrams::disable_transition(const map<string, flt_type> &unigram_stats,
+                            const transitions_t &to_remove,
+                            transitions_t &transitions,
+                            transitions_t &changes)
+{
+    /*
+    changes.clear();
+
+    auto srcit = to_remove.cbegin();
+    string src(srcit->first());
+    auto tgtit = srcit->second->begin();
+    string tgt = *(tgtit->first());
+
+
+    changes[src][tgt] = transitions[src][tgt];
+    flt_type renormalizer = sub_log_domain_probs(0, transitions[src[tgt]]);
+    flt_type ll_diff = 0.0;
+    transitions[src][tgt] = SMALL_LP;
+
+    for (auto it = transitions[src].begin(); it != transitions[src].end(); ++it) {
+        if (it->first != text) {
+            flt_type count = unigram_stats.at(src) * exp(it->second);
+            changes[src][it->first] = it->second;
+            ll_diff -= count * it->second;
+            it->second -= renormalizer;
+            ll_diff += count * it->second;
+        }
+    }
+
+    return ll_diff;
+    */
 }
 
 
@@ -453,8 +488,8 @@ Bigrams::rank_removal_candidates(const map<string, flt_type> &words,
         transitions_t changes;
         set<string> words_to_resegment = backpointers.at(it->first);
         flt_type orig_score = likelihood(words, words_to_resegment, msfg);
-        flt_type context_score = Bigrams::remove_string(reverse, it->first,
-                                                        unigram_stats, transitions, changes);
+        flt_type context_score = Bigrams::disable_string(reverse, it->first,
+                                                         unigram_stats, transitions, changes);
         flt_type hypo_score = likelihood(words, words_to_resegment, msfg);
         it->second = hypo_score-orig_score + context_score;
         Bigrams::restore_string(transitions, changes);
