@@ -155,9 +155,7 @@ void forward(const StringSet &vocab,
                 flt_type cost = arc->cost;
                 if (i>0) cost += fw[i-1];
 
-                Token tok;
-                tok.cost = cost;
-                tok.source = i-1;
+                Token tok(i-1, cost);
                 search[j].push_back(tok);
             }
         }
@@ -169,6 +167,7 @@ void forward(const StringSet &vocab,
     for (int j=1; j<search[len-1].size(); j++)
         fw[len-1] = add_log_domain_probs(fw[len-1], search[len-1][j].cost);
 }
+
 
 void backward(const StringSet &vocab,
               const string &text,
@@ -182,13 +181,12 @@ void backward(const StringSet &vocab,
 
     // Backward
     for (int i=len-1; i>=0; i--) {
-        for (int toki=0; toki<search[i].size(); toki++) {
-            Token tok = search[i][toki];
-            flt_type normalized = tok.cost - fw[i] + bw[i];
-            stats[text.substr(tok.source+1, i-tok.source)] += exp(normalized);
-            if (tok.source == -1) continue;
-            if (bw[tok.source] != 0.0) bw[tok.source] = add_log_domain_probs(bw[tok.source], normalized);
-            else bw[tok.source] = normalized;
+        for (auto tok = search[i].cbegin(); tok != search[i].cend(); ++tok) {
+            flt_type normalized = tok->cost - fw[i] + bw[i];
+            stats[text.substr(tok->source+1, i-tok->source)] += exp(normalized);
+            if (tok->source == -1) continue;
+            if (bw[tok->source] != 0.0) bw[tok->source] = add_log_domain_probs(bw[tok->source], normalized);
+            else bw[tok->source] = normalized;
         }
     }
 }
