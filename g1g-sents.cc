@@ -133,24 +133,32 @@ int main(int argc, char* argv[]) {
 
     cerr << "Initial cutoff" << endl;
     flt_type segwords_cost = gg.resegment_data(corpus_fname, vocab, freqs);
+    vocab = freqs;
+    Unigrams::freqs_to_logprobs(vocab, Unigrams::get_sum(vocab));
+    ostringstream tempfname;
+    tempfname << "cutoff.0.vocab";
+    Unigrams::write_vocab(tempfname.str(), vocab);
+    assert_single_chars(vocab, all_chars, one_char_min_lp);
+
     cerr << "cost: " << segwords_cost << endl;
 
     flt_type temp_cutoff = 5.0;
-    flt_type densum;
     while (true) {
         gg.cutoff(freqs, temp_cutoff);
         cerr << "\tcutoff: " << temp_cutoff << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
-        densum = gg.get_sum(vocab);
-        gg.freqs_to_logprobs(vocab, densum);
+        gg.freqs_to_logprobs(vocab, Unigrams::get_sum(vocab));
         assert_single_chars(vocab, all_chars, one_char_min_lp);
 
+        if (vocab.size() <= target_vocab_size) break;
+        flt_type segwords_cost = gg.resegment_data(corpus_fname, vocab, freqs);
+
+        vocab = freqs;
+        Unigrams::freqs_to_logprobs(vocab, Unigrams::get_sum(vocab));
         ostringstream tempfname;
         tempfname << "cutoff." << temp_cutoff << ".vocab";
         Unigrams::write_vocab(tempfname.str(), vocab);
 
-        if (vocab.size() <= target_vocab_size) break;
-        flt_type segwords_cost = gg.resegment_data(corpus_fname, vocab, freqs);
         cerr << "cost: " << segwords_cost << endl;
         temp_cutoff += 2.5;
     }
