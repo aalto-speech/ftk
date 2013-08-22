@@ -136,6 +136,7 @@ int main(int argc, char* argv[]) {
     cerr << "cost: " << segwords_cost << endl;
 
     flt_type temp_cutoff = 5.0;
+    flt_type densum;
     while (true) {
         gg.cutoff(freqs, temp_cutoff);
         cerr << "\tcutoff: " << temp_cutoff << "\t" << "vocabulary size: " << freqs.size() << endl;
@@ -143,6 +144,11 @@ int main(int argc, char* argv[]) {
         densum = gg.get_sum(vocab);
         gg.freqs_to_logprobs(vocab, densum);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
+
+        ostringstream tempfname;
+        tempfname << "cutoff." << temp_cutoff << ".vocab";
+        Unigrams::write_vocab(tempfname.str(), vocab);
+
         if (vocab.size() <= target_vocab_size) break;
         flt_type segwords_cost = gg.resegment_data(corpus_fname, vocab, freqs);
         cerr << "cost: " << segwords_cost << endl;
