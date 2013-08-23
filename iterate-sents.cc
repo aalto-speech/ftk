@@ -105,10 +105,11 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, number of iterations: " << num_iterations << endl;
     cerr << "parameters, write vocabulary after each iteration: " << write_temp_vocabs << endl;
 
-    int maxlen, word_maxlen;
+    int maxlen;
     map<string, flt_type> all_chars;
     map<string, flt_type> vocab;
     map<string, flt_type> freqs;
+    vector<string> sents;
 
     cerr << "Reading vocabulary " << vocab_in_fname << endl;
     int retval = Unigrams::read_vocab(vocab_in_fname, vocab, maxlen);
@@ -128,14 +129,16 @@ int main(int argc, char* argv[]) {
     else
         gg.set_segmentation_method(viterbi);
 
+    cerr << "Reading training corpus " << training_fname << endl;
+    Unigrams::read_sents(training_fname, sents);
+
     // Optimize vocabulary
     cerr << "optimizing vocabulary" << endl;
-    flt_type initial_cost = gg.resegment_data(training_fname, vocab, freqs);
-    cerr << "initial cost: " << initial_cost << endl;
+    flt_type segsents_cost = gg.resegment_sents(sents, vocab, freqs);
+    cerr << "initial cost: " << segsents_cost << endl;
     StringSet ss(freqs, false);
-    flt_type densum = gg.get_sum(freqs);
     vocab = freqs;
-    gg.freqs_to_logprobs(vocab, densum);
+    gg.freqs_to_logprobs(vocab, Unigrams::get_sum(freqs));
     assert_single_chars(vocab, all_chars, one_char_min_lp);
     ss.assign_scores(vocab);
 
@@ -147,12 +150,10 @@ int main(int argc, char* argv[]) {
 
     cerr << "iterating.." << endl;
     for (int i=0; i<num_iterations; i++) {
-        flt_type segwords_cost = gg.resegment_data(training_fname, ss, freqs);
-        cerr << "cost: " << segwords_cost << endl;
-        flt_type densum = gg.get_sum(freqs);
-        flt_type cost = gg.get_cost(freqs, densum);
+        segsents_cost = gg.resegment_sents(sents, ss, freqs);
+        cerr << "cost: " << segsents_cost << endl;
         vocab = freqs;
-        gg.freqs_to_logprobs(vocab, densum);
+        gg.freqs_to_logprobs(vocab, Unigrams::get_sum(freqs));
         assert_single_chars(vocab, all_chars, one_char_min_lp);
         ss.assign_scores(vocab);
 

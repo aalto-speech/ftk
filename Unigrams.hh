@@ -26,6 +26,9 @@ public:
                            const std::map<std::string, flt_type> &vocab,
                            bool count_style=false);
 
+    static int read_sents(std::string fname,
+                          std::vector<std::string> &sents);
+
     static void sort_vocab(const std::map<std::string, flt_type> &vocab,
                            std::vector<std::pair<std::string, flt_type> > &sorted_vocab,
                            bool descending=true);
@@ -42,13 +45,13 @@ public:
                              const StringSet &vocab,
                              std::map<std::string, flt_type> &new_freqs);
 
-    flt_type resegment_data(std::string fname,
-                            const std::map<std::string, flt_type> &vocab,
-                            std::map<std::string, flt_type> &new_freqs);
+    flt_type resegment_sents(std::vector<std::string> &sents,
+                             const std::map<std::string, flt_type> &vocab,
+                             std::map<std::string, flt_type> &new_freqs);
 
-    flt_type resegment_data(std::string fname,
-                            const StringSet &vocab,
-                            std::map<std::string, flt_type> &new_freqs);
+    flt_type resegment_sents(std::vector<std::string> &sents,
+                             const StringSet &vocab,
+                             std::map<std::string, flt_type> &new_freqs);
 
     static flt_type get_sum(const std::map<std::string, flt_type> &freqs);
 

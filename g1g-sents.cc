@@ -107,11 +107,11 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
     cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
 
-    int maxlen, word_maxlen;
+    int maxlen;
     map<string, flt_type> all_chars;
     map<string, flt_type> vocab;
     map<string, flt_type> freqs;
-    map<string, flt_type> words;
+    vector<string> sents;
 
     cerr << "Reading vocabulary " << vocab_fname << endl;
     int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen);
@@ -131,8 +131,11 @@ int main(int argc, char* argv[]) {
     else
         gg.set_segmentation_method(viterbi);
 
+    cerr << "Reading training corpus " << corpus_fname << endl;
+    Unigrams::read_sents(corpus_fname, sents);
+
     cerr << "Initial cutoff" << endl;
-    flt_type segwords_cost = gg.resegment_data(corpus_fname, vocab, freqs);
+    flt_type segsents_cost = gg.resegment_sents(sents, vocab, freqs);
     vocab = freqs;
     Unigrams::freqs_to_logprobs(vocab, Unigrams::get_sum(vocab));
     ostringstream tempfname;
@@ -140,7 +143,7 @@ int main(int argc, char* argv[]) {
     Unigrams::write_vocab(tempfname.str(), vocab);
     assert_single_chars(vocab, all_chars, one_char_min_lp);
 
-    cerr << "cost: " << segwords_cost << endl;
+    cerr << "cost: " << segsents_cost << endl;
 
     flt_type temp_cutoff = 5.0;
     while (true) {
@@ -151,7 +154,7 @@ int main(int argc, char* argv[]) {
         assert_single_chars(vocab, all_chars, one_char_min_lp);
 
         if (vocab.size() <= target_vocab_size) break;
-        flt_type segwords_cost = gg.resegment_data(corpus_fname, vocab, freqs);
+        segsents_cost = gg.resegment_sents(sents, vocab, freqs);
 
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab, Unigrams::get_sum(vocab));
@@ -159,7 +162,7 @@ int main(int argc, char* argv[]) {
         tempfname << "cutoff." << temp_cutoff << ".vocab";
         Unigrams::write_vocab(tempfname.str(), vocab);
 
-        cerr << "cost: " << segwords_cost << endl;
+        cerr << "cost: " << segsents_cost << endl;
         temp_cutoff += 2.5;
     }
 

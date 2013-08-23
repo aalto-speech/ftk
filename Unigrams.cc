@@ -58,6 +58,27 @@ Unigrams::write_vocab(string fname,
 }
 
 
+int
+Unigrams::read_sents(string fname,
+                     vector<string> &sents)
+{
+    sents.clear();
+    io::Stream datafile(fname, "r");
+    char mystring[MAX_LINE_LEN];
+
+    int lc = 0;
+    while (fgets(mystring, MAX_LINE_LEN, datafile.file)) {
+        string cppstr(mystring);
+        trim(cppstr, '\n');
+        sents.push_back(cppstr);
+        lc++;
+    }
+
+    datafile.close();
+    return lc;
+}
+
+
 bool descending_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return (i.second > j.second); }
 bool ascending_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return (i.second < j.second); }
 
@@ -136,35 +157,30 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
 
 
 flt_type
-Unigrams::resegment_data(string fname,
-                         const map<string, flt_type> &vocab,
-                         map<string, flt_type> &new_freqs)
+Unigrams::resegment_sents(vector<string> &sents,
+                          const map<string, flt_type> &vocab,
+                          map<string, flt_type> &new_freqs)
 {
     StringSet stringset_vocab(vocab);
-    return resegment_data(fname, stringset_vocab, new_freqs);
+    return resegment_sents(sents, stringset_vocab, new_freqs);
 }
 
 
 flt_type
-Unigrams::resegment_data(string fname,
-                         const StringSet &vocab,
-                         map<string, flt_type> &new_freqs)
+Unigrams::resegment_sents(vector<string> &sents,
+                          const StringSet &vocab,
+                          map<string, flt_type> &new_freqs)
 {
     new_freqs.clear();
     flt_type ll = 0.0;
 
-    io::Stream datafile(fname, "r");
-    char mystring[5000];
-
-    while (fgets(mystring, 5000, datafile.file)) {
-        string cppstr(mystring);
-        trim(cppstr, '\n');
+    for (auto sent = sents.begin(); sent != sents.end(); ++sent) {
 
         map<string, flt_type> stats;
-        ll += segf(vocab, cppstr, stats);
+        ll += segf(vocab, *sent, stats);
 
         if (stats.size() == 0) {
-            cerr << "warning, no segmentation for line: " << cppstr << endl;
+            cerr << "warning, no segmentation for sentence: " << *sent << endl;
             exit(0);
         }
 
@@ -173,7 +189,6 @@ Unigrams::resegment_data(string fname,
             new_freqs[it->first] += it->second;
     }
 
-    datafile.close();
     return ll;
 }
 
