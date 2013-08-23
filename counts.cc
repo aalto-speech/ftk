@@ -142,11 +142,12 @@ int main(int argc, char* argv[]) {
 
     map<string, flt_type> unigram_stats;
     transitions_t trans_stats;
-    char linebuffer[8192];
-    while (fgets(linebuffer, 8192 , infile.file) != NULL) {
+    char linebuffer[MAX_LINE_LEN];
+    while (fgets(linebuffer, MAX_LINE_LEN, infile.file) != NULL) {
 
         linebuffer[strlen(linebuffer)-1] = '\0';
         string line(linebuffer);
+        trim(line, '\n');
 
         flt_type curr_weight = 1.0;
         if (weights) {
