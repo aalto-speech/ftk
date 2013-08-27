@@ -23,8 +23,8 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 
-    char *vocab_fname;
-    char *trans_fname;
+    char *vocab_fname = NULL;
+    char *trans_fname = NULL;
     string in_fname;
     string out_fname_1;
     string out_fname_2;
@@ -108,6 +108,7 @@ int main(int argc, char* argv[]) {
     if (vocab_fname != NULL) {
         cerr << "Reading vocabulary " << vocab_fname << endl;
         int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen);
+        vocab[start_end_symbol] = 0.0;
         if (retval < 0) {
             cerr << "something went wrong reading vocabulary" << endl;
             exit(0);
