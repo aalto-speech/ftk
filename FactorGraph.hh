@@ -14,7 +14,7 @@ public:
     /** Arc of a factor graph. */
     class Arc {
     public:
-        Arc(unsigned int source_node, unsigned int target_node,
+        Arc(fg_node_idx_t source_node, fg_node_idx_t target_node,
             double cost=MIN_FLOAT)
         : source_node(source_node), target_node(target_node), cost(0.0) {}
         bool operator==(Arc& rhs) const {
@@ -83,13 +83,13 @@ public:
 private:
     // Constructor helpers
     void create_nodes(const std::string &text, const std::map<std::string, flt_type> &vocab,
-                      int maxlen, std::vector<std::unordered_set<unsigned int> > &incoming);
+                      int maxlen, std::vector<std::unordered_set<fg_node_idx_t> > &incoming);
     void create_nodes(const std::string &text, const StringSet &vocab,
-                      std::vector<std::unordered_set<unsigned int> > &incoming);
-    void prune_and_create_arcs(std::vector<std::unordered_set<unsigned int> > &incoming);
+                      std::vector<std::unordered_set<fg_node_idx_t> > &incoming);
+    void prune_and_create_arcs(std::vector<std::unordered_set<fg_node_idx_t> > &incoming);
     // Helper for enumerating paths
     void advance(std::vector<std::vector<std::string> > &paths,
-                 std::vector<std::string> &curr_string, unsigned int node) const;
+                 std::vector<std::string> &curr_string, fg_node_idx_t node) const;
     // Helper for removing arcs
     void remove_arc(Arc *arc);
 };

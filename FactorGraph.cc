@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 
 #include "FactorGraph.hh"
 
@@ -7,7 +8,7 @@ using namespace std;
 
 void
 FactorGraph::create_nodes(const string &text, const map<string, flt_type> &vocab,
-                          int maxlen, vector<unordered_set<unsigned int> > &incoming)
+                          int maxlen, vector<unordered_set<fg_node_idx_t> > &incoming)
 {
     nodes.push_back(Node(0,0));
     for (unsigned int i=0; i<text.length(); i++) {
@@ -26,7 +27,7 @@ FactorGraph::create_nodes(const string &text, const map<string, flt_type> &vocab
 
 void
 FactorGraph::create_nodes(const string &text, const StringSet &vocab,
-                          vector<unordered_set<unsigned int> > &incoming)
+                          vector<unordered_set<fg_node_idx_t> > &incoming)
 {
     nodes.push_back(Node(0,0));
     for (unsigned int i=0; i<text.length(); i++) {
@@ -51,7 +52,7 @@ FactorGraph::create_nodes(const string &text, const StringSet &vocab,
 
 
 void
-FactorGraph::prune_and_create_arcs(vector<unordered_set<unsigned int> > &incoming)
+FactorGraph::prune_and_create_arcs(vector<unordered_set<fg_node_idx_t> > &incoming)
 {
     // Find all possible node start positions
     unordered_set<int> possible_node_starts;
@@ -102,7 +103,7 @@ FactorGraph::set_text(const string &text,
     this->start_end_symbol.assign(start_end_symbol);
     if (text.length() == 0) return;
 
-    vector<unordered_set<unsigned int> > incoming(text.size()+1); // (pos in text, source pos)
+    vector<unordered_set<fg_node_idx_t> > incoming(text.size()+1); // (pos in text, source pos)
 
     // Create all nodes
     incoming[0].insert(0);
@@ -127,7 +128,7 @@ FactorGraph::set_text(const string &text,
     this->start_end_symbol.assign(start_end_symbol);
     if (text.length() == 0) return;
 
-    vector<unordered_set<unsigned int> > incoming(text.size()+1); // (pos in text, source pos)
+    vector<unordered_set<fg_node_idx_t> > incoming(text.size()+1); // (pos in text, source pos)
 
     // Create all nodes
     incoming[0].insert(0);
@@ -214,7 +215,7 @@ FactorGraph::get_paths(vector<vector<string> > &paths) const
 void
 FactorGraph::advance(vector<vector<string> > &paths,
                      vector<string> &curr_string,
-                     unsigned int node_idx) const
+                     fg_node_idx_t node_idx) const
 {
     const FactorGraph::Node &node = nodes[node_idx];
 
