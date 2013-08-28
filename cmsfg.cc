@@ -145,7 +145,6 @@ int main(int argc, char* argv[]) {
     ug.freqs_to_logprobs(vocab, densum);
     assert_single_chars(vocab, all_chars, one_char_min_lp);
 
-    string start_end_symbol("*");
     StringSet ss_vocab(vocab);
     MultiStringFactorGraph msfg(start_end_symbol);
     vocab[start_end_symbol] = 0.0;

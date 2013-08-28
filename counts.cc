@@ -32,7 +32,6 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> vocab;
     StringSet *ss_vocab = NULL;
     transitions_t transitions;
-    string start_end_symbol("*");
     flt_type one_char_min_lp = -25.0;
     bool enable_forward_backward = false;
     bool weights = false;
@@ -144,7 +143,10 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> unigram_stats;
     transitions_t trans_stats;
     char linebuffer[MAX_LINE_LEN];
+    int li = 1;
     while (fgets(linebuffer, MAX_LINE_LEN, infile.file) != NULL) {
+
+        if (li % 100000 == 0) cerr << "processing line number: " << li << endl;
 
         linebuffer[strlen(linebuffer)-1] = '\0';
         string line(linebuffer);
@@ -167,17 +169,19 @@ int main(int argc, char* argv[]) {
         }
 
         transitions_t curr_stats;
-        FactorGraph fg(line, start_end_symbol, *ss_vocab);
 
         // Unigram model
         if (vocab_fname != NULL)
-            if (enable_forward_backward)
+            if (enable_forward_backward) {
+                FactorGraph fg(line, start_end_symbol, *ss_vocab);
                 forward_backward(vocab, fg, curr_stats);
+            }
             else {
-                cout << "No implementation for Viterbi unigram yet." << endl;
+                viterbi(vocab, line, curr_stats, start_end_symbol);
             }
         // Bigram model
         else {
+            FactorGraph fg(line, start_end_symbol, *ss_vocab);
             if (enable_forward_backward)
                 forward_backward(transitions, fg, curr_stats);
             else
@@ -186,12 +190,14 @@ int main(int argc, char* argv[]) {
 
         Bigrams::update_trans_stats(curr_stats, curr_weight,
                                     trans_stats, unigram_stats);
+
+        li++;
     }
 
     if (ss_vocab != NULL) delete ss_vocab;
 
     Unigrams::write_vocab(out_fname_1, unigram_stats, true);
-    Bigrams::write_transitions(trans_stats, out_fname_2, true);
+    Bigrams::write_transitions(trans_stats, out_fname_2, true, 10);
 
     exit(1);
 }

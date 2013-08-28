@@ -18,6 +18,7 @@ static flt_type FLOOR_LP = -15.0;
 static flt_type SMALL_LP = -100.0;
 static flt_type MIN_FLOAT = -std::numeric_limits<flt_type>::max();
 static unsigned int MAX_LINE_LEN = 5000;
+static std::string start_end_symbol("*");
 
 // Return log(X+Y) where a=log(X) b=log(Y)
 static flt_type add_log_domain_probs(flt_type a, flt_type b) {

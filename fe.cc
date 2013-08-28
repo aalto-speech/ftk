@@ -31,7 +31,6 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> vocab;
     StringSet *ss_vocab = NULL;
     transitions_t transitions;
-    string start_end_symbol("*");
     flt_type one_char_min_lp = -25.0;
     bool enable_posterior_decoding = false;
 

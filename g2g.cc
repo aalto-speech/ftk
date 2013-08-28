@@ -109,7 +109,6 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, floor lp: " << FLOOR_LP << endl;
 
     int maxlen, word_maxlen;
-    string start_end_symbol("*");
     map<string, flt_type> all_chars;
     map<string, flt_type> freqs;
     map<string, flt_type> words;
