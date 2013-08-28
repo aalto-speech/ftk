@@ -120,16 +120,21 @@ Bigrams::copy_transitions(transitions_t &src,
 void
 Bigrams::write_transitions(const transitions_t &transitions,
                            const string &filename,
-                           bool count_style)
+                           bool count_style,
+                           int num_decimals)
 {
     io::Stream transfile(filename, "w");
+
+    ostringstream ssfmt;
+    ssfmt << "%s %s\t%." << num_decimals << "f\n";
+    string sfmt = ssfmt.str();
 
     for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
         for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
             if (count_style)
-                fprintf(transfile.file, "%s %s\t%f\n", srcit->first.c_str(), tgtit->first.c_str(), tgtit->second);
+                fprintf(transfile.file, sfmt.c_str(), srcit->first.c_str(), tgtit->first.c_str(), tgtit->second);
             else
-                fprintf(transfile.file, "%s %s %f\n", srcit->first.c_str(), tgtit->first.c_str(), tgtit->second);
+                fprintf(transfile.file, sfmt.c_str(), srcit->first.c_str(), tgtit->first.c_str(), tgtit->second);
 
     transfile.close();
 }

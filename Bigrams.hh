@@ -40,7 +40,8 @@ static void copy_transitions(transitions_t &src,
 
 static void write_transitions(const transitions_t &transitions,
                               const std::string &filename,
-                              bool count_style=false);
+                              bool count_style=false,
+                              int num_decimals=6);
 
 static int read_transitions(transitions_t &transitions,
                             const std::string &filename);
