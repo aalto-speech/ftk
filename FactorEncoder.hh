@@ -27,6 +27,11 @@ flt_type viterbi(const StringSet &vocab,
                  const std::string &text,
                  std::map<std::string, flt_type> &stats);
 
+// 1-GRAM model, 2-GRAM stats
+flt_type viterbi(const StringSet &vocab,
+                 const std::string &text,
+                 transitions_t &stats,
+                 const std::string &start_end_symbol);
 
 class Token {
     public:
@@ -63,6 +68,7 @@ flt_type forward_backward(const std::map<std::string, flt_type> &vocab,
                           std::map<std::string, flt_type> &stats);
 
 // 2-GRAM
+
 flt_type viterbi(const transitions_t &transitions,
                  FactorGraph &text,
                  std::vector<std::string> &best_path,

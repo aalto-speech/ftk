@@ -242,6 +242,23 @@ flt_type forward_backward(const map<string, flt_type> &vocab,
 }
 
 
+flt_type viterbi(const StringSet &vocab,
+                 const string &text,
+                 transitions_t &stats,
+                 const string &start_end_symbol)
+{
+    stats.clear();
+    vector<string> best_path;
+    flt_type lp = viterbi(vocab, text, best_path, true);
+    if (best_path.size() == 0) return MIN_FLOAT;
+    best_path.insert(best_path.begin(), start_end_symbol);
+    best_path.push_back(start_end_symbol);
+    for (int i=1; i<best_path.size(); i++)
+        stats[best_path[i-1]][best_path[i]] += 1.0;
+    return lp;
+}
+
+
 flt_type viterbi(const transitions_t &transitions,
                  FactorGraph &text,
                  vector<string> &best_path,
