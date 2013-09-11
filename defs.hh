@@ -9,7 +9,7 @@
 typedef double flt_type;
 typedef unsigned short int fg_node_idx_t;
 typedef unsigned int msfg_node_idx_t;
-typedef unsigned char factor_pos_t;
+typedef unsigned short int factor_pos_t;
 typedef unsigned char factor_len_t;
 
 typedef std::map<std::string, std::map<std::string, flt_type> > transitions_t;
