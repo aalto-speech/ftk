@@ -141,9 +141,7 @@ int main(int argc, char* argv[]) {
         gg.set_segmentation_method(viterbi);
 
     cerr << "Initial cutoff" << endl;
-    gg.resegment_words(words, vocab, freqs);
-    flt_type densum = gg.get_sum(freqs);
-    flt_type cost = gg.get_cost(freqs, densum);
+    flt_type cost = gg.resegment_words(words, vocab, freqs);
     cerr << "cost: " << cost << endl;
 
     flt_type temp_cutoff = 5.0;
@@ -151,14 +149,12 @@ int main(int argc, char* argv[]) {
         gg.cutoff(freqs, temp_cutoff);
         cerr << "\tcutoff: " << temp_cutoff << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
-        densum = gg.get_sum(vocab);
-        cost = gg.get_cost(vocab, densum);
-        cerr << "cost: " << cost << endl;
-        gg.freqs_to_logprobs(vocab, densum);
+        gg.freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
         temp_cutoff += 2.5;
         if (temp_cutoff > (flt_type)cutoff_value) break;
-        gg.resegment_words(words, vocab, freqs);
+        cost = gg.resegment_words(words, vocab, freqs);
+        cerr << "cost: " << cost << endl;
     }
 
     cerr << "Removing subwords one by one" << endl;
@@ -178,10 +174,8 @@ int main(int argc, char* argv[]) {
 
         cerr << "ranking candidate subwords" << endl;
         vector<pair<string, flt_type> > removal_scores;
-        gg.rank_removal_candidates(words, vocab, candidates, freqs, removal_scores);
+        cost = gg.rank_removal_candidates(words, vocab, candidates, freqs, removal_scores);
 
-        densum = gg.get_sum(freqs);
-        cost = gg.get_cost(freqs, densum);
         cerr << "starting cost before removing subwords one by one: " << cost << endl;
 
         // Perform removals one by one
@@ -194,8 +188,7 @@ int main(int argc, char* argv[]) {
 
             freqs.erase(removal_scores[i].first);
             vocab = freqs;
-            densum = gg.get_sum(freqs);
-            gg.freqs_to_logprobs(vocab, densum);
+            gg.freqs_to_logprobs(vocab);
             assert_single_chars(vocab, all_chars, one_char_min_lp);
 
             n_removals++;
@@ -211,9 +204,8 @@ int main(int argc, char* argv[]) {
         }
 
         int n_cutoff = gg.cutoff(freqs, cutoff_value);
-        densum = gg.get_sum(freqs);
         vocab = freqs;
-        gg.freqs_to_logprobs(vocab, densum);
+        gg.freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
         cost = gg.iterate(words, vocab, 2);
         assert_single_chars(vocab, all_chars, one_char_min_lp);

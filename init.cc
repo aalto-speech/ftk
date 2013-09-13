@@ -161,9 +161,7 @@ int main(int argc, char* argv[]) {
     words = temp_words;
 
     // Resegment and print cost
-    gg.resegment_words(words, vocab, freqs);
-    flt_type densum = gg.get_sum(freqs);
-    flt_type cost = gg.get_cost(freqs, densum);
+    flt_type cost = gg.resegment_words(words, vocab, freqs);
     cerr << "cost: " << cost << endl;
 
     // Remove word boundaries from vocabulary and words
@@ -182,17 +180,14 @@ int main(int argc, char* argv[]) {
 
     // Resegment without word boundaries
     vocab = freqs;
-    densum = gg.get_sum(vocab);
-    gg.freqs_to_logprobs(vocab, densum);
+    gg.freqs_to_logprobs(vocab);
     assert_single_chars(vocab, all_chars, one_char_min_lp);
 
-    gg.resegment_words(words, vocab, freqs);
-    densum = gg.get_sum(freqs);
-    cost = gg.get_cost(freqs, densum);
+    cost = gg.resegment_words(words, vocab, freqs);
     cerr << "cost: " << cost << endl;
 
     vocab = freqs;
-    gg.freqs_to_logprobs(vocab, densum);
+    gg.freqs_to_logprobs(vocab);
     Unigrams::write_vocab(out_fname, vocab);
 
     exit(1);

@@ -112,11 +112,9 @@ Unigrams::iterate(const std::map<std::string, flt_type> &words,
     flt_type ll = 0.0;
 
     for (unsigned int i=0; i<iterations; i++) {
-        resegment_words(words, vocab, freqs);
-        flt_type densum = get_sum(freqs);
-        ll = get_cost(freqs, densum);
+        ll = resegment_words(words, vocab, freqs);
         vocab = freqs;
-        freqs_to_logprobs(vocab, densum);
+        freqs_to_logprobs(vocab);
     }
 
     return ll;
@@ -223,10 +221,9 @@ Unigrams::get_cost(const map<string, flt_type> &freqs,
 
 
 void
-Unigrams::freqs_to_logprobs(map<string, flt_type> &vocab,
-                            flt_type densum)
+Unigrams::freqs_to_logprobs(map<string, flt_type> &vocab)
 {
-    densum = log(densum);
+    flt_type densum = Unigrams::get_sum(vocab);
     for (auto iter = vocab.begin(); iter != vocab.end(); ++iter)
         iter->second = (log(iter->second)-densum);
 }
@@ -281,7 +278,7 @@ bool rank_desc_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return 
 
 // Perform each of the removals (independent of others in the list) to get
 // initial order for the removals
-void
+flt_type
 Unigrams::rank_removal_candidates(const map<string, flt_type> &words,
                                   const map<string, flt_type> &vocab,
                                   const set<string> &candidates,
@@ -294,10 +291,13 @@ Unigrams::rank_removal_candidates(const map<string, flt_type> &words,
     StringSet ss_vocab(vocab);
     map<string, flt_type> diffs;
 
+    flt_type curr_ll = 0.0;
+
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, flt_type> stats;
         flt_type orig_score = segf(ss_vocab, worditer->first, stats);
+        curr_ll += worditer->second * orig_score;
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
@@ -337,4 +337,6 @@ Unigrams::rank_removal_candidates(const map<string, flt_type> &words,
     }
 
     sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
+
+    return curr_ll;
 }

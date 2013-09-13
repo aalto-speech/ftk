@@ -141,8 +141,7 @@ int main(int argc, char* argv[]) {
     ug.cutoff(freqs, (flt_type)cutoff_value);
     cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
     vocab = freqs;
-    densum = ug.get_sum(vocab);
-    ug.freqs_to_logprobs(vocab, densum);
+    Unigrams::freqs_to_logprobs(vocab);
     assert_single_chars(vocab, all_chars, one_char_min_lp);
 
     StringSet ss_vocab(vocab);

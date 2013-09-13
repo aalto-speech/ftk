@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstdlib>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -143,24 +144,25 @@ int main(int argc, char* argv[]) {
         it->second = 1.0;
     gg.resegment_words(unit_words, vocab, freqs);
     StringSet ss(freqs, false);
-    flt_type densum = gg.get_sum(freqs);
     vocab = freqs;
-    gg.freqs_to_logprobs(vocab, densum);
+    Unigrams::freqs_to_logprobs(vocab);
     assert_single_chars(vocab, all_chars, one_char_min_lp);
     ss.assign_scores(vocab);
 
     cerr << "iterating.." << endl;
+    time_t rawtime;
+    time ( &rawtime );
+    cerr << "start time: " << ctime (&rawtime) << endl;
     for (int i=0; i<num_iterations; i++) {
         flt_type segwords_cost = gg.resegment_words(words, ss, freqs);
-        cerr << "cost from resegment_words: " << segwords_cost << endl;
-        flt_type densum = gg.get_sum(freqs);
-        flt_type cost = gg.get_cost(freqs, densum);
-        cerr << "cost: " << cost << endl;
+        cerr << "cost: " << segwords_cost << endl;
         vocab = freqs;
-        gg.freqs_to_logprobs(vocab, densum);
+        Unigrams::freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
         ss.assign_scores(vocab);
     }
+    time ( &rawtime );
+    cerr << "end time: " << ctime (&rawtime) << endl;
 
     Unigrams::write_vocab(vocab_out_fname, vocab);
 

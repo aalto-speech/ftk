@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
     cerr << "initial cost: " << segsents_cost << endl;
     StringSet ss(freqs, false);
     vocab = freqs;
-    gg.freqs_to_logprobs(vocab, Unigrams::get_sum(freqs));
+    Unigrams::freqs_to_logprobs(vocab);
     assert_single_chars(vocab, all_chars, one_char_min_lp);
     ss.assign_scores(vocab);
 
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
         segsents_cost = gg.resegment_sents(sents, ss, freqs);
         cerr << "cost: " << segsents_cost << endl;
         vocab = freqs;
-        gg.freqs_to_logprobs(vocab, Unigrams::get_sum(freqs));
+        Unigrams::freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
         ss.assign_scores(vocab);
 

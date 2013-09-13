@@ -59,8 +59,7 @@ public:
     static flt_type get_cost(const std::map<std::string, flt_type> &freqs,
                              flt_type densum);
 
-    static void freqs_to_logprobs(std::map<std::string, flt_type> &vocab,
-                                  flt_type densum);
+    static void freqs_to_logprobs(std::map<std::string, flt_type> &vocab);
 
     static int cutoff(std::map<std::string, flt_type> &vocab,
                       flt_type limit);
@@ -70,11 +69,11 @@ public:
                                 const std::map<std::string, flt_type> &vocab,
                                 std::set<std::string> &candidates);
 
-    void rank_removal_candidates(const std::map<std::string, flt_type> &words,
-                                 const std::map<std::string, flt_type> &vocab,
-                                 const std::set<std::string> &candidates,
-                                 std::map<std::string, flt_type> &new_morph_freqs,
-                                 std::vector<std::pair<std::string, flt_type> > &removal_scores);
+    flt_type rank_removal_candidates(const std::map<std::string, flt_type> &words,
+                                     const std::map<std::string, flt_type> &vocab,
+                                     const std::set<std::string> &candidates,
+                                     std::map<std::string, flt_type> &new_morph_freqs,
+                                     std::vector<std::pair<std::string, flt_type> > &removal_scores);
 
 private:
     flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);
