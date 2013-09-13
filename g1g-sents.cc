@@ -184,10 +184,8 @@ int main(int argc, char* argv[]) {
 
         cerr << "ranking candidate subwords" << endl;
         vector<pair<string, flt_type> > removal_scores;
-        gg.rank_removal_candidates(words, vocab, candidates, freqs, removal_scores);
+        cost = gg.rank_removal_candidates(words, vocab, candidates, freqs, removal_scores);
 
-        densum = gg.get_sum(freqs);
-        cost = gg.get_cost(freqs, densum);
         cerr << "starting cost before removing subwords one by one: " << cost << endl;
 
         // Perform removals one by one
@@ -200,8 +198,7 @@ int main(int argc, char* argv[]) {
 
             freqs.erase(removal_scores[i].first);
             vocab = freqs;
-            densum = gg.get_sum(freqs);
-            gg.freqs_to_logprobs(vocab, densum);
+            Unigrams::freqs_to_logprobs(vocab);
             assert_single_chars(vocab, all_chars, one_char_min_lp);
 
             n_removals++;
@@ -217,9 +214,8 @@ int main(int argc, char* argv[]) {
         }
 
         int n_cutoff = gg.cutoff(freqs, cutoff_value);
-        densum = gg.get_sum(freqs);
         vocab = freqs;
-        gg.freqs_to_logprobs(vocab, densum);
+        Unigrams::freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
         cost = gg.iterate(words, vocab, 2);
         assert_single_chars(vocab, all_chars, one_char_min_lp);

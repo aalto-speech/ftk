@@ -133,9 +133,7 @@ int main(int argc, char* argv[]) {
     ug.set_segmentation_method(forward_backward);
 
     cerr << "Initial cutoff" << endl;
-    ug.resegment_words(words, vocab, freqs);
-    flt_type densum = ug.get_sum(freqs);
-    flt_type cost = ug.get_cost(freqs, densum);
+    flt_type cost = ug.resegment_words(words, vocab, freqs);
     cerr << "unigram cost without word end symbols: " << cost << endl;
 
     ug.cutoff(freqs, (flt_type)cutoff_value);
