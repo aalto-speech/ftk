@@ -24,7 +24,8 @@ public:
 
     static int write_vocab(std::string fname,
                            const std::map<std::string, flt_type> &vocab,
-                           bool count_style=false);
+                           bool count_style=false,
+                           int num_decimals=6);
 
     static int read_sents(std::string fname,
                           std::vector<std::string> &sents);

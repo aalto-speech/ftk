@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 
@@ -40,10 +41,13 @@ Unigrams::read_vocab(string fname,
 int
 Unigrams::write_vocab(string fname,
                       const map<string, flt_type> &vocab,
-                      bool count_style)
+                      bool count_style,
+                      int num_decimals)
 {
     ofstream vocabfile(fname);
     if (!vocabfile) return -1;
+
+    vocabfile << setprecision(num_decimals);
 
     vector<pair<string, flt_type> > sorted_vocab;
     sort_vocab(vocab, sorted_vocab);
