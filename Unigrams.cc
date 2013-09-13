@@ -224,6 +224,7 @@ void
 Unigrams::freqs_to_logprobs(map<string, flt_type> &vocab)
 {
     flt_type densum = Unigrams::get_sum(vocab);
+    densum = log(densum);
     for (auto iter = vocab.begin(); iter != vocab.end(); ++iter)
         iter->second = (log(iter->second)-densum);
 }
