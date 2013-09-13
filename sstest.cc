@@ -222,3 +222,36 @@ void sstest :: StringSetTest7 (void)
     node = arc->target_node;
     CPPUNIT_ASSERT ( node->first_arc == NULL );
 }
+
+// Test for assign_scores
+// also removes strings not in the vocabulary
+void sstest :: StringSetTest8 (void)
+{
+    map<string, flt_type> vocab;
+    vocab["joo"] = 50;
+    vocab["heippa"] = 10;
+    vocab["hei"] = 10;
+    vocab["heh"] = 15;
+
+    StringSet ss(vocab);
+
+    auto it = vocab.find(string("heippa"));
+    vocab.erase(it);
+    vocab["jepsis"] = 30;
+
+    ss.assign_scores(vocab);
+    CPPUNIT_ASSERT_EQUAL ( vocab["joo"], ss.get_score("joo") );
+    CPPUNIT_ASSERT_EQUAL ( vocab["hei"], ss.get_score("hei") );
+    CPPUNIT_ASSERT_EQUAL ( vocab["heh"], ss.get_score("heh") );
+    CPPUNIT_ASSERT_EQUAL ( vocab["jepsis"], ss.get_score("jepsis") );
+
+    bool throws = false;
+    try {
+        ss.get_score("heippa");
+    }
+    catch (string e) {
+        throws = true;
+    }
+    CPPUNIT_ASSERT ( throws );
+    CPPUNIT_ASSERT ( vocab.size() == ss.string_count() );
+}

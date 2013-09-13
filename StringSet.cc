@@ -163,7 +163,7 @@ StringSet::optimize_arcs(Node *node, bool log_domain)
 
 
 void
-StringSet::assign_scores(const std::map<std::string, flt_type> &vocab)
+StringSet::assign_scores(const map<string, flt_type> &vocab)
 {
     for (auto it = vocab.begin(); it != vocab.end(); ++it) {
         string factor(it->first);
@@ -172,6 +172,16 @@ StringSet::assign_scores(const std::map<std::string, flt_type> &vocab)
         for (; i < (int)factor.length()-1; i++)
             node = insert(factor[i], "" , 0.0, node);
         insert(factor[i], factor, it->second, node);
+    }
+
+    vector<Arc*> arcs;
+    collect_arcs(arcs);
+
+    for (auto ait = arcs.begin(); ait != arcs.end(); ++ait) {
+        if (vocab.find((*ait)->factor) == vocab.end()) {
+            (*ait)->factor.clear();
+            (*ait)->cost = 0.0;
+        }
     }
 }
 
@@ -219,4 +229,37 @@ StringSet::prune(Node *node)
         return false;
     }
     else return true;
+}
+
+
+void
+StringSet::collect_arcs(vector<Arc*> &arcs)
+{
+    vector<Node*> nodes_to_process;
+    nodes_to_process.push_back(&root_node);
+
+    while (nodes_to_process.size() > 0) {
+        Arc *arc = nodes_to_process.back()->first_arc;
+        nodes_to_process.pop_back();
+        while (arc != NULL) {
+            arcs.push_back(arc);
+            nodes_to_process.push_back(arc->target_node);
+            arc = arc->sibling_arc;
+        }
+    }
+}
+
+
+unsigned int
+StringSet::string_count()
+{
+    vector<Arc*> arcs;
+    collect_arcs(arcs);
+
+    unsigned int count = 0;
+    for (auto ait = arcs.begin(); ait != arcs.end(); ++ait) {
+        if ((*ait)->factor.length() > 0)
+            count++;
+    }
+    return count;
 }

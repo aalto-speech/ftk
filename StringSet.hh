@@ -85,6 +85,9 @@ public:
     /** Prunes unused arcs and nodes */
     void prune() { prune(&root_node); };
 
+    /** Returns the number of stored strings */
+    unsigned int string_count();
+
     Node root_node; //!< The root of the string tree
     int max_factor_length; //!< The length of the longest factor in the set
 
@@ -108,6 +111,10 @@ private:
      * \return true if all arcs and subnodes of node were unused and deleted
      */
     bool prune(Node *node);
+
+    /** Helper, collects all arcs in the StringSet
+     */
+    void collect_arcs(std::vector<Arc*> &arcs);
 };
 
 
