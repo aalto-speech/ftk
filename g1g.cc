@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
         gg.cutoff(freqs, temp_cutoff);
         cerr << "\tcutoff: " << temp_cutoff << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
-        gg.freqs_to_logprobs(vocab);
+        Unigrams::freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
         temp_cutoff += 2.5;
         if (temp_cutoff > (flt_type)cutoff_value) break;
@@ -187,13 +187,12 @@ int main(int argc, char* argv[]) {
             if (vocab.find(removal_scores[i].first) == vocab.end()) continue;
 
             freqs.erase(removal_scores[i].first);
-            vocab = freqs;
-            gg.freqs_to_logprobs(vocab);
-            assert_single_chars(vocab, all_chars, one_char_min_lp);
-
             n_removals++;
 
             if (vocab.size() % 5000 == 0) {
+                vocab = freqs;
+                Unigrams::freqs_to_logprobs(vocab);
+                assert_single_chars(vocab, all_chars, one_char_min_lp);
                 ostringstream vocabfname;
                 vocabfname << "iter" << itern << "_" << vocab.size() << ".vocab";
                 Unigrams::write_vocab(vocabfname.str(), vocab);
@@ -203,9 +202,9 @@ int main(int argc, char* argv[]) {
             if (vocab.size() <= target_vocab_size) break;
         }
 
-        int n_cutoff = gg.cutoff(freqs, cutoff_value);
+        int n_cutoff = Unigrams::cutoff(freqs, cutoff_value);
         vocab = freqs;
-        gg.freqs_to_logprobs(vocab);
+        Unigrams::freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
         cost = gg.iterate(words, vocab, 2);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
