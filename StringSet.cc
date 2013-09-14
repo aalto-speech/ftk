@@ -150,7 +150,7 @@ StringSet::clear(Node *node)
 {
     for (auto ait = node->arcs.begin(); ait != node->arcs.end(); ++ait) {
         if (*ait != NULL) {
-            clear(node);
+            clear((*ait)->target_node);
             delete (*ait)->target_node;
             delete *ait;
         }

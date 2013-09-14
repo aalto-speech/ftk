@@ -186,6 +186,7 @@ int main(int argc, char* argv[]) {
             // Score most probably went to zero already
             if (vocab.find(removal_scores[i].first) == vocab.end()) continue;
 
+            vocab.erase(removal_scores[i].first);
             freqs.erase(removal_scores[i].first);
             n_removals++;
 
