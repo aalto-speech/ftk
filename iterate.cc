@@ -137,25 +137,15 @@ int main(int argc, char* argv[]) {
     else
         gg.set_segmentation_method(viterbi);
 
-    // Optimize vocabulary
-    cerr << "optimizing vocabulary" << endl;
-    unit_words = words;
-    for (auto it = unit_words.begin(); it != unit_words.end(); ++it)
-        it->second = 1.0;
-    gg.resegment_words(unit_words, vocab, freqs);
-    StringSet ss(freqs, false);
-    vocab = freqs;
-    Unigrams::freqs_to_logprobs(vocab);
-    assert_single_chars(vocab, all_chars, one_char_min_lp);
-    ss.assign_scores(vocab);
+    StringSet ss(vocab);
 
     cerr << "iterating.." << endl;
     time_t rawtime;
     time ( &rawtime );
     cerr << "start time: " << ctime (&rawtime) << endl;
     for (int i=0; i<num_iterations; i++) {
-        flt_type segwords_cost = gg.resegment_words(words, ss, freqs);
-        cerr << "cost: " << segwords_cost << endl;
+        flt_type cost = gg.resegment_words(words, ss, freqs);
+        cerr << "cost: " << cost << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);

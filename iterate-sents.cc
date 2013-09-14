@@ -133,25 +133,12 @@ int main(int argc, char* argv[]) {
     Unigrams::read_sents(training_fname, sents);
 
     // Optimize vocabulary
-    cerr << "optimizing vocabulary" << endl;
-    flt_type segsents_cost = gg.resegment_sents(sents, vocab, freqs);
-    cerr << "initial cost: " << segsents_cost << endl;
-    StringSet ss(freqs, false);
-    vocab = freqs;
-    Unigrams::freqs_to_logprobs(vocab);
-    assert_single_chars(vocab, all_chars, one_char_min_lp);
-    ss.assign_scores(vocab);
-
-    if (write_temp_vocabs) {
-        ostringstream tempfname;
-        tempfname << vocab_out_fname << ".iter0";
-        Unigrams::write_vocab(tempfname.str(), vocab);
-    }
+    StringSet ss(vocab);
 
     cerr << "iterating.." << endl;
     for (int i=0; i<num_iterations; i++) {
-        segsents_cost = gg.resegment_sents(sents, ss, freqs);
-        cerr << "cost: " << segsents_cost << endl;
+        flt_type cost = gg.resegment_sents(sents, ss, freqs);
+        cerr << "cost: " << cost << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);

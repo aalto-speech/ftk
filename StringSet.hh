@@ -1,12 +1,10 @@
 #ifndef STRINGSET_HH
 #define STRINGSET_HH
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "defs.hh"
-
 
 /** A structure containing a set of strings in a letter-tree format.
  * Input letters and output strings are stored in arcs. Nodes are just
@@ -20,30 +18,24 @@ public:
     /** Arc of a string tree. */
     class Arc {
     public:
-        Arc(char letter, std::string factor, Node *target_node, Arc *sibling_arc, flt_type cost=0.0)
-            : letter(letter), factor(factor), target_node(target_node), cost(cost),
-              sibling_arc(sibling_arc) { }
-
+        Arc(char letter, std::string factor, Node *target_node, flt_type cost=0.0)
+            : letter(letter), factor(factor), target_node(target_node), cost(cost) { }
         char letter; //!< Letter of the factor
         std::string factor; //!< Non-zero if factor in vocabulary
         Node *target_node; //!< Target node
         flt_type cost;
-        Arc *sibling_arc; //!< Pointer to another arc from the source node.
     };
 
     /** Node of a string tree. */
     class Node {
     public:
-        Node() : first_arc(NULL) { }
-        Node(Arc *first_arc) : first_arc(first_arc) { }
-        Arc *first_arc; //!< The first arc of a list of arcs
+        Node() { }
+        std::vector<Arc*> arcs;
     };
 
     /** Default constructor. */
-    StringSet() : max_factor_length(0) { }
-    StringSet(const std::map<std::string, flt_type> &vocab,
-              bool optimize=true,
-              bool log_domain=true);
+    StringSet() : max_factor_length(0) { };
+    StringSet(const std::map<std::string, flt_type> &vocab);
     ~StringSet();
 
     /** Find an arc with the given letter from the given node.
@@ -52,6 +44,13 @@ public:
      * \return the arc containing the letter or NULL if no such arc exists
      */
     Arc* find_arc(char letter, const Node *node) const;
+
+    /** Find an arc with the given letter from the given node.
+     * \param letter = the letter to search
+     * \param node = the source node
+     * \return the arc containing the letter or NULL if no such arc exists
+     */
+    void insert_arc(char letter, const Node *node) const;
 
     /** Checks if the string is in stringset */
     bool includes(const std::string &factor) const;
@@ -69,21 +68,10 @@ public:
      */
     flt_type remove(const std::string &factor);
 
-    /** Recursively sorts arcs in this node and each subnode,
-     *  in descending order according to cumulative counts
-     * \param node = initial node
-     * \param log_domain = if the scores are in log domain (add scores in log domain, otherwise just +)
-     * \return cumulative count of all subarcs reachable from this node
-     */
-    flt_type optimize_arcs(Node *node, bool log_domain = true);
-
     /** Assigns new scores to the StringSet
      * \param vocab = vocabulary of values to assign
      */
     void assign_scores(const std::map<std::string, flt_type> &vocab);
-
-    /** Prunes unused arcs and nodes */
-    void prune() { prune(&root_node); };
 
     /** Returns the number of stored strings */
     unsigned int string_count();

@@ -133,99 +133,10 @@ void sstest :: StringSetTest4 (void)
     CPPUNIT_ASSERT_EQUAL ( -4.0, ss.get_score("hei") );
 }
 
-// Check that arcs are sorted by their cumulative counts in each node
-void sstest :: StringSetTest5 (void)
-{
-    StringSet ss;
-    ss.add("joo", -0.25);
-    ss.add("heippa", -1.5);
-    ss.add("hei", -1.0);
-    ss.add("heh", -2.0);
-    ss.optimize_arcs(&ss.root_node, true);
-
-    StringSet::Node *node = &ss.root_node;
-    StringSet::Arc *arc = node->first_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'j', arc->letter );
-    arc = arc->sibling_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'h', arc->letter );
-    CPPUNIT_ASSERT ( arc->sibling_arc == NULL );
-
-    node = arc->target_node;
-    arc = node->first_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'e', arc->letter );
-    node = arc->target_node;
-
-    arc = node->first_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'i', arc->letter );
-    arc = arc->sibling_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'h', arc->letter );
-    CPPUNIT_ASSERT ( arc->sibling_arc == NULL );
-}
-
-// Check that arcs are sorted by their cumulative counts in each node
-// Non-log domain
-void sstest :: StringSetTest6 (void)
-{
-    StringSet ss;
-    ss.add("joo", 50);
-    ss.add("heippa", 10);
-    ss.add("hei", 10);
-    ss.add("heh", 15);
-    ss.optimize_arcs(&ss.root_node, false);
-
-    StringSet::Node *node = &ss.root_node;
-    StringSet::Arc *arc = node->first_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'j', arc->letter );
-    arc = arc->sibling_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'h', arc->letter );
-    CPPUNIT_ASSERT ( arc->sibling_arc == NULL );
-
-    node = arc->target_node;
-    arc = node->first_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'e', arc->letter );
-    node = arc->target_node;
-
-    arc = node->first_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'i', arc->letter );
-    arc = arc->sibling_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'h', arc->letter );
-    CPPUNIT_ASSERT ( arc->sibling_arc == NULL );
-}
-
-// Test pruning unused nodes and arcs.
-void sstest :: StringSetTest7 (void)
-{
-    StringSet ss;
-    ss.add("joo", 50);
-    ss.add("heippa", 10);
-    ss.add("hei", 10);
-    ss.add("heh", 15);
-    ss.optimize_arcs(&ss.root_node, false);
-
-    ss.remove("heippa");
-    ss.prune();
-
-    StringSet::Node *node = &ss.root_node;
-    StringSet::Arc *arc = node->first_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'j', arc->letter );
-    arc = arc->sibling_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'h', arc->letter );
-    CPPUNIT_ASSERT ( arc->sibling_arc == NULL );
-
-    node = arc->target_node;
-    arc = node->first_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'e', arc->letter );
-    node = arc->target_node;
-
-    arc = node->first_arc;
-    CPPUNIT_ASSERT_EQUAL ( 'i', arc->letter );
-    node = arc->target_node;
-    CPPUNIT_ASSERT ( node->first_arc == NULL );
-}
 
 // Test for assign_scores
 // also removes strings not in the vocabulary
-void sstest :: StringSetTest8 (void)
+void sstest :: StringSetTest5 (void)
 {
     map<string, flt_type> vocab;
     vocab["joo"] = 50;

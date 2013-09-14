@@ -14,9 +14,6 @@ class sstest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (StringSetTest3);
     CPPUNIT_TEST (StringSetTest4);
     CPPUNIT_TEST (StringSetTest5);
-    CPPUNIT_TEST (StringSetTest6);
-    CPPUNIT_TEST (StringSetTest7);
-    CPPUNIT_TEST (StringSetTest8);
     CPPUNIT_TEST_SUITE_END ();
 
     public:
@@ -29,9 +26,6 @@ class sstest : public CPPUNIT_NS :: TestFixture
         void StringSetTest3(void);
         void StringSetTest4(void);
         void StringSetTest5(void);
-        void StringSetTest6(void);
-        void StringSetTest7(void);
-        void StringSetTest8(void);
 
     private:
         std::string start_end;

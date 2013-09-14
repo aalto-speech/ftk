@@ -51,6 +51,11 @@ static void trim(std::string &str, char to_trim)
     else str.erase(str.begin(), str.end());
 }
 
+static inline unsigned char remap_char(char orig)
+{
+    return (unsigned char)orig-97;
+}
+
 
 #endif /* PROJECT_DEFS */
 
