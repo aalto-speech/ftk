@@ -3,6 +3,7 @@
 #include <set>
 #include <stdexcept>
 #include <queue>
+#include <iostream>
 
 #include "FactorEncoder.hh"
 
@@ -78,8 +79,56 @@ flt_type viterbi(const StringSet &vocab,
         for (int j=i; j<text.length(); j++) {
 
             StringSet::Arc *arc = vocab.find_arc(text[j], node);
+            if (arc == nullptr) break;
+            node = arc->target_node;
 
-            if (arc == NULL) break;
+            // Morph associated with this node
+            if (arc->factor.length() > 0) {
+                flt_type cost = arc->cost;
+                if (i>0) cost += search[i-1].cost;
+
+                if (cost > search[j].cost) {
+                    search[j].cost = cost;
+                    search[j].source = i-1;
+                }
+            }
+        }
+    }
+
+    // Look up the best path
+    int target = search.size()-1;
+    if (search[target].cost == MIN_FLOAT) return MIN_FLOAT;
+
+    int source = search[target].source;
+    while (true) {
+        best_path.push_back(text.substr(source+1, target-source));
+        if (source == -1) break;
+        target = source;
+        source = search[target].source;
+    }
+
+    if (reverse) std::reverse(best_path.begin(), best_path.end());
+    return search.back().cost;
+}
+
+
+flt_type viterbi_safe(const StringSet &vocab,
+                      const string &text,
+                      vector<string> &best_path,
+                      bool reverse)
+{
+    best_path.clear();
+    if (text.length() == 0) return MIN_FLOAT;
+    vector<Token> search(text.length());
+
+    for (int i=0; i<text.length(); i++) {
+
+        // Iterate all factors starting from this position
+        const StringSet::Node *node = &vocab.root_node;
+        for (int j=i; j<text.length(); j++) {
+
+            StringSet::Arc *arc = vocab.find_arc_safe(text[j], node);
+            if (arc == nullptr) break;
             node = arc->target_node;
 
             // Morph associated with this node
@@ -118,7 +167,7 @@ flt_type viterbi(const StringSet &vocab,
 {
     stats.clear();
     vector<string> best_path;
-    flt_type lp = viterbi(vocab, text, best_path, false);
+    flt_type lp = viterbi_safe(vocab, text, best_path, false);
     for (auto it = best_path.begin(); it != best_path.end(); ++it)
         stats[*it] += 1.0;
     return lp;
@@ -147,7 +196,7 @@ void forward(const StringSet &vocab,
 
             StringSet::Arc *arc = vocab.find_arc(text[j], node);
 
-            if (arc == NULL) break;
+            if (arc == nullptr) break;
             node = arc->target_node;
 
             // Morph associated with this node

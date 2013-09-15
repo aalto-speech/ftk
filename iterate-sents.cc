@@ -132,8 +132,8 @@ int main(int argc, char* argv[]) {
     cerr << "Reading training corpus " << training_fname << endl;
     Unigrams::read_sents(training_fname, sents);
 
-    // Optimize vocabulary
     StringSet ss(vocab);
+    ss.make_safe_end_nodes(sents);
 
     cerr << "iterating.." << endl;
     for (int i=0; i<num_iterations; i++) {

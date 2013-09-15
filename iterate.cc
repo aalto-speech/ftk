@@ -138,6 +138,7 @@ int main(int argc, char* argv[]) {
         gg.set_segmentation_method(viterbi);
 
     StringSet ss(vocab);
+    ss.make_safe_end_nodes(words);
 
     cerr << "iterating.." << endl;
     time_t rawtime;
