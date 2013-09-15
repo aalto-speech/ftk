@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
     Unigrams::read_sents(corpus_fname, sents);
 
     cerr << "Initial cutoff" << endl;
-    flt_type segsents_cost = gg.resegment_sents(sents, vocab, freqs);
+    flt_type cost = gg.resegment_sents(sents, vocab, freqs);
     vocab = freqs;
     Unigrams::freqs_to_logprobs(vocab);
     ostringstream tempfname;
@@ -143,18 +143,18 @@ int main(int argc, char* argv[]) {
     Unigrams::write_vocab(tempfname.str(), vocab);
     assert_single_chars(vocab, all_chars, one_char_min_lp);
 
-    cerr << "cost: " << segsents_cost << endl;
+    cerr << "cost: " << cost << endl;
 
     flt_type temp_cutoff = 5.0;
     while (true) {
-        gg.cutoff(freqs, temp_cutoff);
+        Unigrams::cutoff(freqs, temp_cutoff);
         cerr << "\tcutoff: " << temp_cutoff << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
-        gg.freqs_to_logprobs(vocab);
+        Unigrams::freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
 
         if (vocab.size() <= target_vocab_size) break;
-        segsents_cost = gg.resegment_sents(sents, vocab, freqs);
+        cost = gg.resegment_sents(sents, vocab, freqs);
 
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
@@ -162,7 +162,7 @@ int main(int argc, char* argv[]) {
         tempfname << "cutoff." << temp_cutoff << ".vocab";
         Unigrams::write_vocab(tempfname.str(), vocab);
 
-        cerr << "cost: " << segsents_cost << endl;
+        cerr << "cost: " << cost << endl;
         temp_cutoff += 2.5;
     }
 
