@@ -41,7 +41,7 @@ public:
     /** Find an arc with the given letter from the given node.
      * \param letter = the letter to search
      * \param node = the source node
-     * \return the arc containing the letter or NULL if no such arc exists
+     * \return the arc containing the letter or nullptr if no such arc exists
      */
     Arc* find_arc(char letter, const Node *node) const;
 
@@ -49,6 +49,13 @@ public:
      * \param letter = the letter to search
      * \param node = the source node
      * \return the arc containing the letter or NULL if no such arc exists
+     */
+    Arc* find_arc_safe(char letter, const Node *node) const;
+
+    /** Find an arc with the given letter from the given node.
+     * \param letter = the letter to search
+     * \param node = the source node
+     * \return the arc containing the letter or nullptr if no such arc exists
      */
     void insert_arc(char letter, const Node *node) const;
 
@@ -75,6 +82,9 @@ public:
 
     /** Returns the number of stored strings */
     unsigned int string_count();
+
+    void make_safe_end_nodes(const std::vector<std::string> &texts);
+    void make_safe_end_nodes(const std::map<std::string, flt_type> &texts);
 
     Node root_node; //!< The root of the string tree
     int max_factor_length; //!< The length of the longest factor in the set

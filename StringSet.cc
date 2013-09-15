@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 
 #include "StringSet.hh"
@@ -28,10 +29,10 @@ StringSet::insert(char letter,
     Arc *arc = find_arc(letter, node);
 
     // No existing arc: create a new arc
-    if (arc == NULL) {
+    if (arc == nullptr) {
         Node *new_node = new Node();
-        unsigned char remapped = remap_char(letter);
-        if (node->arcs.size() < remapped+1) node->arcs.resize(remapped+1, NULL);
+        unsigned int remapped = remap_char(letter);
+        if (node->arcs.size() < remapped+1) node->arcs.resize(remapped+1, nullptr);
         arc = new Arc(letter, factor, new_node, cost);
         node->arcs[remapped] = arc;
     }
@@ -54,11 +55,19 @@ StringSet::Arc*
 StringSet::find_arc(char letter,
                     const StringSet::Node *node) const
 {
-    unsigned char remapped = remap_char(letter);
+    unsigned int remapped = remap_char(letter);
     if (remapped < node->arcs.size())
         return node->arcs[remapped];
     else
-        return NULL;
+        return nullptr;
+}
+
+
+StringSet::Arc*
+StringSet::find_arc_safe(char letter,
+                         const StringSet::Node *node) const
+{
+    return node->arcs[remap_char(letter)];
 }
 
 
@@ -66,10 +75,10 @@ bool
 StringSet::includes(const string &factor) const
 {
     const StringSet::Node *node = &root_node;
-    StringSet::Arc *arc = NULL;
+    StringSet::Arc *arc = nullptr;
     for (unsigned int i=0; i<factor.length(); i++) {
         arc = find_arc(factor[i], node);
-        if (arc == NULL) return false;
+        if (arc == nullptr) return false;
         node = arc->target_node;
     }
     if (arc->factor.length() == 0) return false;
@@ -81,10 +90,10 @@ flt_type
 StringSet::get_score(const string &factor) const
 {
     const StringSet::Node *node = &root_node;
-    StringSet::Arc *arc = NULL;
+    StringSet::Arc *arc = nullptr;
     for (unsigned int i=0; i<factor.length(); i++) {
         arc = find_arc(factor[i], node);
-        if (arc == NULL) throw string("could not find factor");
+        if (arc == nullptr) throw string("could not find factor");
         node = arc->target_node;
     }
     if (arc->factor.length() == 0) throw string("could not find factor");
@@ -107,11 +116,11 @@ flt_type
 StringSet::remove(const string &factor)
 {
     StringSet::Node *node = &root_node;
-    StringSet::Arc *arc = NULL;
+    StringSet::Arc *arc = nullptr;
 
     for (unsigned int i=0; i<factor.length(); i++) {
         arc = find_arc(factor[i], node);
-        if (arc == NULL) throw string("could not remove factor");
+        if (arc == nullptr) throw string("could not remove factor");
         node = arc->target_node;
     }
     arc->factor.clear();
@@ -149,7 +158,7 @@ void
 StringSet::clear(Node *node)
 {
     for (auto ait = node->arcs.begin(); ait != node->arcs.end(); ++ait) {
-        if (*ait != NULL) {
+        if (*ait != nullptr) {
             clear((*ait)->target_node);
             delete (*ait)->target_node;
             delete *ait;
@@ -169,7 +178,7 @@ StringSet::collect_arcs(vector<Arc*> &arcs)
         nodes_to_process.pop_back();
 
         for (auto ait = node->arcs.begin(); ait != node->arcs.end(); ++ait) {
-            if (*ait == NULL) continue;
+            if (*ait == nullptr) continue;
             arcs.push_back(*ait);
             nodes_to_process.push_back((*ait)->target_node);
         }
@@ -185,8 +194,41 @@ StringSet::string_count()
 
     unsigned int count = 0;
     for (auto ait = arcs.begin(); ait != arcs.end(); ++ait) {
-        if (*ait == NULL) continue;
+        if (*ait == nullptr) continue;
         if ((*ait)->factor.length() > 0) count++;
     }
     return count;
 }
+
+
+void
+StringSet::make_safe_end_nodes(const vector<string> &texts)
+{
+    for (auto tit = texts.begin(); tit != texts.end(); ++tit) {
+        string text(*tit);
+        for (int i=0; i<text.length(); i++) {
+            Node *node = &root_node;
+            for (int j=i; j<text.length(); j++) {
+                unsigned int remapped = remap_char(text[j]);
+                if (remapped+1 > node->arcs.size()) {
+                    node->arcs.resize(remapped+1, nullptr);
+                    break;
+                }
+                StringSet::Arc *arc = node->arcs[remapped];
+                if (arc == nullptr) break;
+                node = arc->target_node;
+            }
+        }
+    }
+}
+
+
+void
+StringSet::make_safe_end_nodes(const std::map<std::string, flt_type> &texts)
+{
+    vector<string> vtexts;
+    for (auto tit = texts.begin(); tit != texts.end(); ++tit)
+        vtexts.push_back(tit->first);
+    make_safe_end_nodes(vtexts);
+}
+
