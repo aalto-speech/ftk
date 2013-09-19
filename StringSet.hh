@@ -29,7 +29,7 @@ public:
     /** Node of a string tree. */
     class Node {
     public:
-        Node() { }
+        Node(int character_count = 0) { arcs.resize(character_count, nullptr); }
         std::vector<Arc*> arcs;
     };
 
@@ -88,6 +88,8 @@ public:
 
     Node root_node; //!< The root of the string tree
     int max_factor_length; //!< The length of the longest factor in the set
+    unsigned char charmap[256];
+    int character_count;
 
 private:
 
@@ -113,6 +115,16 @@ private:
     /** Helper, collects all arcs in the StringSet
      */
     void collect_arcs(std::vector<Arc*> &arcs);
+
+    /** Helper, constructs a compact letter mapping to range [0,|C|]
+     */
+    void learn_map(const std::map<std::string, flt_type> &vocab);
+
+    inline unsigned char remap_char(char orig) const
+    {
+        return charmap[(unsigned char)orig];
+    }
+
 };
 
 
