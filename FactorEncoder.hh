@@ -23,11 +23,6 @@ flt_type viterbi(const StringSet &vocab,
                  std::vector<std::string> &best_path,
                  bool reverse=true);
 
-flt_type viterbi_safe(const StringSet &vocab,
-                      const std::string &text,
-                      std::vector<std::string> &best_path,
-                      bool reverse=true);
-
 flt_type viterbi(const StringSet &vocab,
                  const std::string &text,
                  std::map<std::string, flt_type> &stats);
