@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
         temp_cutoff += 1.0;
     }
 
-    cerr << "Removing subwords one by one" << endl;
+    cerr << "Pruning factors" << endl;
     int itern = 1;
     while (true) {
 
@@ -171,10 +171,66 @@ int main(int argc, char* argv[]) {
         set<string> candidates;
         gg.init_candidates(n_candidates_per_iter, vocab, candidates);
 
-        cerr << "ranking candidate subwords" << endl;
+        cerr << "ranking candidate factors" << endl;
         vector<pair<string, flt_type> > removal_scores;
         cost = gg.rank_candidates(sents, vocab, candidates, freqs, removal_scores);
         cerr << "cost: " << cost << endl;
+
+        // Perform removals one by one
+        unsigned int n_removals = 0;
+        for (unsigned int i=0; i<removal_scores.size(); i++) {
+
+            if (removal_scores[i].first.length() == 1) continue;
+            // Score most probably went to zero already
+            if (vocab.find(removal_scores[i].first) == vocab.end()) continue;
+            if (freqs.find(removal_scores[i].first) == freqs.end()) continue;
+
+            vocab.erase(removal_scores[i].first);
+            freqs.erase(removal_scores[i].first);
+            n_removals++;
+
+            if (vocab.size() % 5000 == 0) {
+                vocab = freqs;
+                Unigrams::freqs_to_logprobs(vocab);
+                assert_single_chars(vocab, all_chars, one_char_min_lp);
+                ostringstream vocabfname;
+                vocabfname << "iter" << itern << "_" << vocab.size() << ".vocab";
+                Unigrams::write_vocab(vocabfname.str(), vocab);
+            }
+
+            if (n_removals >= max_removals_per_iter) break;
+            if (vocab.size() <= target_vocab_size) break;
+        }
+
+        int n_cutoff = Unigrams::cutoff(freqs, cutoff_value);
+        vocab = freqs;
+        Unigrams::freqs_to_logprobs(vocab);
+        assert_single_chars(vocab, all_chars, one_char_min_lp);
+        cost = gg.iterate(sents, vocab, 2);
+        assert_single_chars(vocab, all_chars, one_char_min_lp);
+
+        cerr << "factors removed in this iteration: " << n_removals << endl;
+        cerr << "factors removed with cutoff this iteration: " << n_cutoff << endl;
+        cerr << "current vocabulary size: " << vocab.size() << endl;
+        cerr << "likelihood after the removals: " << cost << endl;
+
+        ostringstream vocabfname;
+        vocabfname << "iter" << itern << ".vocab";
+        Unigrams::write_vocab(vocabfname.str(), vocab);
+
+        itern++;
+
+        if (n_removals < min_removals_per_iter) {
+            cerr << "stopping by min_removals_per_iter." << endl;
+            break;
+        }
+
+        if (vocab.size() <= target_vocab_size) {
+            cerr << "stopping by min_vocab_size." << endl;
+            break;
+        }
+
+
     }
 
     exit(1);

@@ -104,8 +104,8 @@ Unigrams::sort_vocab(const map<string, flt_type> &vocab,
 
 
 flt_type
-Unigrams::iterate(const std::map<std::string, flt_type> &words,
-                  std::map<std::string, flt_type> &vocab,
+Unigrams::iterate(const map<string, flt_type> &words,
+                  map<string, flt_type> &vocab,
                   unsigned int iterations)
 {
     map<string, flt_type> freqs;
@@ -113,6 +113,24 @@ Unigrams::iterate(const std::map<std::string, flt_type> &words,
 
     for (unsigned int i=0; i<iterations; i++) {
         ll = resegment_words(words, vocab, freqs);
+        vocab = freqs;
+        freqs_to_logprobs(vocab);
+    }
+
+    return ll;
+}
+
+
+flt_type
+Unigrams::iterate(const vector<string> &sents,
+                  map<string, flt_type> &vocab,
+                  unsigned int iterations)
+{
+    map<string, flt_type> freqs;
+    flt_type ll = 0.0;
+
+    for (unsigned int i=0; i<iterations; i++) {
+        ll = resegment_sents(sents, vocab, freqs);
         vocab = freqs;
         freqs_to_logprobs(vocab);
     }
@@ -159,7 +177,7 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
 
 
 flt_type
-Unigrams::resegment_sents(vector<string> &sents,
+Unigrams::resegment_sents(const vector<string> &sents,
                           const map<string, flt_type> &vocab,
                           map<string, flt_type> &new_freqs)
 {
@@ -169,7 +187,7 @@ Unigrams::resegment_sents(vector<string> &sents,
 
 
 flt_type
-Unigrams::resegment_sents(vector<string> &sents,
+Unigrams::resegment_sents(const vector<string> &sents,
                           const StringSet &vocab,
                           map<string, flt_type> &new_freqs)
 {
