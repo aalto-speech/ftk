@@ -238,6 +238,8 @@ bool rank_desc_sort(pair<unsigned char, int> i,pair<unsigned char, int> j) { ret
 void
 StringSet::learn_map(const map<string, flt_type> &vocab)
 {
+    for (int i=0; i<256; i++) charmap[i] = 255;
+
     map<unsigned char, int> charcounts;
     for (auto it = vocab.begin(); it != vocab.end(); ++it) {
         for (const char &chr : it->first) charcounts[(unsigned char)chr]++;
@@ -251,7 +253,6 @@ StringSet::learn_map(const map<string, flt_type> &vocab)
     sort(sorted_charcounts.begin(), sorted_charcounts.end(), rank_desc_sort);
 
     unsigned char idx = 0;
-    //charmap.resize(256);
     character_count = charcounts.size();
     for (auto it = sorted_charcounts.begin(); it != sorted_charcounts.end(); ++it) {
         charmap[it->first] = idx;
