@@ -64,15 +64,21 @@ public:
     static int cutoff(std::map<std::string, flt_type> &vocab,
                       flt_type limit);
 
-    int init_removal_candidates(int n_candidates,
-                                const std::map<std::string, flt_type> &vocab,
-                                std::set<std::string> &candidates);
+    int init_candidates(int n_candidates,
+                        const std::map<std::string, flt_type> &vocab,
+                        std::set<std::string> &candidates);
 
-    flt_type rank_removal_candidates(const std::map<std::string, flt_type> &words,
-                                     const std::map<std::string, flt_type> &vocab,
-                                     const std::set<std::string> &candidates,
-                                     std::map<std::string, flt_type> &new_morph_freqs,
-                                     std::vector<std::pair<std::string, flt_type> > &removal_scores);
+    flt_type rank_candidates(const std::map<std::string, flt_type> &words,
+                             const std::map<std::string, flt_type> &vocab,
+                             const std::set<std::string> &candidates,
+                             std::map<std::string, flt_type> &new_freqs,
+                             std::vector<std::pair<std::string, flt_type> > &removal_scores);
+
+    flt_type rank_candidates(std::vector<std::string> &sents,
+                             const std::map<std::string, flt_type> &vocab,
+                             const std::set<std::string> &candidates,
+                             std::map<std::string, flt_type> &new_freqs,
+                             std::vector<std::pair<std::string, flt_type> > &removal_scores);
 
 private:
     flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);

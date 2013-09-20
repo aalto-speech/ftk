@@ -251,7 +251,7 @@ Unigrams::cutoff(map<string, flt_type> &vocab,
 // Select n_candidates number of subwords in the vocabulary as removal candidates
 // running from the least common subword
 int
-Unigrams::init_removal_candidates(int n_candidates,
+Unigrams::init_candidates(int n_candidates,
                                   const map<string, flt_type> &vocab,
                                   set<string> &candidates)
 {
@@ -277,11 +277,11 @@ bool rank_desc_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return 
 // Perform each of the removals (independent of others in the list) to get
 // initial order for the removals
 flt_type
-Unigrams::rank_removal_candidates(const map<string, flt_type> &words,
-                                  const map<string, flt_type> &vocab,
-                                  const set<string> &candidates,
-                                  map<string, flt_type> &new_freqs,
-                                  vector<pair<string, flt_type> > &removal_scores)
+Unigrams::rank_candidates(const map<string, flt_type> &words,
+                          const map<string, flt_type> &vocab,
+                          const set<string> &candidates,
+                          map<string, flt_type> &new_freqs,
+                          vector<pair<string, flt_type> > &removal_scores)
 {
     new_freqs.clear();
     removal_scores.clear();
@@ -323,6 +323,72 @@ Unigrams::rank_removal_candidates(const map<string, flt_type> &words,
                 }
 
                 diffs[hypoiter->first] += worditer->second * (hypo_score-orig_score);
+
+                ss_vocab.add(hypoiter->first, stored_value);
+            }
+        }
+    }
+
+    for (auto iter = diffs.begin(); iter != diffs.end(); ++iter) {
+        pair<string, flt_type> removal_score = make_pair(iter->first, iter->second);
+        removal_scores.push_back(removal_score);
+    }
+
+    sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
+
+    return curr_ll;
+}
+
+
+// Perform each of the removals (independent of others in the list) to get
+// initial order for the removals
+flt_type
+Unigrams::rank_candidates(std::vector<std::string> &sents,
+                          const map<string, flt_type> &vocab,
+                          const set<string> &candidates,
+                          map<string, flt_type> &new_freqs,
+                          vector<pair<string, flt_type> > &removal_scores)
+{
+    new_freqs.clear();
+    removal_scores.clear();
+
+    StringSet ss_vocab(vocab);
+    map<string, flt_type> diffs;
+
+    flt_type curr_ll = 0.0;
+
+    for (auto sentiter = sents.cbegin(); sentiter != sents.cend(); ++sentiter) {
+
+        map<string, flt_type> stats;
+        flt_type orig_score = segf(ss_vocab, *sentiter, stats);
+        curr_ll += orig_score;
+
+        if (stats.size() == 0) {
+            cerr << "warning, no segmentation for sentence: " << *sentiter << endl;
+            exit(0);
+        }
+
+        // Update statistics
+        for (auto it = stats.cbegin(); it != stats.cend(); ++it)
+            new_freqs[it->first] += it->second;
+
+        // Hypothesize what the segmentation would be if some subword didn't exist
+        for (auto hypoiter = stats.cbegin(); hypoiter != stats.cend(); ++hypoiter) {
+
+            // If wanting to hypothesize removal of this subword
+            if (candidates.find(hypoiter->first) != candidates.end()) {
+
+                flt_type stored_value = ss_vocab.remove(hypoiter->first);
+                map<string, flt_type> hypo_stats;
+
+                flt_type hypo_score = segf(ss_vocab, *sentiter, hypo_stats);
+
+                if (hypo_stats.size() == 0) {
+                    cerr << "warning, no hypo segmentation for sentence: " << *sentiter << endl;
+                    exit(0);
+                }
+
+                diffs[hypoiter->first] += (hypo_score-orig_score);
 
                 ss_vocab.add(hypoiter->first, stored_value);
             }

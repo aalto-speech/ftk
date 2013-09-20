@@ -169,8 +169,12 @@ int main(int argc, char* argv[]) {
 
         cerr << "candidates for removal: " << n_candidates_per_iter << endl;
         set<string> candidates;
-        gg.init_removal_candidates(n_candidates_per_iter, vocab, candidates);
+        gg.init_candidates(n_candidates_per_iter, vocab, candidates);
 
+        cerr << "ranking candidate subwords" << endl;
+        vector<pair<string, flt_type> > removal_scores;
+        cost = gg.rank_candidates(sents, vocab, candidates, freqs, removal_scores);
+        cerr << "cost: " << cost << endl;
     }
 
     exit(1);
