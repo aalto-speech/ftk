@@ -203,37 +203,6 @@ StringSet::string_count()
 }
 
 
-void
-StringSet::make_safe_end_nodes(const vector<string> &texts)
-{
-    for (auto tit = texts.begin(); tit != texts.end(); ++tit) {
-        string text(*tit);
-        for (int i=0; i<text.length(); i++) {
-            Node *node = &root_node;
-            for (int j=i; j<text.length(); j++) {
-                unsigned int remapped = remap_char(text[j]);
-                if (remapped+1 > node->arcs.size()) {
-                    node->arcs.resize(remapped+1, nullptr);
-                    break;
-                }
-                StringSet::Arc *arc = node->arcs[remapped];
-                if (arc == nullptr) break;
-                node = arc->target_node;
-            }
-        }
-    }
-}
-
-
-void
-StringSet::make_safe_end_nodes(const std::map<std::string, flt_type> &texts)
-{
-    vector<string> vtexts;
-    for (auto tit = texts.begin(); tit != texts.end(); ++tit)
-        vtexts.push_back(tit->first);
-    make_safe_end_nodes(vtexts);
-}
-
 bool rank_desc_sort(pair<unsigned char, int> i,pair<unsigned char, int> j) { return (i.second > j.second); }
 void
 StringSet::learn_map(const map<string, flt_type> &vocab)

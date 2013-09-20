@@ -83,9 +83,6 @@ public:
     /** Returns the number of stored strings */
     unsigned int string_count();
 
-    void make_safe_end_nodes(const std::vector<std::string> &texts);
-    void make_safe_end_nodes(const std::map<std::string, flt_type> &texts);
-
     Node root_node; //!< The root of the string tree
     int max_factor_length; //!< The length of the longest factor in the set
     unsigned char charmap[256];
