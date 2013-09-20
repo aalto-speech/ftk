@@ -65,7 +65,6 @@ public:
                       flt_type limit);
 
     int init_removal_candidates(int n_candidates,
-                                const std::map<std::string, flt_type> &words,
                                 const std::map<std::string, flt_type> &vocab,
                                 std::set<std::string> &candidates);
 

@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
         cerr << "collecting candidate subwords for removal" << endl;
         set<string> candidates;
         if ((int)vocab.size()-n_candidates_per_iter < target_vocab_size) n_candidates_per_iter = (int)vocab.size()-target_vocab_size;
-        gg.init_removal_candidates(n_candidates_per_iter, words, vocab, candidates);
+        gg.init_removal_candidates(n_candidates_per_iter, vocab, candidates);
 
         cerr << "ranking candidate subwords" << endl;
         vector<pair<string, flt_type> > removal_scores;

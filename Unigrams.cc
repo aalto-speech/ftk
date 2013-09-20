@@ -252,15 +252,12 @@ Unigrams::cutoff(map<string, flt_type> &vocab,
 // running from the least common subword
 int
 Unigrams::init_removal_candidates(int n_candidates,
-                                  const map<string, flt_type> &words,
                                   const map<string, flt_type> &vocab,
                                   set<string> &candidates)
 {
-    map<string, flt_type> new_morph_freqs;
-    resegment_words(words, vocab, new_morph_freqs);
 
     vector<pair<string, flt_type> > sorted_vocab;
-    sort_vocab(new_morph_freqs, sorted_vocab, false);
+    sort_vocab(vocab, sorted_vocab, false);
 
     int selected_candidates = 0;
     for (auto it = sorted_vocab.cbegin(); it != sorted_vocab.cend(); ++it) {
