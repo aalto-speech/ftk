@@ -33,12 +33,14 @@ int main(int argc, char* argv[]) {
     transitions_t transitions;
     flt_type one_char_min_lp = -25.0;
     bool enable_posterior_decoding = false;
+    bool print_sentence_markers = false;
 
     poptContext pc;
     struct poptOption po[] = {
         {"vocabulary", 'v', POPT_ARG_STRING, &vocab_fname, 11001, NULL, "Vocabulary file name"},
         {"transitions", 't', POPT_ARG_STRING, &trans_fname, 11002, NULL, "Transition file name"},
         {"posterior-decode", 'p', POPT_ARG_NONE, &enable_posterior_decoding, 11002, NULL, "Posterior decoding instead of Viterbi"},
+        {"sentence-ends", 's', POPT_ARG_NONE, &print_sentence_markers, 11002, NULL, "Print sentence begin and end symbols"},
         POPT_AUTOHELP
         {NULL}
     };
@@ -164,11 +166,13 @@ int main(int argc, char* argv[]) {
         }
 
         // Print out the best path
+        if (print_sentence_markers) fwrite("<s> ", 1, 4, outfile.file);
         for (unsigned int i=0; i<best_path.size()-1; i++) {
             fwrite(best_path[i].c_str(), 1, best_path[i].length(), outfile.file);
             fwrite(" ", 1, 1, outfile.file);
         }
         fwrite(best_path[best_path.size()-1].c_str(), 1, best_path[best_path.size()-1].length(), outfile.file);
+        if (print_sentence_markers) fwrite(" </s>", 1, 5, outfile.file);
         fwrite("\n", 1, 1, outfile.file);
     }
 
