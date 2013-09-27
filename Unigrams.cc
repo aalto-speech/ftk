@@ -305,15 +305,18 @@ Unigrams::rank_candidates(const map<string, flt_type> &words,
     removal_scores.clear();
 
     StringSet ss_vocab(vocab);
-    map<string, flt_type> diffs;
+    map<string, flt_type> ll_diffs;
+    map<string, flt_type> token_diffs;
 
     flt_type curr_ll = 0.0;
+    flt_type token_count = 0.0;
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, flt_type> stats;
         flt_type orig_score = segf(ss_vocab, worditer->first, stats);
         curr_ll += worditer->second * orig_score;
+        token_count += worditer->second * stats.size();
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
@@ -340,15 +343,19 @@ Unigrams::rank_candidates(const map<string, flt_type> &words,
                     exit(0);
                 }
 
-                diffs[hypoiter->first] += worditer->second * (hypo_score-orig_score);
+                ll_diffs[hypoiter->first] += worditer->second * (hypo_score-orig_score);
+                token_diffs[hypoiter->first] += worditer->second * ((flt_type)(hypo_stats.size())-(flt_type)(stats.size()));
 
                 ss_vocab.add(hypoiter->first, stored_value);
             }
         }
     }
 
-    for (auto iter = diffs.begin(); iter != diffs.end(); ++iter) {
-        pair<string, flt_type> removal_score = make_pair(iter->first, iter->second);
+    for (auto iter = ll_diffs.begin(); iter != ll_diffs.end(); ++iter) {
+        flt_type renormalizer = sub_log_domain_probs(0, vocab.at(iter->first));
+        flt_type hypo_token_count = (token_count + token_diffs[iter->first]);
+        flt_type normalizer_ll_diff = hypo_token_count * -renormalizer;
+        pair<string, flt_type> removal_score = make_pair(iter->first, iter->second + normalizer_ll_diff);
         removal_scores.push_back(removal_score);
     }
 
@@ -371,15 +378,18 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
     removal_scores.clear();
 
     StringSet ss_vocab(vocab);
-    map<string, flt_type> diffs;
+    map<string, flt_type> ll_diffs;
+    map<string, flt_type> token_diffs;
 
     flt_type curr_ll = 0.0;
+    flt_type token_count = 0.0;
 
     for (auto sentiter = sents.cbegin(); sentiter != sents.cend(); ++sentiter) {
 
         map<string, flt_type> stats;
         flt_type orig_score = segf(ss_vocab, *sentiter, stats);
         curr_ll += orig_score;
+        token_count += stats.size();
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for sentence: " << *sentiter << endl;
@@ -406,14 +416,18 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
                     exit(0);
                 }
 
-                diffs[hypoiter->first] += (hypo_score-orig_score);
+                ll_diffs[hypoiter->first] += (hypo_score-orig_score);
+                token_diffs[hypoiter->first] += (flt_type)(hypo_stats.size())-(flt_type)(stats.size());
 
                 ss_vocab.add(hypoiter->first, stored_value);
             }
         }
     }
 
-    for (auto iter = diffs.begin(); iter != diffs.end(); ++iter) {
+    for (auto iter = ll_diffs.begin(); iter != ll_diffs.end(); ++iter) {
+        flt_type renormalizer = sub_log_domain_probs(0, vocab.at(iter->first));
+        flt_type hypo_token_count = (token_count + token_diffs[iter->first]);
+        flt_type normalizer_ll_diff = hypo_token_count * -renormalizer;
         pair<string, flt_type> removal_score = make_pair(iter->first, iter->second);
         removal_scores.push_back(removal_score);
     }
