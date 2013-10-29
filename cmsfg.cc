@@ -8,9 +8,8 @@
 #include <string>
 #include <vector>
 
-#include <popt.h>
-
 #include "defs.hh"
+#include "conf.hh"
 #include "StringSet.hh"
 #include "FactorEncoder.hh"
 #include "Unigrams.hh"
@@ -32,73 +31,21 @@ assert_single_chars(map<string, flt_type> &vocab,
 
 int main(int argc, char* argv[]) {
 
-    float cutoff_value = 0.0;
+    conf::Config config;
+    config("usage: cmsfg [OPTION...] WORDLIST INIT_VOCAB MSFG_OUT\n")
+      ('h', "help", "", "", "display help")
+      ('u', "cutoff=INT", "arg", "0", "Cutoff value for initial segmentation");
+    config.default_parse(argc, argv);
+    if (config.arguments.size() != 3) config.print_help(stderr, 1);
+
     flt_type one_char_min_lp = -25.0;
-    string vocab_fname;
-    string wordlist_fname;
-    string msfg_fname;
+    flt_type cutoff_value = config["cutoff"].get_float();
+    string wordlist_fname = config.arguments[0];
+    string vocab_fname = config.arguments[1];
+    string msfg_fname = config.arguments[2];
 
-    // Popt documentation:
-    // http://linux.die.net/man/3/popt
-    // http://privatemisc.blogspot.fi/2012/12/popt-basic-example.html
-    poptContext pc;
-    struct poptOption po[] = {
-        {"cutoff", 'u', POPT_ARG_FLOAT, &cutoff_value, 11001, NULL, "Cutoff value for initial segmentation"},
-        POPT_AUTOHELP
-        {NULL}
-    };
-
-    pc = poptGetContext(NULL, argc, (const char **)argv, po, 0);
-    poptSetOtherOptionHelp(pc, "[INITIAL VOCABULARY] [WORDLIST] [MSFG_OUT]");
-
-    int val;
-    while ((val = poptGetNextOpt(pc)) >= 0)
-        continue;
-
-    // poptGetNextOpt returns -1 when the final argument has been parsed
-    // otherwise an error occured
-    if (val != -1) {
-        switch (val) {
-        case POPT_ERROR_NOARG:
-            cerr << "Argument missing for an option" << endl;
-            exit(1);
-        case POPT_ERROR_BADOPT:
-            cerr << "Option's argument could not be parsed" << endl;
-            exit(1);
-        case POPT_ERROR_BADNUMBER:
-        case POPT_ERROR_OVERFLOW:
-            cerr << "Option could not be converted to number" << endl;
-            exit(1);
-        default:
-            cerr << "Unknown error in option processing" << endl;
-            exit(1);
-        }
-    }
-
-    // Handle ARG part of command line
-    if (poptPeekArg(pc) != NULL)
-        vocab_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Initial vocabulary file not set" << endl;
-        exit(1);
-    }
-
-    if (poptPeekArg(pc) != NULL)
-        wordlist_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Wordlist file not set" << endl;
-        exit(1);
-    }
-
-    if (poptPeekArg(pc) != NULL)
-        msfg_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Output msfg file not set" << endl;
-        exit(1);
-    }
-
-    cerr << "parameters, initial vocabulary: " << vocab_fname << endl;
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
+    cerr << "parameters, initial vocabulary: " << vocab_fname << endl;
     cerr << "parameters, msfg to write: " << msfg_fname << endl;
     cerr << "parameters, cutoff: " << setprecision(15) << cutoff_value << endl;
 
