@@ -24,15 +24,11 @@ int main(int argc, char* argv[]) {
 
     string vocab_fname;
     string trans_fname;
-    string in_fname;
-    string out_fname;
     int maxlen;
     map<string, flt_type> vocab;
     StringSet *ss_vocab = NULL;
     transitions_t transitions;
     flt_type one_char_min_lp = -25.0;
-    bool enable_posterior_decoding = false;
-    bool print_sentence_markers = false;
     bool unigram = true;
 
     conf::Config config;
@@ -45,10 +41,10 @@ int main(int argc, char* argv[]) {
     config.default_parse(argc, argv);
     if (config.arguments.size() != 2) config.print_help(stderr, 1);
 
-    print_sentence_markers = config["sentence-markers"].specified;
-    enable_posterior_decoding = config["posterior-decode"].specified;
-    in_fname = config.arguments[0];
-    out_fname = config.arguments[1];
+    bool print_sentence_markers = config["sentence-markers"].specified;
+    bool enable_posterior_decoding = config["posterior-decode"].specified;
+    string in_fname = config.arguments[0];
+    string out_fname = config.arguments[1];
 
     if (!config["vocabulary"].specified && !config["transitions"].specified) {
         cerr << "Please define vocabulary or transitions" << endl;
