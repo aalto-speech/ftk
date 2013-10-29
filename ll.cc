@@ -7,9 +7,8 @@
 #include <string>
 #include <vector>
 
-#include <popt.h>
-
 #include "defs.hh"
+#include "conf.hh"
 #include "StringSet.hh"
 #include "FactorEncoder.hh"
 #include "Unigrams.hh"
@@ -17,83 +16,24 @@
 using namespace std;
 
 
-void assert_single_chars(map<string, flt_type> &vocab,
-                         const map<string, flt_type> &chars,
-                         flt_type val)
-{
-    for (auto it = chars.cbegin(); it != chars.cend(); ++it)
-        if (vocab.find(it->first) == vocab.end())
-            vocab[it->first] = val;
-}
-
-
 int main(int argc, char* argv[]) {
 
-    bool enable_forward_backward = false;
-    int num_iterations = 5;
-    flt_type one_char_min_lp = -25.0;
-    string vocab_in_fname;
-    string vocab_out_fname;
-    string wordlist_fname;
+    conf::Config config;
+    config("usage: fe [OPTION...] WORDLIST VOCABULARY\n")
+      ('h', "help", "", "", "display help")
+      ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi");
+    config.default_parse(argc, argv);
+    if (config.arguments.size() != 2) config.print_help(stderr, 1);
 
-    // Popt documentation:
-    // http://linux.die.net/man/3/popt
-    // http://privatemisc.blogspot.fi/2012/12/popt-basic-example.html
-    poptContext pc;
-    struct poptOption po[] = {
-        {"forward_backward", 'f', POPT_ARG_NONE, &enable_forward_backward, 11007, "Use Forward-backward segmentation instead of Viterbi", NULL},
-        POPT_AUTOHELP
-        {NULL}
-    };
+    bool enable_forward_backward = config["forward-backward"].specified;
+    string wordlist_fname = config.arguments[0];
+    string vocab_in_fname = config.arguments[1];
 
-    pc = poptGetContext(NULL, argc, (const char **)argv, po, 0);
-    poptSetOtherOptionHelp(pc, "VOCABULARY] [WORDLIST]");
-
-    int val;
-    while ((val = poptGetNextOpt(pc)) >= 0)
-        continue;
-
-    // poptGetNextOpt returns -1 when the final argument has been parsed
-    // otherwise an error occured
-    if (val != -1) {
-        switch (val) {
-        case POPT_ERROR_NOARG:
-            cerr << "Argument missing for an option" << endl;
-            exit(1);
-        case POPT_ERROR_BADOPT:
-            cerr << "Option's argument could not be parsed" << endl;
-            exit(1);
-        case POPT_ERROR_BADNUMBER:
-        case POPT_ERROR_OVERFLOW:
-            cerr << "Option could not be converted to number" << endl;
-            exit(1);
-        default:
-            cerr << "Unknown error in option processing" << endl;
-            exit(1);
-        }
-    }
-
-    // Handle ARG part of command line
-    if (poptPeekArg(pc) != NULL)
-        vocab_in_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Vocabulary file not set" << endl;
-        exit(1);
-    }
-
-    if (poptPeekArg(pc) != NULL)
-        wordlist_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Wordlist file not set" << endl;
-        exit(1);
-    }
-
-    cerr << "parameters, vocabulary: " << vocab_in_fname << endl;
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
+    cerr << "parameters, vocabulary: " << vocab_in_fname << endl;
     cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
 
     int maxlen, word_maxlen;
-    map<string, flt_type> all_chars;
     map<string, flt_type> vocab;
     map<string, flt_type> freqs;
     map<string, flt_type> words;
@@ -106,9 +46,6 @@ int main(int argc, char* argv[]) {
     }
     cerr << "\t" << "size: " << vocab.size() << endl;
     cerr << "\t" << "maximum string length: " << maxlen << endl;
-    for (auto it = vocab.cbegin(); it != vocab.end(); ++it)
-        if (it->first.length() == 1)
-            all_chars[it->first] = 0.0;
 
     cerr << "Reading word list " << wordlist_fname << endl;
     retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen);
@@ -130,4 +67,3 @@ int main(int argc, char* argv[]) {
 
     exit(1);
 }
-
