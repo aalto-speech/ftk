@@ -8,9 +8,8 @@
 #include <string>
 #include <vector>
 
-#include <popt.h>
-
 #include "defs.hh"
+#include "conf.hh"
 #include "StringSet.hh"
 #include "FactorEncoder.hh"
 #include "Unigrams.hh"
@@ -21,88 +20,27 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 
-    float cutoff_value = 0.0;
-    int n_candidates_per_iter = 5000;
-    int removals_per_iter = 5000;
-    int target_vocab_size = 30000;
-    flt_type one_char_min_lp = -25.0;
-    string initial_transitions_fname;
-    string wordlist_fname;
-    string msfg_fname;
-    string transition_fname;
+    conf::Config config;
+    config("usage: g1g [OPTION...] WORDLIST TRANSITIONS_INIT MSFG_IN TRANSITIONS_OUT\n")
+      ('h', "help", "", "", "display help")
+      ('c', "candidates=INT", "arg", "5000", "Number of candidate subwords to try to remove per iteration")
+      ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
+      ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)");
+    config.default_parse(argc, argv);
+    if (config.arguments.size() != 4) config.print_help(stderr, 1);
 
-    // Popt documentation:
-    // http://linux.die.net/man/3/popt
-    // http://privatemisc.blogspot.fi/2012/12/popt-basic-example.html
-    poptContext pc;
-    struct poptOption po[] = {
-        {"candidates", 'c', POPT_ARG_INT, &n_candidates_per_iter, 11002, NULL, "Number of candidate subwords to try to remove per iteration"},
-        {"removals", 'r', POPT_ARG_INT, &removals_per_iter, 11003, NULL, "Number of removals per iteration"},
-        {"vocab_size", 'g', POPT_ARG_INT, &target_vocab_size, 11007, NULL, "Target vocabulary size (stopping criterion)"},
-        POPT_AUTOHELP
-        {NULL}
-    };
+    int n_candidates_per_iter = config["candidates"].get_int();
+    int removals_per_iter = config["removals"].get_int();
+    int target_vocab_size = config["vocab-size"].get_int();
+    string wordlist_fname = config.arguments[0];
+    string initial_transitions_fname = config.arguments[1];
+    string msfg_fname = config.arguments[2];
+    string transition_fname = config.arguments[3];
 
-    pc = poptGetContext(NULL, argc, (const char **)argv, po, 0);
-    poptSetOtherOptionHelp(pc, "[INITIAL TRANSITIONS] [WORDLIST] [MSFG_IN] [TRANSITIONS]");
-
-    int val;
-    while ((val = poptGetNextOpt(pc)) >= 0)
-        continue;
-
-    // poptGetNextOpt returns -1 when the final argument has been parsed
-    // otherwise an error occured
-    if (val != -1) {
-        switch (val) {
-        case POPT_ERROR_NOARG:
-            cerr << "Argument missing for an option" << endl;
-            exit(1);
-        case POPT_ERROR_BADOPT:
-            cerr << "Option's argument could not be parsed" << endl;
-            exit(1);
-        case POPT_ERROR_BADNUMBER:
-        case POPT_ERROR_OVERFLOW:
-            cerr << "Option could not be converted to number" << endl;
-            exit(1);
-        default:
-            cerr << "Unknown error in option processing" << endl;
-            exit(1);
-        }
-    }
-
-    // Handle ARG part of command line
-    if (poptPeekArg(pc) != NULL)
-        initial_transitions_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Initial vocabulary file not set" << endl;
-        exit(1);
-    }
-
-    if (poptPeekArg(pc) != NULL)
-        wordlist_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Wordlist file not set" << endl;
-        exit(1);
-    }
-
-    if (poptPeekArg(pc) != NULL)
-        msfg_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Input MSFG file not set" << endl;
-        exit(1);
-    }
-
-    if (poptPeekArg(pc) != NULL)
-        transition_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Transition file not set" << endl;
-        exit(1);
-    }
-
-    cerr << "parameters, initial transitions: " << initial_transitions_fname << endl;
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
+    cerr << "parameters, initial transitions: " << initial_transitions_fname << endl;
     cerr << "parameters, msfg: " << msfg_fname << endl;
-    cerr << "parameters, transitions: " << transition_fname << endl;
+    cerr << "parameters, transitions out: " << transition_fname << endl;
     cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
     cerr << "parameters, removals per iteration: " << removals_per_iter << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
