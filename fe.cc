@@ -8,9 +8,8 @@
 #include <string>
 #include <vector>
 
-#include <popt.h>
-
 #include "defs.hh"
+#include "conf.hh"
 #include "io.hh"
 #include "StringSet.hh"
 #include "FactorGraph.hh"
@@ -23,8 +22,8 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 
-    char *vocab_fname;
-    char *trans_fname;
+    string vocab_fname;
+    string trans_fname;
     string in_fname;
     string out_fname;
     int maxlen;
@@ -34,69 +33,35 @@ int main(int argc, char* argv[]) {
     flt_type one_char_min_lp = -25.0;
     bool enable_posterior_decoding = false;
     bool print_sentence_markers = false;
+    bool unigram = true;
 
-    poptContext pc;
-    struct poptOption po[] = {
-        {"vocabulary", 'v', POPT_ARG_STRING, &vocab_fname, 11001, NULL, "Vocabulary file name"},
-        {"transitions", 't', POPT_ARG_STRING, &trans_fname, 11002, NULL, "Transition file name"},
-        {"posterior-decode", 'p', POPT_ARG_NONE, &enable_posterior_decoding, 11002, NULL, "Posterior decoding instead of Viterbi"},
-        {"sentence-ends", 's', POPT_ARG_NONE, &print_sentence_markers, 11002, NULL, "Print sentence begin and end symbols"},
-        POPT_AUTOHELP
-        {NULL}
-    };
+    conf::Config config;
+    config("usage: fe [OPTION...] INPUT OUTPUT\n")
+      ('h', "help", "", "", "display help")
+      ('v', "vocabulary=FILE", "arg", "", "Unigram model file")
+      ('t', "transitions=FILE", "arg", "", "Bigram model file")
+      ('p', "posterior-decode", "", "", "Posterior decoding instead of Viterbi")
+      ('s', "sentence-markers", "", "", "Print sentence begin and end symbols");
+    config.default_parse(argc, argv);
+    if (config.arguments.size() != 2) config.print_help(stderr, 1);
 
-    pc = poptGetContext(NULL, argc, (const char **)argv, po, 0);
-    poptSetOtherOptionHelp(pc, "INPUT SEGMENTED_OUTPUT");
+    print_sentence_markers = config["sentence-markers"].specified;
+    enable_posterior_decoding = config["posterior-decode"].specified;
+    in_fname = config.arguments[0];
+    out_fname = config.arguments[1];
 
-    int val;
-    while ((val = poptGetNextOpt(pc)) >= 0)
-        continue;
-
-    // poptGetNextOpt returns -1 when the final argument has been parsed
-    // otherwise an error occured
-    if (val != -1) {
-        switch (val) {
-        case POPT_ERROR_NOARG:
-            cerr << "Argument missing for an option" << endl;
-            exit(1);
-        case POPT_ERROR_BADOPT:
-            cerr << "Option's argument could not be parsed" << endl;
-            exit(1);
-        case POPT_ERROR_BADNUMBER:
-        case POPT_ERROR_OVERFLOW:
-            cerr << "Option could not be converted to number" << endl;
-            exit(1);
-        default:
-            cerr << "Unknown error in option processing" << endl;
-            exit(1);
-        }
-    }
-
-    if (poptPeekArg(pc) != NULL)
-        in_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Input file not set" << endl;
-        exit(1);
-    }
-
-    if (poptPeekArg(pc) != NULL)
-        out_fname.assign((char*)poptGetArg(pc));
-    else {
-        cerr << "Output file not set" << endl;
-        exit(1);
-    }
-
-    if (vocab_fname == NULL && trans_fname == NULL) {
+    if (!config["vocabulary"].specified && !config["transitions"].specified) {
         cerr << "Please define vocabulary or transitions" << endl;
         exit(0);
     }
 
-    if (vocab_fname != NULL && trans_fname != NULL) {
-        cerr << "Don't define both vocabulary and transitions" << endl;
+    if (config["vocabulary"].specified && config["transitions"].specified) {
+        cerr << "Please don't define both vocabulary and transitions" << endl;
         exit(0);
     }
 
-    if (vocab_fname != NULL) {
+    if (config["vocabulary"].specified) {
+        vocab_fname = config["vocabulary"].get_str();
         cerr << "Reading vocabulary " << vocab_fname << endl;
         int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen);
         if (retval < 0) {
@@ -108,7 +73,9 @@ int main(int argc, char* argv[]) {
         ss_vocab = new StringSet(vocab);
     }
 
-    if (trans_fname != NULL) {
+    if (config["transitions"].specified) {
+        unigram = false;
+        trans_fname = config["vocabulary"].get_str();
         cerr << "Reading transitions " << trans_fname << endl;
         int retval = Bigrams::read_transitions(transitions, trans_fname);
         Bigrams::trans_to_vocab(transitions, vocab);
@@ -117,7 +84,7 @@ int main(int argc, char* argv[]) {
             cerr << "something went wrong reading transitions" << endl;
             exit(0);
         }
-        cerr << "\t" << "vocabulary: " << transitions.size() << endl;
+        cerr << "\t" << "vocabulary size: " << transitions.size() << endl;
         cerr << "\t" << "transitions: " << retval << endl;
     }
 
@@ -127,13 +94,13 @@ int main(int argc, char* argv[]) {
         infile.open(in_fname, "r");
         outfile.open(out_fname, "w");
     }
-    catch (io::Stream::OpenError oe) {
+    catch (io::Stream::OpenError &oe) {
         cerr << "Something went wrong opening the files." << endl;
         exit(0);
     }
 
-    char linebuffer[8192];
-    while (fgets(linebuffer, 8192 , infile.file) != NULL) {
+    char linebuffer[MAX_LINE_LEN];
+    while (fgets(linebuffer, MAX_LINE_LEN , infile.file) != NULL) {
 
         linebuffer[strlen(linebuffer)-1] = '\0';
         string line(linebuffer);
@@ -145,9 +112,11 @@ int main(int argc, char* argv[]) {
         }
 
         vector<string> best_path;
-        if (vocab_fname != NULL)
-            if (enable_posterior_decoding)
+        if (unigram)
+            if (enable_posterior_decoding) {
                 cerr << "Posterior decoding not implemented yet for unigrams." << endl;
+                exit(0);
+            }
             else
                 viterbi(*ss_vocab, line, best_path);
         else {
