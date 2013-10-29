@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
     config("usage: segposts [OPTION...] INPUT SEGPROBS_OUTPUT\n")
       ('h', "help", "", "", "display help")
       ('v', "vocabulary=FILE", "arg", "", "Unigram model file")
-      ('v', "transitions=FILE", "arg", "", "Bigram model file");
+      ('t', "transitions=FILE", "arg", "", "Bigram model file");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 2) config.print_help(stderr, 1);
 
