@@ -19,7 +19,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: fe [OPTION...] WORDLIST VOCABULARY\n")
+    config("usage: ll [OPTION...] WORDLIST VOCABULARY\n")
       ('h', "help", "", "", "display help")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi");
     config.default_parse(argc, argv);
