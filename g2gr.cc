@@ -21,7 +21,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: g1g [OPTION...] WORDLIST TRANSITIONS_INIT MSFG_IN TRANSITIONS_OUT\n")
+    config("usage: g2gr [OPTION...] WORDLIST TRANSITIONS_INIT MSFG_IN TRANSITIONS_OUT\n")
       ('h', "help", "", "", "display help")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
       ('v', "vocab-size=INT", "arg must", "30000", "Target vocabulary size (stopping criterion)");

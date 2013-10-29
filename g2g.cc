@@ -21,7 +21,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: g1g [OPTION...] WORDLIST TRANSITIONS_INIT MSFG_IN TRANSITIONS_OUT\n")
+    config("usage: g2g [OPTION...] WORDLIST TRANSITIONS_INIT MSFG_IN TRANSITIONS_OUT\n")
       ('h', "help", "", "", "display help")
       ('c', "candidates=INT", "arg", "5000", "Number of candidate subwords to try to remove per iteration")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
