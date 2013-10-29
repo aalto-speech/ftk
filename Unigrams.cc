@@ -400,10 +400,10 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
             new_freqs[it->first] += it->second;
 
-        // Hypothesize what the segmentation would be if some subword didn't exist
+        // Hypothesize what the segmentation would be if some string didn't exist
         for (auto hypoiter = stats.cbegin(); hypoiter != stats.cend(); ++hypoiter) {
 
-            // If wanting to hypothesize removal of this subword
+            // If wanting to hypothesize removal of this string
             if (candidates.find(hypoiter->first) != candidates.end()) {
 
                 flt_type stored_value = ss_vocab.remove(hypoiter->first);
