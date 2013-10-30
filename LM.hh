@@ -3,9 +3,11 @@
 
 #include <cstddef>
 #include <cfloat>
+#include <string>
 
-#include "types.hh"
 #include "FixedArray.hh"
+#include "SymbolMap.hh"
+
 
 namespace fsalm {
 
@@ -65,13 +67,13 @@ public:
     typedef FixedArray<int> Array;
     typedef FixedArray<float> FloatArray;
 
-    Str start_str;
-    Str end_str;
+    std::string start_str;
+    std::string end_str;
     Semiring *semiring;
 
     LM();
     void reset();
-    const SymbolMap &symbol_map() const {
+    const misc::SymbolMap<std::string,int> &symbol_map() const {
         return m_symbol_map;
     }
     int start_symbol() const {
@@ -105,8 +107,8 @@ public:
     /** Return the number of explicit children of node. */
     int num_children(int node_id) const;
 
-    /** String describing a vector of symbol indices. */
-    Str str(const IntVec &vec) const;
+    /** std::stringing describing a vector of symbol indices. */
+    std::string str(const std::vector<int> &vec) const;
 
     /** Find context node for given backoff vector by backoffing
      * further if necessary.
@@ -121,7 +123,7 @@ public:
      * \param vec = candidate context for the backoff
      * \return node index corresponding to backoff context
      */
-    int find_backoff(IntVec vec) const;
+    int find_backoff(std::vector<int> vec) const;
 
     /** Move to next node through given symbol but do not backoff.
      *
@@ -148,7 +150,7 @@ public:
      * \param score Float pointer to which the possible score of the arc is ADDED
      * \return The resulting node (or -1 if explicit arc with symbol not found).
      */
-    int walk_no_bo(int node_id, const IntVec &vec, float *score = NULL) const;
+    int walk_no_bo(int node_id, const std::vector<int> &vec, float *score = NULL) const;
 
     /** Walks through a list of symbols but does not backoff. Returns indices of
      * all the traversed nodes.
@@ -162,8 +164,8 @@ public:
      * \param score Float pointer to which the possible score of the arc is ADDED
      * \return Indices of all the traversed nodes.
      */
-    IntVec walk_no_bo_vec(int node_id, const IntVec &vec,
-                          float *score = NULL) const;
+    std::vector<int> walk_no_bo_vec(int node_id, const std::vector<int> &vec,
+                                    float *score = NULL) const;
 
     /** Move to next node through given symbol by backoffing if necessary.
      *
@@ -173,17 +175,17 @@ public:
      * \return the resulting node
      */
     int walk(int node_id, int symbol, float *score = NULL) const;
-    int walk(int node_id, const IntVec &vec, float *score = NULL) const;
+    int walk(int node_id, const std::vector<int> &vec, float *score = NULL) const;
 
     void new_arc(int src_node_id, int symbol, int tgt_node_id, float score);
-    void new_ngram(const IntVec &vec, float score, float bo_score);
+    void new_ngram(const std::vector<int> &vec, float score, float bo_score);
     int new_node();
     void set_arc(int arc_id, int symbol, int target, float score);
     void trim();
     void quantize(int bits);
 
     /** Compute potential of each node (used by push). */
-    void compute_potential(FloatVec &d);
+    void compute_potential(std::vector<float> &d);
 
     /** Push scores as early as possible. */
     void push();
@@ -196,16 +198,16 @@ public:
     void write(FILE *file) const;
 
     /** Write the language model in MIT fst format. */
-    void write_fst(FILE *file, Str bo_symbol = "<B>") const;
+    void write_fst(FILE *file, std::string bo_symbol = "<B>") const;
 
     /** Write the language model in ATT fsmt format. */
-    void write_fsmt(FILE *file, Str bo_symbol = "<B>") const;
-    void write_fsmt_node(FILE *file, int n, Str bo_symbol) const;
+    void write_fsmt(FILE *file, std::string bo_symbol = "<B>") const;
+    void write_fsmt_node(FILE *file, int n, std::string bo_symbol) const;
 
     /** Fetch probabilities for all symbols (ignoring non-events). */
-    void fetch_probs(int node_id, FloatVec &vec);
+    void fetch_probs(int node_id, std::vector<float> &vec);
 
-    Str debug_str() const;
+    std::string debug_str() const;
     bool debug_check_sum(int node_id) const;
     bool debug_check_sums() const;
     bool debug_check_zero_bo() const;
@@ -237,15 +239,15 @@ private:
     /** Cache containing information about the last ngram inserted in
      * the strucure. */
     struct {
-        IntVec ctx_vec;  //!< Context vector, i.e. all but the last symbol.
+        std::vector<int> ctx_vec;  //!< Context vector, i.e. all but the last symbol.
         int ctx_node_id;
     } m_cache;
 
     /** Mapping between language model symbols and indices. */
-    SymbolMap m_symbol_map;
+    misc::SymbolMap<std::string,int> m_symbol_map;
 
     /** Bit array defining non-event symbols. */
-    BoolVec m_non_event;
+    std::vector<bool> m_non_event;
 
     int m_order;
     int m_empty_node_id;

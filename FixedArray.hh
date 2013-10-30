@@ -1,8 +1,12 @@
 #ifndef FIXEDARRAY_HH
 #define FIXEDARRAY_HH
 
-#include <errno.h>
+#include <cassert>
+#include <cerrno>
+#include <stdexcept>
+#include <cstring>
 #include <vector>
+
 
 namespace fsalm {
 
@@ -86,7 +90,7 @@ public:
      */
     void set_width(unsigned int bits_per_elem)
     {
-        throw Error("FixedArray16::set_width() not supported");
+        throw std::runtime_error("FixedArray16::set_width() not supported");
     }
 
     /** Set the value of an element.
@@ -98,7 +102,7 @@ public:
     void set(int elem, T value)
     {
         if (elem >= m_num_elems)
-            throw Error("bit::FixedArray::set(): out of range");
+            throw std::runtime_error("bit::FixedArray::set(): out of range");
         m_buffer.at(elem) = value;
     }
 
@@ -143,7 +147,7 @@ public:
     T get(int elem) const
     {
         if (elem >= m_num_elems)
-            throw Error("bit::FixedArray::get(): out of range");
+            throw std::runtime_error("bit::FixedArray::get(): out of range");
         return m_buffer.at(elem);
     }
 
@@ -187,7 +191,7 @@ public:
         if (data_len() > 0) {
             size_t ret = fwrite(data(), data_len(), 1, file);
             if (ret != 1)
-                throw Error(
+                throw std::runtime_error(
                     std::string("bit::FixedArray::write() fwrite failed: ") +
                     strerror(errno));
         }
@@ -206,7 +210,7 @@ public:
         int ret = fscanf(file, "FXARRAY%d:%d:",
                          &version, &m_num_elems);
         if (ret != 2 || version != 1)
-            throw Error(
+            throw std::runtime_error(
                 "bit::FixedArray::read() error while reading header");
         m_buffer.resize(m_num_elems);
         m_capacity = m_num_elems;
@@ -214,10 +218,10 @@ public:
             size_t ret = fread(data(), data_len(), 1, file);
             if (ret != 1) {
                 if (ferror(file))
-                    throw Error(
+                    throw std::runtime_error(
                         "bit::FixedArray::read() error while reading buffer");
                 assert(feof(file));
-                throw Error(
+                throw std::runtime_error(
                     "bit::FixedArray::read() eof while reading buffer");
             }
         }

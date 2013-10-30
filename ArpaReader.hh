@@ -1,8 +1,12 @@
 #ifndef ARPAREADER_HH
 #define ARPAREADER_HH
 
-#include <cstddef>  // NULL
-#include "types.hh"
+#include <cstddef>
+#include <string>
+#include <vector>
+
+#include "SymbolMap.hh"
+
 
 namespace fsalm {
 
@@ -41,7 +45,7 @@ public:
     bool read_order_ngrams(bool sort = false);
 
     /** Return the most recently read line from input. */
-    Str recent_line() const {
+    std::string recent_line() const {
         return m_recent_line;
     }
 
@@ -60,7 +64,7 @@ public:
         bool show_progress;
 
         /** Symbols to ignore. */
-        StrVec ignore_symbols;
+        std::vector<std::string> ignore_symbols;
     } opt;
 
     /** Information in the ARPA header. */
@@ -69,12 +73,12 @@ public:
         int num_ngrams_total; //!< Total number of ngrams in the model
 
         /** The number of ngrams in each order (0 = 1-gram) */
-        IntVec num_ngrams;
+        std::vector<int> num_ngrams;
     } header;
 
     /** The ngram read at the last call of read_ngram() */
     struct Ngram {
-        IntVec symbols; //!< The symbols of the ngram
+        std::vector<int> symbols; //!< The symbols of the ngram
         float log_prob; //!< The log-probability (base 10) of the ngram
         float backoff; //!< The backoff weight
         bool operator<(const Ngram &ngram) const
@@ -102,16 +106,16 @@ public:
     } ngram;
 
     std::vector<Ngram> order_ngrams; //!< Ngrams read with read_order_ngrams()
-    IntVec sorted_order; //!< Indices of sorted ngrams
+    std::vector<int> sorted_order; //!< Indices of sorted ngrams
 
-    SymbolMap *symbol_map; //!< The symbols in the model
+    misc::SymbolMap<std::string,int> *symbol_map; //!< The symbols in the model
     bool end_reached; //!< Have we reached the \end\ keyword
 
 private:
     FILE *m_file; //!< The file to read from
     int m_current_order; //!< The order ngram just read from the file
     int m_ngrams_read; //!< The number of ngrams read for current order
-    Str m_recent_line; //!< The most recently read line from input
+    std::string m_recent_line; //!< The most recently read line from input
     int m_num_ignored; //!< Number of ngrams ignored while reading
 };
 };

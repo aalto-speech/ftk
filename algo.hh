@@ -1,7 +1,7 @@
 #ifndef BIT_ALGO_HH
 #define BIT_ALGO_HH
 
-#include "types.hh"
+#include <stdexcept>
 
 namespace fsalm {
 
@@ -56,9 +56,9 @@ lower_bound(const A &array, I value, typename A::index_type first,
             typename A::index_type limit)
 {
     if (first > limit)
-        throw Error("bit::lower_bound(): negative range");
+        throw std::runtime_error("bit::lower_bound(): negative range");
     if (limit > array.num_elems())
-        throw Error("bit::lower_bound(): out of range");
+        throw std::runtime_error("bit::lower_bound(): out of range");
 
     typename A::index_type middle;
     typename A::index_type half;

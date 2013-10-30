@@ -1,9 +1,12 @@
 #include <algorithm>
-#include <cstddef>  // NULL
-#include <assert.h>
+#include <cstddef>
+#include <cassert>
+#include <string>
+#include <vector>
+
 #include "ArpaReader.hh"
 #include "str.hh"
-#include "types.hh"
+
 
 namespace fsalm {
 
@@ -32,8 +35,8 @@ ArpaReader::reset(FILE *file)
 void
 ArpaReader::read_header()
 {
-    Str line;
-    StrVec fields;
+    std::string line;
+    std::vector<std::string> fields;
 
     // Read until \data\ reached
     //
@@ -61,7 +64,7 @@ ArpaReader::read_header()
 
         if (line.substr(0, 6) != "ngram ")
             throw std::runtime_error("invalid line in header: " + line);
-        Str order_count = line.substr(6);
+        std::string order_count = line.substr(6);
         fields = str::split(order_count, "=", false, 2);
         if (fields.size() != 2)
             throw std::runtime_error("invalid line in header: " + line);
@@ -72,7 +75,7 @@ ArpaReader::read_header()
             header.order++;
             header.num_ngrams_total += c;
         }
-        catch (Ex &e) {
+        catch (std::exception &e) {
             throw std::runtime_error("invalid line in header: " + line);
         }
     }
@@ -87,8 +90,8 @@ ArpaReader::read_ngram()
     if (end_reached)
         return false;
 
-    Str line;
-    std::vector<Str> fields;
+    std::string line;
+    std::vector<std::string> fields;
 
 restart:
     while (1) {
@@ -182,7 +185,7 @@ restart:
         try {
             ngram.backoff = str::str2float(fields[m_current_order + 2]);
         }
-        catch (Ex &e) {
+        catch (std::exception &e) {
             throw std::runtime_error("invalid backoff value on line: " + line);
         }
     }
@@ -192,7 +195,7 @@ restart:
     try {
         ngram.log_prob = str::str2float(fields[0]);
     }
-    catch (Ex &e) {
+    catch (std::exception &e) {
         throw std::runtime_error("invalid log-probability on line: " + line);
     }
 
@@ -222,7 +225,7 @@ restart:
             for (int i = 1; i < m_current_order + 2; i++)
                 ngram.symbols.push_back(symbol_map->index(fields[i]));
         }
-        catch (Str &str) {
+        catch (std::string &str) {
             throw std::runtime_error(str::fmt(256, "invalid symbol in %d-gram: ",
                                               m_current_order + 1) + line);
         }
