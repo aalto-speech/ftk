@@ -1,9 +1,12 @@
 #include <deque>
 #include <assert.h>
 #include <stdio.h>
+#include <iostream>
+
 #include "conf.hh"
 #include "str.hh"
 #include "io.hh"
+
 
 namespace conf {
 
@@ -92,8 +95,7 @@ Config::operator()(unsigned char short_name, std::string long_name,
         long_name_map_key.erase(equal_pos);
 
     // Parse the type string
-    std::vector<std::string> types;
-    str::split(&type, " \t", true, &types);
+    std::vector<std::string> types = str::split(type, " \t", true);
     for (int i = 0; i < (int)types.size(); i++) {
         if (types[i] == "arg")
             o.needs_argument = true;
@@ -267,8 +269,10 @@ Config::read(FILE *file, bool override)
 {
     // Read and split the file in fields
     std::string text;
-    if (!str::read_file(&text, file)) {
-        perror("could not read config file");
+    try {
+        text = str::read_file(file);
+    } catch (...) {
+        std::cerr << "could not read config file" << std::endl;
         exit(1);
     }
     std::vector<std::string> fields;
