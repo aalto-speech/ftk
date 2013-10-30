@@ -1,10 +1,11 @@
-#include <cstddef>  // NULL
-#include <math.h>
+#include <cstddef>
+#include <cmath>
+#include <deque>
+
 #include "algo.hh"
 #include "LM.hh"
 #include "ArpaReader.hh"
-#include "macros.hh"
-#include <deque>
+
 
 namespace fsalm {
 
@@ -61,7 +62,7 @@ int LM::num_children(int node_id) const
 Str LM::str(const IntVec &vec) const
 {
     Str ret;
-    FOR(i, vec) {
+    for (int i=0; i<vec.size(); i++) {
         if (i > 0)
             ret.append(" ");
         ret.append(m_symbol_map.at(vec[i]));
@@ -114,7 +115,7 @@ int LM::walk_no_bo(int node_id, int symbol, float *score) const
 
 int LM::walk_no_bo(int node_id, const IntVec &vec, float *score) const
 {
-    FOR(i, vec) {
+    for (int i=0; i<vec.size(); i++) {
         node_id = walk_no_bo(node_id, vec[i], score);
         if (node_id < 0)
             return -1;
@@ -126,7 +127,7 @@ IntVec LM::walk_no_bo_vec(int node_id, const IntVec &vec, float *score) const
 {
     IntVec ret;
     ret.reserve(vec.size());
-    FOR(i, vec) {
+    for (int i=0; i<vec.size(); i++) {
         node_id = walk_no_bo(node_id, vec[i], score);
         if (node_id < 0)
             break;
@@ -152,7 +153,7 @@ int LM::walk(int node_id, int symbol, float *score) const
 
 int LM::walk(int node_id, const IntVec &vec, float *score) const
 {
-    FOR(i, vec) {
+    for (int i=0; i<vec.size(); i++) {
         node_id = walk(node_id, vec[i], score);
     }
     return node_id;
@@ -359,7 +360,7 @@ void LM::compute_potential(FloatVec &d)
         r.at(q) = semiring->zero;
 
         std::vector<InArc> &in_arcs_q = in_arcs.at(q);
-        FOR(a, in_arcs_q) {
+        for (int a=0; a<in_arcs_q.size(); a++) {
             InArc &in_arc = in_arcs_q[a];
             int n = in_arc.source;
 
