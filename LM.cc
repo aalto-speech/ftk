@@ -1,11 +1,12 @@
+#include <algorithm>
 #include <cstddef>
 #include <cmath>
-#include <deque>
 #include <cstring>
+#include <deque>
+#include <functional>
 #include <string>
 #include <iostream>
 
-#include "algo.hh"
 #include "LM.hh"
 #include "ArpaReader.hh"
 
@@ -171,8 +172,9 @@ int LM::walk_no_bo(int node_id, int symbol, float *score) const
         assert(limit >= first);
         if (limit > first) {
             // Find an arc with the given symbol.
-            int arc_id = fsalm::binary_search<std::vector<int>,int>(m_arcs.symbol, symbol, first, limit);
-            if (arc_id != limit) {
+            auto lower_b=std::lower_bound (m_arcs.symbol.begin()+first, m_arcs.symbol.begin()+limit, symbol);
+            int arc_id = lower_b-m_arcs.symbol.begin();
+            if (arc_id != limit && *lower_b == symbol) {
                 // The search found such an arc.
                 if (score != NULL)
                     *score += m_arcs.score.at(arc_id);
