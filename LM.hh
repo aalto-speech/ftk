@@ -4,8 +4,8 @@
 #include <cstddef>
 #include <cfloat>
 #include <string>
+#include <vector>
 
-#include "FixedArray.hh"
 #include "SymbolMap.hh"
 
 
@@ -64,9 +64,6 @@ public:
 class LM {
 public:
 
-    typedef FixedArray<int> Array;
-    typedef FixedArray<float> FloatArray;
-
     std::string start_str;
     std::string end_str;
     Semiring *semiring;
@@ -95,10 +92,10 @@ public:
         return m_order;
     }
     int num_arcs() const {
-        return m_arcs.symbol.num_elems();
+        return m_arcs.symbol.size();
     }
     int num_nodes() const {
-        return m_nodes.bo_target.num_elems();
+        return m_nodes.bo_target.size();
     }
     float final_score() const {
         return m_final_score;
@@ -107,7 +104,7 @@ public:
     /** Return the number of explicit children of node. */
     int num_children(int node_id) const;
 
-    /** std::stringing describing a vector of symbol indices. */
+    /** String describing a vector of symbol indices. */
     std::string str(const std::vector<int> &vec) const;
 
     /** Find context node for given backoff vector by backoffing
@@ -224,16 +221,16 @@ private:
 
     /** Node information */
     struct {
-        FloatArray bo_score;
-        Array bo_target;
-        Array limit_arc;  //!< Index to one past the last arc that starts from this node.
+        std::vector<float> bo_score;
+        std::vector<int> bo_target;
+        std::vector<int> limit_arc;  //!< Index to one past the last arc that starts from this node.
     } m_nodes;
 
     /** Arc information */
     struct {
-        Array symbol;  //!< The symbol assigned to the arc.
-        Array target;  //!< The target node.
-        FloatArray score;  //!< Possible score of the arc.
+        std::vector<int> symbol;  //!< The symbol assigned to the arc.
+        std::vector<int> target;  //!< The target node.
+        std::vector<float> score;  //!< Possible score of the arc.
     } m_arcs;
 
     /** Cache containing information about the last ngram inserted in

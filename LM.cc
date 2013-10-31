@@ -1,7 +1,9 @@
 #include <cstddef>
 #include <cmath>
 #include <deque>
+#include <cstring>
 #include <string>
+#include <iostream>
 
 #include "algo.hh"
 #include "LM.hh"
@@ -16,6 +18,73 @@ float log10_to_ln(float f)
 {
     return f * M_LN10;
 }
+
+template <class myVec>
+void vec_resize(myVec &vec, int sz) {
+    if (sz > vec.size()) {
+        int cap = vec.capacity();
+        if (sz >= cap) {
+            int new_cap = cap * 2;
+            if (sz >= new_cap)
+                new_cap = sz + 1;
+            vec.reserve(new_cap);
+        }
+        vec.resize(sz);
+    }
+}
+
+
+/** Write the vector to file.
+ *
+ * \param file = file stream to write to
+ * \throw bit::io_error if write fails
+ */
+template <class myVec>
+void vec_write(myVec &vec, FILE *file)
+{
+    fputs("FXARRAY1:", file);
+    fprintf(file, "%d:", (int)vec.size());
+    int data_len = vec.size() * sizeof(vec[0]);
+    if (data_len > 0) {
+        size_t ret = fwrite((unsigned char*)&vec.at(0), data_len, 1, file);
+        if (ret != 1)
+            throw std::runtime_error(
+                std::string("bit::FixedArray::write() fwrite failed: ") +
+                strerror(errno));
+    }
+}
+
+
+/** Read the vector from file.
+ *
+ * \param file = file stream to read from
+ * \throw bit::io_error if read fails
+ */
+template <class myVec>
+void vec_read(myVec &vec, FILE *file)
+{
+    int version;
+    int num_elems;
+    int ret = fscanf(file, "FXARRAY%d:%d:",
+                     &version, &num_elems);
+    if (ret != 2 || version != 1)
+        throw std::runtime_error(
+            "bit::FixedArray::read() error while reading header");
+    vec.resize(num_elems);
+    int data_len = vec.size() * sizeof(vec[0]);
+    if (data_len > 0) {
+        size_t ret = fread((unsigned char*)&vec.at(0), data_len, 1, file);
+        if (ret != 1) {
+            if (ferror(file))
+                throw std::runtime_error(
+                    "bit::FixedArray::read() error while reading buffer");
+            assert(feof(file));
+            throw std::runtime_error(
+                "bit::FixedArray::read() eof while reading buffer");
+        }
+    }
+}
+
 
 LM::LM()
 {
@@ -52,10 +121,10 @@ int LM::num_children(int node_id) const
     assert(node_id >= 0);
     if (node_id == 0)
         return 0;
-    int limit = m_nodes.limit_arc.get(node_id);
+    int limit = m_nodes.limit_arc.at(node_id);
     if (limit == 0)
         return 0;
-    int first = m_nodes.limit_arc.get(node_id - 1);
+    int first = m_nodes.limit_arc.at(node_id - 1);
     assert(limit >= first);
     return limit - first;
 }
@@ -95,19 +164,19 @@ int LM::walk_no_bo(int node_id, int symbol, float *score) const
     if (node_id == m_final_node_id)
         throw std::runtime_error("LM::walk_no_bo(): final node not allowed");
     // Limit tells the first arc that will not be considered in the search.
-    int limit = m_nodes.limit_arc.get(node_id);
+    int limit = m_nodes.limit_arc.at(node_id);
     if (limit > 0) {
         // The first arc that will be considered in the search is limit_arc of the previous node.
-        int first = m_nodes.limit_arc.get(node_id - 1);
+        int first = m_nodes.limit_arc.at(node_id - 1);
         assert(limit >= first);
         if (limit > first) {
             // Find an arc with the given symbol.
-            int arc_id = fsalm::binary_search<Array,int>(m_arcs.symbol, symbol, first, limit);
+            int arc_id = fsalm::binary_search<std::vector<int>,int>(m_arcs.symbol, symbol, first, limit);
             if (arc_id != limit) {
                 // The search found such an arc.
                 if (score != NULL)
-                    *score += m_arcs.score.get(arc_id);
-                return m_arcs.target.get(arc_id);
+                    *score += m_arcs.score.at(arc_id);
+                return m_arcs.target.at(arc_id);
             }
         }
     }
@@ -144,8 +213,8 @@ int LM::walk(int node_id, int symbol, float *score) const
         int new_node_id = walk_no_bo(node_id, symbol, score);
         if (new_node_id < 0) {
             if (score != NULL)
-                *score += m_nodes.bo_score.get(node_id);
-            node_id = m_nodes.bo_target.get(node_id);
+                *score += m_nodes.bo_score.at(node_id);
+            node_id = m_nodes.bo_target.at(node_id);
             continue;
         }
         return new_node_id;
@@ -164,20 +233,22 @@ void LM::new_arc(int src_node_id, int symbol, int tgt_node_id, float score)
 {
     assert(src_node_id > 0);
     int arc_id = num_arcs();
-    int limit_arc = m_nodes.limit_arc.get(src_node_id);
+    int limit_arc = m_nodes.limit_arc.at(src_node_id);
     assert(limit_arc == 0 || limit_arc == arc_id);
 
     // Set limit_arc for nodes that precede src_node_id and have
     // limit_arc unset.
     if (limit_arc == 0 && arc_id > 0) {
         for (int n = src_node_id - 1; n > 0; n--) {
-            if (m_nodes.limit_arc.get(n) > 0)
+            if (m_nodes.limit_arc.at(n) > 0)
                 break;
-            m_nodes.limit_arc.set_grow_widen(n, arc_id);
+            vec_resize(m_nodes.limit_arc, n + 1);
+            m_nodes.limit_arc.at(n) = arc_id;
         }
     }
 
-    m_nodes.limit_arc.set_grow_widen(src_node_id, arc_id + 1);
+    vec_resize(m_nodes.limit_arc, src_node_id + 1);
+    m_nodes.limit_arc.at(src_node_id) = arc_id + 1;
     set_arc(arc_id, symbol, tgt_node_id, score);
 }
 
@@ -229,25 +300,33 @@ void LM::new_ngram(const std::vector<int> &vec, float score, float bo_score)
     //
     new_arc(m_cache.ctx_node_id, vec.back(), tgt_node_id, score);
     if (tgt_node_id != bo_node_id) {
-        m_nodes.bo_target.set_grow_widen(tgt_node_id, bo_node_id);
-        m_nodes.bo_score.set_grow_widen(tgt_node_id, bo_score);
+        vec_resize(m_nodes.bo_target, tgt_node_id + 1);
+        m_nodes.bo_target.at(tgt_node_id) = bo_node_id;
+        vec_resize(m_nodes.bo_score, tgt_node_id + 1);
+        m_nodes.bo_score.at(tgt_node_id) = bo_score;
     }
 }
 
 int LM::new_node()
 {
     int node_id = num_nodes();
-    m_nodes.bo_target.set_grow_widen(node_id, 0);
-    m_nodes.bo_score.set_grow_widen(node_id, 0);
-    m_nodes.limit_arc.set_grow_widen(node_id, 0);
+    vec_resize(m_nodes.bo_target, node_id + 1);
+    m_nodes.bo_target.at(node_id) = 0;
+    vec_resize(m_nodes.bo_score, node_id + 1);
+    m_nodes.bo_score.at(node_id) = 0;
+    vec_resize(m_nodes.limit_arc, node_id + 1);
+    m_nodes.limit_arc.at(node_id) = 0;
     return node_id;
 }
 
 void LM::set_arc(int arc_id, int symbol, int target, float score)
 {
-    m_arcs.symbol.set_grow_widen(arc_id, symbol);
-    m_arcs.target.set_grow_widen(arc_id, target);
-    m_arcs.score.set_grow_widen(arc_id, score);
+    vec_resize(m_arcs.symbol, arc_id + 1);
+    m_arcs.symbol.at(arc_id) = symbol;
+    vec_resize(m_arcs.target, arc_id + 1);
+    m_arcs.target.at(arc_id) = target;
+    vec_resize(m_arcs.score, arc_id + 1);
+    m_arcs.score.at(arc_id) = score;
 }
 
 void LM::trim()
@@ -261,14 +340,14 @@ void LM::trim()
     int new_n = 1;
     for (int n = 1; n < num_nodes(); n++) {
         if (num_children(n) == 0) {
-            float bo_score = m_nodes.bo_score.get(n);
+            float bo_score = m_nodes.bo_score.at(n);
             if (bo_score != 0)
                 fprintf(stderr, "WARNING: LM::trim(): childless node %d "
                         "with bo_score = %g\n", n, bo_score);
 
 //          throw std::runtime_error(str::fmt(256, "LM::trim(): childless node %d "
 //                               "with bo_score = %g", n, bo_score));
-            new_target[n] = new_target.at(m_nodes.bo_target.get(n));
+            new_target[n] = new_target.at(m_nodes.bo_target.at(n));
             removed[n] = true;
         }
         else
@@ -279,8 +358,8 @@ void LM::trim()
     // backoff targets.
     //
     for (int a = 0; a < num_arcs(); a++) {
-        int tgt = m_arcs.target.get(a);
-        m_arcs.target.set(a, new_target.at(tgt));
+        int tgt = m_arcs.target.at(a);
+        m_arcs.target.at(a) = new_target.at(tgt);
     }
 
     // Remove childless nodes and update backoff target indices.
@@ -288,14 +367,13 @@ void LM::trim()
     for (int n = 1; n < num_nodes(); n++) {
         if (removed[n])
             continue;
-        m_nodes.bo_score.set(new_target[n], m_nodes.bo_score.get(n));
-        m_nodes.bo_target.set(new_target[n],
-                              new_target.at(m_nodes.bo_target.get(n)));
-        m_nodes.limit_arc.set(new_target[n], m_nodes.limit_arc.get(n));
+        m_nodes.bo_score.at(new_target[n]) = m_nodes.bo_score.at(n);
+        m_nodes.bo_target.at(new_target[n]) = new_target.at(m_nodes.bo_target.at(n));
+        m_nodes.limit_arc.at(new_target[n]) = m_nodes.limit_arc.at(n);
     }
-    m_nodes.bo_score.resize(new_n);
-    m_nodes.bo_target.resize(new_n);
-    m_nodes.limit_arc.resize(new_n);
+    vec_resize(m_nodes.bo_score, new_n);
+    vec_resize(m_nodes.bo_target, new_n);
+    vec_resize(m_nodes.limit_arc, new_n);
 
     // Update initial node id
     m_initial_node_id = walk(m_empty_node_id, m_start_symbol);
@@ -323,17 +401,17 @@ void LM::compute_potential(std::vector<float> &d)
     std::vector<std::vector<InArc> > in_arcs;
     in_arcs.resize(num_nodes());
     for (int n = 0; n < num_nodes(); n++) {
-        int bo_tgt = m_nodes.bo_target.get(n);
+        int bo_tgt = m_nodes.bo_target.at(n);
         if (bo_tgt > 0)
             in_arcs.at(bo_tgt).push_back(InArc(n, -1));
 
-        int limit = m_nodes.limit_arc.get(n);
+        int limit = m_nodes.limit_arc.at(n);
         if (limit == 0)
             continue;
-        int first = m_nodes.limit_arc.get(n-1);
+        int first = m_nodes.limit_arc.at(n-1);
         assert(first <= limit);
         for (int a = first; a < limit; a++) {
-            int tgt = m_arcs.target.get(a);
+            int tgt = m_arcs.target.at(a);
             in_arcs.at(tgt).push_back(InArc(n, a));
         }
     }
@@ -367,9 +445,9 @@ void LM::compute_potential(std::vector<float> &d)
 
             float score = 0;
             if (in_arc.arc_id < 0)
-                score = m_nodes.bo_score.get(n);
+                score = m_nodes.bo_score.at(n);
             else
-                score = m_arcs.score.get(in_arc.arc_id);
+                score = m_arcs.score.at(in_arc.arc_id);
 
             float R_times_a = semiring->times(R, score);
             float new_d = semiring->plus(d[n], R_times_a);
@@ -396,25 +474,25 @@ void LM::push()
     m_final_score = potential.at(m_initial_node_id);
 
     for (int n = 0; n < num_nodes(); n++) {
-        int bo_tgt = m_nodes.bo_target.get(n);
+        int bo_tgt = m_nodes.bo_target.at(n);
         if (bo_tgt > 0) {
-            float score = m_nodes.bo_score.get(n);
+            float score = m_nodes.bo_score.at(n);
             score = semiring->times(score, potential.at(bo_tgt));
             score = semiring->divide(score, potential.at(n));
-            m_nodes.bo_score.set(n, score);
+            m_nodes.bo_score.at(n) = score;
         }
 
-        int limit = m_nodes.limit_arc.get(n);
+        int limit = m_nodes.limit_arc.at(n);
         if (limit == 0)
             continue;
-        int first = m_nodes.limit_arc.get(n-1);
+        int first = m_nodes.limit_arc.at(n-1);
         assert(first <= limit);
         for (int a = first; a < limit; a++) {
-            float score = m_arcs.score.get(a);
-            int target = m_arcs.target.get(a);
+            float score = m_arcs.score.at(a);
+            int target = m_arcs.target.at(a);
             score = semiring->times(score, potential.at(target));
             score = semiring->divide(score, potential.at(n));
-            m_arcs.score.set(a, score);
+            m_arcs.score.at(a) = score;
         }
 
     }
@@ -495,6 +573,7 @@ void LM::read_arpa(FILE *file, bool show_progress)
     fprintf(stderr, "fsalm: %d nodes, %d arcs\n", num_nodes(), num_arcs());
 }
 
+
 void LM::read(FILE *file)
 {
     int version;
@@ -506,12 +585,12 @@ void LM::read(FILE *file)
     str::read_line(start_str, file, true);
     str::read_line(end_str, file, true);
     m_symbol_map.read(file);
-    m_arcs.symbol.read(file);
-    m_arcs.target.read(file);
-    m_arcs.score.read(file);
-    m_nodes.bo_score.read(file);
-    m_nodes.bo_target.read(file);
-    m_nodes.limit_arc.read(file);
+    vec_read(m_arcs.symbol, file);
+    vec_read(m_arcs.target, file);
+    vec_read(m_arcs.score, file);
+    vec_read(m_nodes.bo_score, file);
+    vec_read(m_nodes.bo_target, file);
+    vec_read(m_nodes.limit_arc, file);
 
     m_start_symbol = m_symbol_map.index(start_str);
     m_end_symbol = m_symbol_map.index(end_str);
@@ -534,13 +613,14 @@ void LM::write(FILE *file) const
             m_order, m_empty_node_id, m_initial_node_id, m_final_node_id, m_final_score);
     fprintf(file, "%s\n%s\n", start_str.c_str(), end_str.c_str());
     m_symbol_map.write(file);
-    m_arcs.symbol.write(file);
-    m_arcs.target.write(file);
-    m_arcs.score.write(file);
-    m_nodes.bo_score.write(file);
-    m_nodes.bo_target.write(file);
-    m_nodes.limit_arc.write(file);
+    vec_write(m_arcs.symbol, file);
+    vec_write(m_arcs.target, file);
+    vec_write(m_arcs.score, file);
+    vec_write(m_nodes.bo_score, file);
+    vec_write(m_nodes.bo_target, file);
+    vec_write(m_nodes.limit_arc, file);
 }
+
 
 void LM::write_fst(FILE *file, std::string bo_symbol) const
 {
@@ -549,19 +629,19 @@ void LM::write_fst(FILE *file, std::string bo_symbol) const
     fprintf(file, "F %d\n", m_final_node_id);
 
     for (int n = 1; n < num_nodes(); n++) {
-        int bo_tgt = m_nodes.bo_target.get(n);
+        int bo_tgt = m_nodes.bo_target.at(n);
         if (bo_tgt > 0)
             fprintf(file, "T %d %d %s %s %g\n", n, bo_tgt, bo_symbol.c_str(),
-                    bo_symbol.c_str(), m_nodes.bo_score.get(n));
-        int limit = m_nodes.limit_arc.get(n);
+                    bo_symbol.c_str(), m_nodes.bo_score.at(n));
+        int limit = m_nodes.limit_arc.at(n);
         if (limit == 0)
             continue;
-        int first = m_nodes.limit_arc.get(n-1);
+        int first = m_nodes.limit_arc.at(n-1);
         assert(first <= limit);
         for (int a = first; a < limit; a++) {
-            int tgt = m_arcs.target.get(a);
-            std::string symbol = m_symbol_map.at(m_arcs.symbol.get(a));
-            float score = m_arcs.score.get(a);
+            int tgt = m_arcs.target.at(a);
+            std::string symbol = m_symbol_map.at(m_arcs.symbol.at(a));
+            float score = m_arcs.score.at(a);
             fprintf(file, "T %d %d %s %s %g\n", n, tgt,
                     symbol.c_str(), symbol.c_str(), score);
         }
@@ -570,23 +650,23 @@ void LM::write_fst(FILE *file, std::string bo_symbol) const
 
 void LM::write_fsmt_node(FILE *file, int n, std::string bo_symbol) const
 {
-    int bo_tgt = m_nodes.bo_target.get(n);
+    int bo_tgt = m_nodes.bo_target.at(n);
     if (bo_tgt > 0)
         fprintf(file, "%d %d %s %g\n", n, bo_tgt,
-                bo_symbol.c_str(), -log10_to_ln(m_nodes.bo_score.get(n)));
-    int limit = m_nodes.limit_arc.get(n);
+                bo_symbol.c_str(), -log10_to_ln(m_nodes.bo_score.at(n)));
+    int limit = m_nodes.limit_arc.at(n);
     if (limit == 0)
         return;
-    int first = m_nodes.limit_arc.get(n-1);
+    int first = m_nodes.limit_arc.at(n-1);
     assert(first <= limit);
     for (int a = first; a < limit; a++) {
-        int tgt = m_arcs.target.get(a);
+        int tgt = m_arcs.target.at(a);
         if (n == m_empty_node_id && tgt == m_initial_node_id) {
             fprintf(stderr, "WARNING: omitting sentence start arc\n");
             continue;
         }
-        std::string symbol = m_symbol_map.at(m_arcs.symbol.get(a));
-        float score = -log10_to_ln(m_arcs.score.get(a));
+        std::string symbol = m_symbol_map.at(m_arcs.symbol.at(a));
+        float score = -log10_to_ln(m_arcs.score.at(a));
         fprintf(file, "%d %d %s %g\n", n, tgt, symbol.c_str(), score);
     }
 }
@@ -609,23 +689,23 @@ void LM::fetch_probs(int node_id, std::vector<float> &vec)
     assert(node_id != m_final_node_id);
     float bo_score = 0;
     while (1) {
-        int limit = m_nodes.limit_arc.get(node_id);
+        int limit = m_nodes.limit_arc.at(node_id);
         assert(limit > 0);
-        int first = m_nodes.limit_arc.get(node_id - 1);
+        int first = m_nodes.limit_arc.at(node_id - 1);
         assert(first < limit);
         for (int a = first; a < limit; a++) {
-            int symbol = m_arcs.symbol.get(a);
+            int symbol = m_arcs.symbol.at(a);
             if (m_non_event[symbol])
                 continue;
             if (vec[symbol] < FLT_MAX)
                 continue;
-            float score = m_arcs.score.get(a) + bo_score;
+            float score = m_arcs.score.at(a) + bo_score;
             vec[symbol] = score;
         }
         if (node_id == m_empty_node_id)
             break;
-        bo_score += m_nodes.bo_score.get(node_id);
-        node_id = m_nodes.bo_target.get(node_id);
+        bo_score += m_nodes.bo_score.at(node_id);
+        node_id = m_nodes.bo_target.at(node_id);
     }
 }
 
@@ -634,12 +714,12 @@ std::string LM::debug_str() const
     std::string str;
     for (int n = 0; n < num_nodes(); n++) {
         str.append(str::fmt(256, "%d bs=%g bt=%d l=%d\n",
-                            n, m_nodes.bo_score.get(n),
-                            m_nodes.bo_target.get(n), m_nodes.limit_arc.get(n)));
+                            n, m_nodes.bo_score.at(n),
+                            m_nodes.bo_target.at(n), m_nodes.limit_arc.at(n)));
     }
     for (int a = 0; a < num_arcs(); a++) {
-        str.append(str::fmt(256, "%d s=%d t=%d s=%g\n", a, m_arcs.symbol.get(a),
-                            m_arcs.target.get(a), m_arcs.score.get(a)));
+        str.append(str::fmt(256, "%d s=%d t=%d s=%g\n", a, m_arcs.symbol.at(a),
+                            m_arcs.target.at(a), m_arcs.score.at(a)));
     }
     return str;
 }
@@ -674,7 +754,7 @@ bool LM::debug_check_zero_bo() const
     for (int n = 0; n < num_nodes(); n++) {
         if (num_children(n) > 0)
             continue;
-        float bo_score = m_nodes.bo_score.get(n);
+        float bo_score = m_nodes.bo_score.at(n);
         if (bo_score != 0) {
             fprintf(stderr, "WARNING: node %d has no children but bo_score = %g\n",
                     n, bo_score);

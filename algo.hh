@@ -10,8 +10,8 @@ template <class A, typename I>
 I max(const A &array)
 {
     I max = 0;
-    for (typename A::index_type i = 0; i < array.num_elems(); i++) {
-        I value = array.get(i);
+    for (int i = 0; i < array.num_elems(); i++) {
+        I value = array.at(i);
         if (value > max)
             max = value;
     }
@@ -29,12 +29,11 @@ I max(const A &array)
  * \throw Error if range exceeds array size
  */
 template <class A, typename I>
-typename A::index_type
-binary_search(const A &array, I value, typename A::index_type first,
-              typename A::index_type limit)
+int
+binary_search(const A &array, I value, int first, int limit)
 {
-    typename A::index_type bound = lower_bound(array, value, first, limit);
-    if (bound < limit && array.get(bound) == value)
+    int bound = lower_bound(array, value, first, limit);
+    if (bound < limit && array.at(bound) == value)
         return bound;
     return limit;
 }
@@ -51,25 +50,24 @@ binary_search(const A &array, I value, typename A::index_type first,
  * \throw Error if range exceeds array size
  */
 template <class A, typename I>
-typename A::index_type
-lower_bound(const A &array, I value, typename A::index_type first,
-            typename A::index_type limit)
+int
+lower_bound(const A &array, I value, int first, int limit)
 {
     if (first > limit)
         throw std::runtime_error("bit::lower_bound(): negative range");
-    if (limit > array.num_elems())
+    if (limit > array.size())
         throw std::runtime_error("bit::lower_bound(): out of range");
 
-    typename A::index_type middle;
-    typename A::index_type half;
-    typename A::index_type len = limit - first;
+    int middle;
+    int half;
+    int len = limit - first;
 
     while (len > 5) { // NOTE: magic threshold to do linear search
         half = len / 2;
         middle = first + half;
 
         // Equal
-        I cur_value = array.get(middle);
+        I cur_value = array.at(middle);
 
         // First half
         if (cur_value >= value) {
@@ -85,7 +83,7 @@ lower_bound(const A &array, I value, typename A::index_type first,
     }
 
     while (first < limit) {
-        I cur_value = array.get(first);
+        I cur_value = array.at(first);
         if (cur_value >= value)
             break;
         first++;
