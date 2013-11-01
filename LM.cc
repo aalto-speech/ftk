@@ -10,6 +10,8 @@
 #include "LM.hh"
 #include "ArpaReader.hh"
 
+using namespace std;
+
 
 namespace fsalm {
 
@@ -49,8 +51,8 @@ void vec_write(myVec &vec, FILE *file)
     if (data_len > 0) {
         size_t ret = fwrite((unsigned char*)&vec.at(0), data_len, 1, file);
         if (ret != 1)
-            throw std::runtime_error(
-                std::string("bit::FixedArray::write() fwrite failed: ") +
+            throw runtime_error(
+                string("bit::FixedArray::write() fwrite failed: ") +
                 strerror(errno));
     }
 }
@@ -69,7 +71,7 @@ void vec_read(myVec &vec, FILE *file)
     int ret = fscanf(file, "FXARRAY%d:%d:",
                      &version, &num_elems);
     if (ret != 2 || version != 1)
-        throw std::runtime_error(
+        throw runtime_error(
             "bit::FixedArray::read() error while reading header");
     vec.resize(num_elems);
     int data_len = vec.size() * sizeof(vec[0]);
@@ -77,10 +79,10 @@ void vec_read(myVec &vec, FILE *file)
         size_t ret = fread((unsigned char*)&vec.at(0), data_len, 1, file);
         if (ret != 1) {
             if (ferror(file))
-                throw std::runtime_error(
+                throw runtime_error(
                     "bit::FixedArray::read() error while reading buffer");
             assert(feof(file));
-            throw std::runtime_error(
+            throw runtime_error(
                 "bit::FixedArray::read() eof while reading buffer");
         }
     }
@@ -130,9 +132,9 @@ int LM::num_children(int node_id) const
     return limit - first;
 }
 
-std::string LM::str(const std::vector<int> &vec) const
+string LM::str(const vector<int> &vec) const
 {
-    std::string ret;
+    string ret;
     for (int i=0; i<vec.size(); i++) {
         if (i > 0)
             ret.append(" ");
@@ -141,15 +143,15 @@ std::string LM::str(const std::vector<int> &vec) const
     return ret;
 }
 
-int LM::find_backoff(std::vector<int> vec) const
+int LM::find_backoff(vector<int> vec) const
 {
     if (vec.empty())
         return m_empty_node_id;
     if (vec.back() == m_end_symbol)
-        throw std::runtime_error("LM::find_backoff(): sentence end not allowed");
+        throw runtime_error("LM::find_backoff(): sentence end not allowed");
 
     while (1) {
-        std::vector<int> nodes = walk_no_bo_vec(m_empty_node_id, vec);
+        vector<int> nodes = walk_no_bo_vec(m_empty_node_id, vec);
         assert(!nodes.empty());
         assert(nodes.size() <= vec.size());
         if (nodes.size() == vec.size())
@@ -163,7 +165,7 @@ int LM::walk_no_bo(int node_id, int symbol, float *score) const
 {
     assert(node_id >= 0);
     if (node_id == m_final_node_id)
-        throw std::runtime_error("LM::walk_no_bo(): final node not allowed");
+        throw runtime_error("LM::walk_no_bo(): final node not allowed");
     // Limit tells the first arc that will not be considered in the search.
     int limit = m_nodes.limit_arc.at(node_id);
     if (limit > 0) {
@@ -172,7 +174,7 @@ int LM::walk_no_bo(int node_id, int symbol, float *score) const
         assert(limit >= first);
         if (limit > first) {
             // Find an arc with the given symbol.
-            auto lower_b=std::lower_bound (m_arcs.symbol.begin()+first, m_arcs.symbol.begin()+limit, symbol);
+            auto lower_b=lower_bound (m_arcs.symbol.begin()+first, m_arcs.symbol.begin()+limit, symbol);
             int arc_id = lower_b-m_arcs.symbol.begin();
             if (arc_id != limit && *lower_b == symbol) {
                 // The search found such an arc.
@@ -185,7 +187,7 @@ int LM::walk_no_bo(int node_id, int symbol, float *score) const
     return -1;
 }
 
-int LM::walk_no_bo(int node_id, const std::vector<int> &vec, float *score) const
+int LM::walk_no_bo(int node_id, const vector<int> &vec, float *score) const
 {
     for (int i=0; i<vec.size(); i++) {
         node_id = walk_no_bo(node_id, vec[i], score);
@@ -195,9 +197,9 @@ int LM::walk_no_bo(int node_id, const std::vector<int> &vec, float *score) const
     return node_id;
 }
 
-std::vector<int> LM::walk_no_bo_vec(int node_id, const std::vector<int> &vec, float *score) const
+vector<int> LM::walk_no_bo_vec(int node_id, const vector<int> &vec, float *score) const
 {
-    std::vector<int> ret;
+    vector<int> ret;
     ret.reserve(vec.size());
     for (int i=0; i<vec.size(); i++) {
         node_id = walk_no_bo(node_id, vec[i], score);
@@ -223,7 +225,7 @@ int LM::walk(int node_id, int symbol, float *score) const
     }
 }
 
-int LM::walk(int node_id, const std::vector<int> &vec, float *score) const
+int LM::walk(int node_id, const vector<int> &vec, float *score) const
 {
     for (int i=0; i<vec.size(); i++) {
         node_id = walk(node_id, vec[i], score);
@@ -254,7 +256,7 @@ void LM::new_arc(int src_node_id, int symbol, int tgt_node_id, float score)
     set_arc(arc_id, symbol, tgt_node_id, score);
 }
 
-void LM::new_ngram(const std::vector<int> &vec, float score, float bo_score)
+void LM::new_ngram(const vector<int> &vec, float score, float bo_score)
 {
     assert(!vec.empty());
 
@@ -262,11 +264,11 @@ void LM::new_ngram(const std::vector<int> &vec, float score, float bo_score)
     // context node by traversing the arcs specified by the context symbols
     // (all but the last symbol in the n-gram).
     //
-    std::vector<int> ctx_vec(vec.begin(), vec.end() - 1);
+    vector<int> ctx_vec(vec.begin(), vec.end() - 1);
     if (m_cache.ctx_node_id < 0 || ctx_vec != m_cache.ctx_vec) {
         m_cache.ctx_node_id = walk_no_bo(empty_node_id(), ctx_vec);
         if (m_cache.ctx_node_id < 0)
-            throw std::runtime_error("prefix missing for ngram \"" + str(vec) + "\"");
+            throw runtime_error("prefix missing for ngram \"" + str(vec) + "\"");
         m_cache.ctx_vec = ctx_vec;
     }
     assert(m_cache.ctx_node_id > 0);
@@ -282,7 +284,7 @@ void LM::new_ngram(const std::vector<int> &vec, float score, float bo_score)
         bo_node_id = m_final_node_id;
     }
     else {
-        bo_node_id = find_backoff(std::vector<int>(vec.begin() + 1, vec.end()));
+        bo_node_id = find_backoff(vector<int>(vec.begin() + 1, vec.end()));
         assert(bo_node_id >= 0);
 
         // For highest order n-grams, an arc to the backoff node will be created.
@@ -336,8 +338,8 @@ void LM::trim()
     // Find childless nodes and compute new node indices by not
     // counting childless nodes and backoffing for removed nodes.
     //
-    std::vector<int> new_target(num_nodes(), 0);
-    std::vector<bool> removed(num_nodes(), false);
+    vector<int> new_target(num_nodes(), 0);
+    vector<bool> removed(num_nodes(), false);
     new_target.at(0) = 0;
     int new_n = 1;
     for (int n = 1; n < num_nodes(); n++) {
@@ -347,7 +349,7 @@ void LM::trim()
                 fprintf(stderr, "WARNING: LM::trim(): childless node %d "
                         "with bo_score = %g\n", n, bo_score);
 
-//          throw std::runtime_error(str::fmt(256, "LM::trim(): childless node %d "
+//          throw runtime_error(str::fmt(256, "LM::trim(): childless node %d "
 //                               "with bo_score = %g", n, bo_score));
             new_target[n] = new_target.at(m_nodes.bo_target.at(n));
             removed[n] = true;
@@ -393,14 +395,14 @@ void LM::quantize(int bits)
 //    m_arcs.score.linear_quantization_bits(bits);
 }
 
-void LM::compute_potential(std::vector<float> &d)
+void LM::compute_potential(vector<float> &d)
 {
     // Implemented according to "Mehryar Mohri and Michael Riley.  A
     // Weight Pushing Algorithm for Large Vocabulary Speech
     // Recognition.  Eurospeech 2001."
 
     // Compute incoming arcs for each node.
-    std::vector<std::vector<InArc> > in_arcs;
+    vector<vector<InArc> > in_arcs;
     in_arcs.resize(num_nodes());
     for (int n = 0; n < num_nodes(); n++) {
         int bo_tgt = m_nodes.bo_target.at(n);
@@ -421,9 +423,9 @@ void LM::compute_potential(std::vector<float> &d)
     int N = num_nodes();
     d.clear();
     d.resize(N, semiring->zero);
-    std::vector<float> r(N, semiring->zero);
-    std::vector<bool> in_queue(N, false);
-    std::deque<int> queue;
+    vector<float> r(N, semiring->zero);
+    vector<bool> in_queue(N, false);
+    deque<int> queue;
 
     d.at(m_final_node_id) = semiring->one;
     r.at(m_final_node_id) = semiring->one;
@@ -440,7 +442,7 @@ void LM::compute_potential(std::vector<float> &d)
         float R = r.at(q);
         r.at(q) = semiring->zero;
 
-        std::vector<InArc> &in_arcs_q = in_arcs.at(q);
+        vector<InArc> &in_arcs_q = in_arcs.at(q);
         for (int a=0; a<in_arcs_q.size(); a++) {
             InArc &in_arc = in_arcs_q[a];
             int n = in_arc.source;
@@ -467,7 +469,7 @@ void LM::compute_potential(std::vector<float> &d)
 
 void LM::push()
 {
-    std::vector<float> potential;
+    vector<float> potential;
     compute_potential(potential);
 
     assert(potential.size() == num_nodes());
@@ -519,17 +521,17 @@ void LM::read_arpa(FILE *file, bool show_progress)
     try {
         reader.read_order_ngrams(false);
     }
-    catch (std::exception &e) {
-        throw std::runtime_error(std::string("LM::read_arpa(): error while reading unigrams: ")
-                    + e.what());
+    catch (exception &e) {
+        throw runtime_error(string("LM::read_arpa(): error while reading unigrams: ")
+                            + e.what());
     }
 
     try {
         m_start_symbol = m_symbol_map.index(start_str);
         m_end_symbol = m_symbol_map.index(end_str);
     }
-    catch (std::string &str) {
-        throw std::runtime_error(
+    catch (string &str) {
+        throw runtime_error(
             "LM::read_arpa(): sentence start '" + start_str +
             "' or sentence end '" + end_str + "' not in unigrams");
     }
@@ -583,7 +585,7 @@ void LM::read(FILE *file)
                      &version, &m_order, &m_empty_node_id, &m_initial_node_id,
                      &m_final_node_id, &m_final_score);
     if (ret != 6 || version != 1)
-        throw std::runtime_error("LM::read() error while reading header");
+        throw runtime_error("LM::read() error while reading header");
     str::read_line(start_str, file, true);
     str::read_line(end_str, file, true);
     m_symbol_map.read(file);
@@ -604,9 +606,9 @@ void LM::read(FILE *file)
     // Check that initial node matches start symbol
     int node_id = walk(m_empty_node_id, m_start_symbol);
     if (node_id != m_initial_node_id)
-        throw std::runtime_error(str::fmt(1024, "LM::read(): initial node %d does not match "
-                                 "start symbol target %d", m_initial_node_id,
-                                 node_id));
+        throw runtime_error(str::fmt(1024, "LM::read(): initial node %d does not match "
+                                     "start symbol target %d", m_initial_node_id,
+                                     node_id));
 }
 
 void LM::write(FILE *file) const
@@ -624,7 +626,7 @@ void LM::write(FILE *file) const
 }
 
 
-void LM::write_fst(FILE *file, std::string bo_symbol) const
+void LM::write_fst(FILE *file, string bo_symbol) const
 {
     fputs("#FSTBasic MaxPlus\n", file);
     fprintf(file, "I %d\n", m_initial_node_id);
@@ -642,7 +644,7 @@ void LM::write_fst(FILE *file, std::string bo_symbol) const
         assert(first <= limit);
         for (int a = first; a < limit; a++) {
             int tgt = m_arcs.target.at(a);
-            std::string symbol = m_symbol_map.at(m_arcs.symbol.at(a));
+            string symbol = m_symbol_map.at(m_arcs.symbol.at(a));
             float score = m_arcs.score.at(a);
             fprintf(file, "T %d %d %s %s %g\n", n, tgt,
                     symbol.c_str(), symbol.c_str(), score);
@@ -650,7 +652,7 @@ void LM::write_fst(FILE *file, std::string bo_symbol) const
     }
 }
 
-void LM::write_fsmt_node(FILE *file, int n, std::string bo_symbol) const
+void LM::write_fsmt_node(FILE *file, int n, string bo_symbol) const
 {
     int bo_tgt = m_nodes.bo_target.at(n);
     if (bo_tgt > 0)
@@ -667,13 +669,13 @@ void LM::write_fsmt_node(FILE *file, int n, std::string bo_symbol) const
             fprintf(stderr, "WARNING: omitting sentence start arc\n");
             continue;
         }
-        std::string symbol = m_symbol_map.at(m_arcs.symbol.at(a));
+        string symbol = m_symbol_map.at(m_arcs.symbol.at(a));
         float score = -log10_to_ln(m_arcs.score.at(a));
         fprintf(file, "%d %d %s %g\n", n, tgt, symbol.c_str(), score);
     }
 }
 
-void LM::write_fsmt(FILE *file, std::string bo_symbol) const
+void LM::write_fsmt(FILE *file, string bo_symbol) const
 {
     write_fsmt_node(file, m_initial_node_id, bo_symbol);
     for (int n = 1; n < num_nodes(); n++) {
@@ -684,7 +686,7 @@ void LM::write_fsmt(FILE *file, std::string bo_symbol) const
     fprintf(file, "%d\n", m_final_node_id);
 }
 
-void LM::fetch_probs(int node_id, std::vector<float> &vec)
+void LM::fetch_probs(int node_id, vector<float> &vec)
 {
     vec.clear();
     vec.resize(m_symbol_map.size(), FLT_MAX);
@@ -711,9 +713,9 @@ void LM::fetch_probs(int node_id, std::vector<float> &vec)
     }
 }
 
-std::string LM::debug_str() const
+string LM::debug_str() const
 {
-    std::string str;
+    string str;
     for (int n = 0; n < num_nodes(); n++) {
         str.append(str::fmt(256, "%d bs=%g bt=%d l=%d\n",
                             n, m_nodes.bo_score.at(n),
