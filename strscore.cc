@@ -2,7 +2,10 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <utility>
 
+#include "defs.hh"
 #include "io.hh"
 #include "conf.hh"
 #include "LM.hh"
@@ -41,6 +44,8 @@ int main(int argc, char* argv[]) {
 
     int count;
     string line, lstr;
+    vector<pair<string, float> > scores;
+    float normalizer = SMALL_LP;
     while (getline(infile, line)) {
         stringstream ss(line);
         ss >> count;
@@ -56,8 +61,12 @@ int main(int argc, char* argv[]) {
         }
 
         total_prob *= log(10.0); // Convert from log10 (ARPA default) to ln
-        outfile << total_prob << "\t" << lstr << endl;
+        normalizer = add_log_domain_probs(normalizer, total_prob);
+        scores.push_back(make_pair(lstr, total_prob));
     }
+
+    for (auto it=scores.begin(); it != scores.end(); ++it)
+        outfile << it->second-normalizer << "\t" << it->first << endl;
 
     infile.close();
     outfile.close();
