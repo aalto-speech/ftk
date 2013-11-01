@@ -45,7 +45,7 @@ void vec_resize(myVec &vec, int sz) {
 template <class myVec>
 void vec_write(myVec &vec, FILE *file)
 {
-    fputs("FXARRAY1:", file);
+    fputs("LMVECTOR1:", file);
     fprintf(file, "%d:", (int)vec.size());
     int data_len = vec.size() * sizeof(vec[0]);
     if (data_len > 0) {
@@ -68,7 +68,7 @@ void vec_read(myVec &vec, FILE *file)
 {
     int version;
     int num_elems;
-    int ret = fscanf(file, "FXARRAY%d:%d:",
+    int ret = fscanf(file, "LMVECTOR%d:%d:",
                      &version, &num_elems);
     if (ret != 2 || version != 1)
         throw runtime_error("vec_read() error while reading header");
