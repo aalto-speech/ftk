@@ -1,9 +1,7 @@
-#include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
-#include <map>
 #include <sstream>
-#include <vector>
 
 #include "io.hh"
 #include "conf.hh"
@@ -49,7 +47,7 @@ int main(int argc, char* argv[]) {
         ss >> lstr;
 
         float total_prob = 0.0;
-        int node_id = lm.initial_node_id();
+        int node_id = lm.empty_node_id();
         for (int i=0; i<lstr.length(); i++) {
             int sym = lm.symbol_map().index(lstr.substr(i, 1));
             float curr_prob = 0.0;
@@ -57,6 +55,7 @@ int main(int argc, char* argv[]) {
             total_prob += curr_prob;
         }
 
+        total_prob *= log(10.0); // Convert from log10 (ARPA default) to ln
         outfile << total_prob << "\t" << lstr << endl;
     }
 
