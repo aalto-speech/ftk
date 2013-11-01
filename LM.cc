@@ -40,7 +40,7 @@ void vec_resize(myVec &vec, int sz) {
 /** Write the vector to file.
  *
  * \param file = file stream to write to
- * \throw bit::io_error if write fails
+ * \throw runtime_error if write fails
  */
 template <class myVec>
 void vec_write(myVec &vec, FILE *file)
@@ -52,7 +52,7 @@ void vec_write(myVec &vec, FILE *file)
         size_t ret = fwrite((unsigned char*)&vec.at(0), data_len, 1, file);
         if (ret != 1)
             throw runtime_error(
-                string("bit::FixedArray::write() fwrite failed: ") +
+                string("vec_write() fwrite failed: ") +
                 strerror(errno));
     }
 }
@@ -61,7 +61,7 @@ void vec_write(myVec &vec, FILE *file)
 /** Read the vector from file.
  *
  * \param file = file stream to read from
- * \throw bit::io_error if read fails
+ * \throw runtime_error if read fails
  */
 template <class myVec>
 void vec_read(myVec &vec, FILE *file)
@@ -71,19 +71,16 @@ void vec_read(myVec &vec, FILE *file)
     int ret = fscanf(file, "FXARRAY%d:%d:",
                      &version, &num_elems);
     if (ret != 2 || version != 1)
-        throw runtime_error(
-            "bit::FixedArray::read() error while reading header");
+        throw runtime_error("vec_read() error while reading header");
     vec.resize(num_elems);
     int data_len = vec.size() * sizeof(vec[0]);
     if (data_len > 0) {
         size_t ret = fread((unsigned char*)&vec.at(0), data_len, 1, file);
         if (ret != 1) {
             if (ferror(file))
-                throw runtime_error(
-                    "bit::FixedArray::read() error while reading buffer");
+                throw runtime_error("vec_read() error while reading buffer");
             assert(feof(file));
-            throw runtime_error(
-                "bit::FixedArray::read() eof while reading buffer");
+            throw runtime_error("vec_read() eof while reading buffer");
         }
     }
 }
