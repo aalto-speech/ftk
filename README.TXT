@@ -4,14 +4,28 @@ This toolkit contains programs for segmenting strings and training segmentation 
 It has been developed primarily for learning units for speech recognition,
 but can be used for other purposes as well. Subword vocabulary trained with unigram statistics
 has been evaluated with respect to entropy and LVCSR accuracy. Phrase models and bigram 
-statistics are more experimental at the moment.
+statistics are more experimental at the moment. g1g-sents may be adapted for 
+general segmentation purposes.
+
+The segmentation model is a unigram or bigram model.
+Parameters are trained from text with Expectation-Maximization similarly as for multigrams.
+The model training starts from a large vocabulary which is pruned to a suitable size.
+Vocabulary selection is greedy in the sense that in each iteration strings which have the
+least effect on total data likelihood, are removed.
 
 Licence: Currently only for Aalto internal use. 
 Author: Matti Varjokallio.
-        Contains code modified from other Aalto projects like AaltoASR by Teemu Hirsimäki and others,
-        including ArpaReader, LM and conf are directly from AaltoASR
-Implementation: C++11, GCC 4.6 or newer recommended. 
+        Contains code modified from other Aalto projects by Teemu Hirsimäki and others,
+        including ArpaReader, LM and conf which are from AaltoASR
+Implementation: C++11, GCC 4.6 or newer recommended.
+        EM layer: FactorEncoder, FactorGraph, MSFG
+        Model selection layer: Unigrams, Bigrams
+        Current executables roughly cover all the functionality
+        but the idea is to write new ones as needed
 Dependencies: CPPUnit needed for running unit tests, may be commented out in Makefile
+              Unit tests mainly for Expectation-Maximization and related data structures
+Character encoding: core functionality supports all normal fixed-length and UTF8-style encodings.
+        Initialization programs substrings and strscore currently only 1-byte encoding
 
 PROGRAMS:
 substrings: get all substrings from a set of strings
