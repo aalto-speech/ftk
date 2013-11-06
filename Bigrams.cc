@@ -429,6 +429,7 @@ Bigrams::disable_transition(const map<string, flt_type> &unigram_stats,
 
     return ll_diff;
     */
+    return 0.0;
 }
 
 
