@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
       ('c', "candidates=INT", "arg", "5000", "Number of candidate subwords to try to remove per iteration")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
+      ('t', "temp-vocabs", "", "", "Write out intermediate vocabularies")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
@@ -139,7 +140,7 @@ int main(int argc, char* argv[]) {
             freqs.erase(removal_scores[i].first);
             n_removals++;
 
-            if (vocab.size() % 5000 == 0) {
+            if (config["temp-vocabs"].specified && vocab.size() % 5000 == 0) {
                 vocab = freqs;
                 Unigrams::freqs_to_logprobs(vocab);
                 assert_single_chars(vocab, all_chars, one_char_min_lp);
@@ -163,10 +164,6 @@ int main(int argc, char* argv[]) {
         cerr << "subwords removed with cutoff this iteration: " << n_cutoff << endl;
         cerr << "current vocabulary size: " << vocab.size() << endl;
         cerr << "likelihood after the removals: " << cost << endl;
-
-        ostringstream vocabfname;
-        vocabfname << out_vocab_fname << "_iter" << itern << ".vocab";
-        Unigrams::write_vocab(vocabfname.str(), vocab);
 
         itern++;
 
