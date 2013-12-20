@@ -269,9 +269,10 @@ Unigrams::cutoff(map<string, flt_type> &vocab,
 // Select n_candidates number of subwords in the vocabulary as removal candidates
 // running from the least common subword
 int
-Unigrams::init_candidates(int n_candidates,
-                                  const map<string, flt_type> &vocab,
-                                  set<string> &candidates)
+Unigrams::init_candidates(const map<string, flt_type> &vocab,
+                          set<string> &candidates,
+                          int n_candidates,
+                          int min_length)
 {
 
     vector<pair<string, flt_type> > sorted_vocab;
@@ -280,7 +281,67 @@ Unigrams::init_candidates(int n_candidates,
     int selected_candidates = 0;
     for (auto it = sorted_vocab.cbegin(); it != sorted_vocab.cend(); ++it) {
         const string &subword = it->first;
-        if (subword.length() < 2) continue;
+        if (subword.length() < min_length) continue;
+        candidates.insert(subword);
+        selected_candidates++;
+        if (selected_candidates >= n_candidates) break;
+    }
+
+    return selected_candidates;
+}
+
+
+// Select n_candidates number of subwords in the vocabulary as removal candidates
+// by random
+int
+Unigrams::init_candidates_by_random(const map<string, flt_type> &vocab,
+                                    set<string> &candidates,
+                                    int n_candidates,
+                                    int min_length)
+{
+    vector<string> shuffled_vocab;
+    for (auto it = vocab.cbegin(); it != vocab.cend(); ++it)
+        shuffled_vocab.push_back(it->first);
+    random_shuffle(shuffled_vocab.begin(), shuffled_vocab.end());
+
+    int selected_candidates = 0;
+    for (auto it = shuffled_vocab.begin(); it != shuffled_vocab.end(); ++it) {
+        const string &subword = *it;
+        if (subword.length() < min_length) continue;
+        candidates.insert(subword);
+        selected_candidates++;
+        if (selected_candidates >= n_candidates) break;
+    }
+
+    return selected_candidates;
+}
+
+
+// Select n_candidates number of subwords in the vocabulary as removal candidates
+// by the occupancy count in unweighted word segmentations
+int
+Unigrams::init_candidates_by_usage(const map<string, flt_type> &words,
+                                   const map<string, flt_type> &vocab,
+                                   set<string> &candidates,
+                                   int n_candidates,
+                                   flt_type max_usage,
+                                   int min_length)
+{
+    map<string, flt_type> words_type = words;
+    for (auto it = words_type.begin(); it != words_type.end(); ++it)
+        it->second = 1.0;
+
+    map<string, flt_type> type_occ;
+    resegment_words(words_type, vocab, type_occ);
+
+    vector<pair<string, flt_type> > sorted_occ;
+    sort_vocab(type_occ, sorted_occ, false);
+
+    int selected_candidates = 0;
+    for (auto it = sorted_occ.cbegin(); it != sorted_occ.cend(); ++it) {
+        const string &subword = it->first;
+        if (it->second > max_usage) break;
+        if (subword.length() < min_length) continue;
         candidates.insert(subword);
         selected_candidates++;
         if (selected_candidates >= n_candidates) break;
