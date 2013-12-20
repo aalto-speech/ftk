@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
 
         cerr << "candidates for removal: " << n_candidates_per_iter << endl;
         set<string> candidates;
-        gg.init_candidates(n_candidates_per_iter, vocab, candidates);
+        gg.init_candidates(vocab, candidates, n_candidates_per_iter);
 
         cerr << "ranking candidate factors" << endl;
         vector<pair<string, flt_type> > removal_scores;

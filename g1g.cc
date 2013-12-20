@@ -116,9 +116,11 @@ int main(int argc, char* argv[]) {
         cerr << "collecting candidate subwords for removal" << endl;
         set<string> candidates;
         if ((int)vocab.size()-n_candidates_per_iter < target_vocab_size) n_candidates_per_iter = (int)vocab.size()-target_vocab_size;
-        gg.init_candidates(n_candidates_per_iter, vocab, candidates);
+        gg.init_candidates_by_usage(words, vocab, candidates, n_candidates_per_iter/3);
+        gg.init_candidates_by_random(vocab, candidates, (n_candidates_per_iter-candidates.size())/3);
+        gg.init_candidates(vocab, candidates, n_candidates_per_iter-candidates.size());
 
-        cerr << "ranking candidate subwords" << endl;
+        cerr << "ranking candidate subwords (" << candidates.size() << ")" << endl;
         vector<pair<string, flt_type> > removal_scores;
         cost = gg.rank_candidates(words, vocab, candidates, freqs, removal_scores);
 
