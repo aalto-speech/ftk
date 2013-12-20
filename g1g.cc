@@ -94,14 +94,14 @@ int main(int argc, char* argv[]) {
     flt_type cost = gg.resegment_words(words, vocab, freqs);
     cerr << "cost: " << cost << endl;
 
-    flt_type temp_cutoff = 5.0;
+    flt_type temp_cutoff = 1.0;
     while (true) {
         gg.cutoff(freqs, temp_cutoff);
         cerr << "\tcutoff: " << temp_cutoff << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
-        temp_cutoff += 2.5;
+        temp_cutoff += 1.0;
         if (temp_cutoff > (flt_type)cutoff_value) break;
         cost = gg.resegment_words(words, vocab, freqs);
         cerr << "cost: " << cost << endl;
