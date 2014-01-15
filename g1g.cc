@@ -125,10 +125,9 @@ int main(int argc, char* argv[]) {
 
         cerr << "collecting candidate subwords for removal" << endl;
         set<string> candidates;
-        if ((int)vocab.size()-n_candidates_per_iter < target_vocab_size) n_candidates_per_iter = (int)vocab.size()-target_vocab_size;
         gg.init_candidates_by_usage(words, vocab, candidates, n_candidates_per_iter/3, min_removal_length);
-        gg.init_candidates_by_random(vocab, candidates, (n_candidates_per_iter-candidates.size())/3, min_removal_length);
-        gg.init_candidates(vocab, candidates, n_candidates_per_iter-candidates.size(), min_removal_length);
+        gg.init_candidates_by_random(vocab, candidates, (n_candidates_per_iter-candidates.size())/4, min_removal_length);
+        gg.init_candidates(vocab, candidates, n_candidates_per_iter, min_removal_length);
 
         cerr << "ranking candidate subwords (" << candidates.size() << ")" << endl;
         vector<pair<string, flt_type> > removal_scores;
@@ -149,10 +148,9 @@ int main(int argc, char* argv[]) {
             freqs.erase(removal_scores[i].first);
             n_removals++;
 
-            if (temp_vocab_interval > 0 && vocab.size() % temp_vocab_interval == 0) {
+            if (temp_vocab_interval > 0 && freqs.size() % temp_vocab_interval == 0) {
                 vocab = freqs;
                 Unigrams::freqs_to_logprobs(vocab);
-                assert_short_subwords(vocab, short_subwords, short_subword_min_lp);
                 ostringstream vocabfname;
                 vocabfname << "iteration_" << itern << "_" << vocab.size() << ".vocab";
                 Unigrams::write_vocab(vocabfname.str(), vocab);

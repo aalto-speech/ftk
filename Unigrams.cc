@@ -285,7 +285,7 @@ Unigrams::init_candidates(const map<string, flt_type> &vocab,
         if (candidates.find(subword) != candidates.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
-        if (selected_candidates >= n_candidates) break;
+        if (candidates.size() >= n_candidates) break;
     }
 
     return selected_candidates;
@@ -312,7 +312,7 @@ Unigrams::init_candidates_by_random(const map<string, flt_type> &vocab,
         if (candidates.find(subword) != candidates.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
-        if (selected_candidates >= n_candidates) break;
+        if (candidates.size() >= n_candidates) break;
     }
 
     return selected_candidates;
@@ -347,7 +347,7 @@ Unigrams::init_candidates_by_usage(const map<string, flt_type> &words,
         if (candidates.find(subword) != candidates.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
-        if (selected_candidates >= n_candidates) break;
+        if (candidates.size() >= n_candidates) break;
     }
 
     return selected_candidates;
