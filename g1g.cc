@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
 
-    flt_type one_char_min_lp = -25.0;
+    flt_type short_subword_min_lp = -25.0;
     string wordlist_fname = config.arguments[0];
     string vocab_fname = config.arguments[1];
     string out_vocab_fname = config.arguments[2];
@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
         cerr << "\tcutoff: " << temp_cutoff << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
-        assert_short_subwords(vocab, short_subwords, one_char_min_lp);
+        assert_short_subwords(vocab, short_subwords, short_subword_min_lp);
         temp_cutoff += 1.0;
         if (temp_cutoff > (flt_type)cutoff_value) break;
         cost = gg.resegment_words(words, vocab, freqs);
@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
             if (temp_vocab_interval > 0 && vocab.size() % temp_vocab_interval == 0) {
                 vocab = freqs;
                 Unigrams::freqs_to_logprobs(vocab);
-                assert_short_subwords(vocab, short_subwords, one_char_min_lp);
+                assert_short_subwords(vocab, short_subwords, short_subword_min_lp);
                 ostringstream vocabfname;
                 vocabfname << "iteration_" << itern << "_" << vocab.size() << ".vocab";
                 Unigrams::write_vocab(vocabfname.str(), vocab);
@@ -165,9 +165,9 @@ int main(int argc, char* argv[]) {
         int n_cutoff = Unigrams::cutoff(freqs, cutoff_value, min_removal_length);
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
-        assert_short_subwords(vocab, short_subwords, one_char_min_lp);
+        assert_short_subwords(vocab, short_subwords, short_subword_min_lp);
         cost = gg.iterate(words, vocab, 2);
-        assert_short_subwords(vocab, short_subwords, one_char_min_lp);
+        assert_short_subwords(vocab, short_subwords, short_subword_min_lp);
 
         cerr << "subwords removed in this iteration: " << n_removals << endl;
         cerr << "subwords removed with cutoff this iteration: " << n_cutoff << endl;
@@ -182,5 +182,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    Unigrams::write_vocab(out_vocab_fname, vocab);
     exit(1);
 }
