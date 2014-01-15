@@ -32,10 +32,10 @@ int main(int argc, char* argv[]) {
     config("usage: g1g [OPTION...] WORDLIST VOCAB_INIT VOCAB_OUTNAME\n")
       ('h', "help", "", "", "display help")
       ('u', "cutoff=INT", "arg", "0", "Cutoff value for each iteration")
-      ('c', "candidates=INT", "arg", "5000", "Number of candidate subwords to try to remove per iteration")
+      ('c', "candidates=INT", "arg", "25000", "Number of subwords to consider for removal per iteration")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
-      ('t', "temp-vocabs", "", "", "Write out intermediate vocabularies")
+      ('t', "temp-vocabs=INT", "arg", "0", "Write out intermediate vocabularies for #V mod INT == 0")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
     int n_candidates_per_iter = config["candidates"].get_int();
     int removals_per_iter = config["removals"].get_int();
     int target_vocab_size = config["vocab-size"].get_int();
+    int temp_vocab_interval = config["temp-vocabs"].get_int();
     bool enable_forward_backward = config["forward-backward"].specified;
 
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
@@ -56,6 +57,10 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
     cerr << "parameters, removals per iteration: " << removals_per_iter << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
+    if (temp_vocab_interval > 0)
+        cerr << "parameters, write temp vocabs: " << temp_vocab_interval << endl;
+    else
+        cerr << "parameters, write temp vocabs: NO" << endl;
     cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
 
     int maxlen, word_maxlen;
@@ -72,9 +77,10 @@ int main(int argc, char* argv[]) {
     }
     cerr << "\t" << "size: " << vocab.size() << endl;
     cerr << "\t" << "maximum string length: " << maxlen << endl;
-    for (auto it = vocab.cbegin(); it != vocab.end(); ++it)
+    for (auto it = vocab.cbegin(); it != vocab.end(); ++it) {
         if (it->first.length() == 1)
             all_chars[it->first] = 0.0;
+    }
 
     cerr << "Reading word list " << wordlist_fname << endl;
     retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen);
@@ -127,7 +133,7 @@ int main(int argc, char* argv[]) {
 
         cerr << "starting cost before removing subwords one by one: " << cost << endl;
 
-        // Perform removals one by one
+        // Remove subwords one by one
         unsigned int n_removals = 0;
         for (unsigned int i=0; i<removal_scores.size(); i++) {
 
@@ -140,12 +146,12 @@ int main(int argc, char* argv[]) {
             freqs.erase(removal_scores[i].first);
             n_removals++;
 
-            if (config["temp-vocabs"].specified && vocab.size() % 5000 == 0) {
+            if (temp_vocab_interval > 0 && vocab.size() % temp_vocab_interval == 0) {
                 vocab = freqs;
                 Unigrams::freqs_to_logprobs(vocab);
                 assert_single_chars(vocab, all_chars, one_char_min_lp);
                 ostringstream vocabfname;
-                vocabfname << out_vocab_fname << "_iter" << itern << "_" << vocab.size() << ".vocab";
+                vocabfname << "iteration_" << itern << "_" << vocab.size() << ".vocab";
                 Unigrams::write_vocab(vocabfname.str(), vocab);
             }
 
