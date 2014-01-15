@@ -164,7 +164,7 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
-            exit(0);
+            continue;
         }
 
         // Update statistics
@@ -250,13 +250,13 @@ Unigrams::freqs_to_logprobs(map<string, flt_type> &vocab)
 
 int
 Unigrams::cutoff(map<string, flt_type> &vocab,
-                 flt_type limit)
+                 flt_type limit,
+                 int min_length)
 {
-    // http://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
     int nremovals = 0;
     auto iter = vocab.begin();
     while (iter != vocab.end()) {
-        if (iter->second <= limit && iter->first.length() > 1) {
+        if (iter->second <= limit && iter->first.length() >= min_length) {
             vocab.erase(iter++);
             nremovals++;
         }
@@ -282,6 +282,7 @@ Unigrams::init_candidates(const map<string, flt_type> &vocab,
     for (auto it = sorted_vocab.cbegin(); it != sorted_vocab.cend(); ++it) {
         const string &subword = it->first;
         if (subword.length() < min_length) continue;
+        if (candidates.find(subword) != candidates.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
         if (selected_candidates >= n_candidates) break;
@@ -308,6 +309,7 @@ Unigrams::init_candidates_by_random(const map<string, flt_type> &vocab,
     for (auto it = shuffled_vocab.begin(); it != shuffled_vocab.end(); ++it) {
         const string &subword = *it;
         if (subword.length() < min_length) continue;
+        if (candidates.find(subword) != candidates.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
         if (selected_candidates >= n_candidates) break;
@@ -342,6 +344,7 @@ Unigrams::init_candidates_by_usage(const map<string, flt_type> &words,
         const string &subword = it->first;
         if (it->second > max_usage) break;
         if (subword.length() < min_length) continue;
+        if (candidates.find(subword) != candidates.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
         if (selected_candidates >= n_candidates) break;
