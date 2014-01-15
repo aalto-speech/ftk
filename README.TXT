@@ -48,4 +48,4 @@ cat substrings.txt | wlist2srilm.py > srilm.txt
 ngram-count -text srilm.txt -text-has-weights -order 8 -lm srilm_gt_8g.arpa
 strscore srilm_gt_8g.arpa substrings.txt substrings.scored.txt
 iterate -i 5 -f wordcounts.txt substrings.scored.txt initial.vocab
-g1g -u 50 -c 25000 -r 500 -v 20000 wordcounts.txt initial.vocab final.vocab  (-f for forward-backward)
+g1g -u 50 -c 50000 -r 500 -v 20000 -t wordcounts.txt initial.vocab final.vocab  (-f for forward-backward)

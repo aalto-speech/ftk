@@ -326,8 +326,8 @@ Unigrams::init_candidates_by_usage(const map<string, flt_type> &words,
                                    const map<string, flt_type> &vocab,
                                    set<string> &candidates,
                                    int n_candidates,
-                                   flt_type max_usage,
-                                   int min_length)
+                                   int min_length,
+                                   flt_type max_usage)
 {
     map<string, flt_type> words_type = words;
     for (auto it = words_type.begin(); it != words_type.end(); ++it)

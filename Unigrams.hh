@@ -83,8 +83,8 @@ public:
                                  const std::map<std::string, flt_type> &vocab,
                                  std::set<std::string> &candidates,
                                  int n_candidates,
-                                 flt_type max_usage=std::numeric_limits<flt_type>::max(),
-                                 int min_length=2);
+                                 int min_length=2,
+                                 flt_type max_usage=std::numeric_limits<flt_type>::max());
 
     flt_type rank_candidates(const std::map<std::string, flt_type> &words,
                              const std::map<std::string, flt_type> &vocab,
