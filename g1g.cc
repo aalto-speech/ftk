@@ -9,6 +9,7 @@
 
 #include "defs.hh"
 #include "conf.hh"
+#include "str.hh"
 #include "StringSet.hh"
 #include "FactorEncoder.hh"
 #include "Unigrams.hh"
@@ -25,6 +26,14 @@ void assert_short_subwords(map<string, flt_type> &vocab,
             vocab[*it] = val;
 }
 
+void parse_limits(string limitstr, map<int,int> &limits) {
+    vector<string> fields;
+    str::split_with_quotes(&limitstr, " ,", true, &fields);
+    if (fields.size() % 2 != 0) throw string("Problem parsing the removal limits");
+    for (int i=0; i<fields.size(); i=i+2)
+        limits[stoi(fields[i])] = stoi(fields[i+1]);
+}
+
 
 int main(int argc, char* argv[]) {
 
@@ -34,6 +43,7 @@ int main(int argc, char* argv[]) {
       ('u', "cutoff=INT", "arg", "0", "Cutoff value for each iteration")
       ('c', "candidates=INT", "arg", "25000", "Number of subwords to consider for removal per iteration")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
+      ('l', "removal-limits=STRING", "arg", "", "Limits for subword removal LIMIT1,REMOVALS1,LIMIT2,REMOVALS2,..")
       ('m', "min-length=INT", "arg", "2", "Minimum length of subwords to remove")
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
       ('t', "temp-vocabs=INT", "arg", "0", "Write out intermediate vocabularies for #V mod INT == 0")
@@ -53,12 +63,25 @@ int main(int argc, char* argv[]) {
     int temp_vocab_interval = config["temp-vocabs"].get_int();
     bool enable_forward_backward = config["forward-backward"].specified;
 
+    map<int,int> removal_limits;
+    if (config["removal-limits"].specified)
+        parse_limits(config["removal-limits"].get_str(), removal_limits);
+
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
     cerr << "parameters, initial vocabulary: " << vocab_fname << endl;
     cerr << "parameters, cutoff: " << setprecision(15) << cutoff_value << endl;
     cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
     cerr << "parameters, minimum length for subwords to remove: " << min_removal_length << endl;
     cerr << "parameters, removals per iteration: " << removals_per_iter << endl;
+    if (removal_limits.size() > 0) {
+        int limitc = 1;
+        for (auto it = removal_limits.begin(); it != removal_limits.end(); ++it) {
+            cerr << "parameters, removal limit " << limitc << ": "
+            << it->second << " removals per iteration below vocabulary size " << it->first << endl;
+            limitc++;
+        }
+    }
+
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
     if (temp_vocab_interval > 0)
         cerr << "parameters, write temp vocabs: " << temp_vocab_interval << endl;
@@ -122,6 +145,9 @@ int main(int argc, char* argv[]) {
     while (true) {
 
         cerr << "iteration " << itern << endl;
+
+        for (auto it = removal_limits.rbegin(); it != removal_limits.rend(); it++)
+            if (vocab.size() <= it->first) removals_per_iter = it->second;
 
         cerr << "collecting candidate subwords for removal" << endl;
         set<string> candidates;
