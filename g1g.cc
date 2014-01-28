@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
       ('h', "help", "", "", "display help")
       ('u', "cutoff-target=INT", "arg", "200000", "Iterate cutoff while this vocabulary size is reached, DEFAULT: 200 000")
       ('i', "cutoff-increment=FLOAT", "arg", "1.0", "Cutoff increment for each iteration, DEFAULT: 1.0")
-      ('c', "candidates=INT", "arg", "25000", "Number of subwords to consider for removal per iteration, DEFAULT: 25 000")
+      ('c', "candidates=INT", "arg", "50000", "Number of subwords to consider for removal per iteration, DEFAULT: 50 000")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration, DEFAULT: 500")
       ('l', "removal-limits=STRING", "arg", "", "Extra limits for subword removal LIMIT1,REMOVALS1,LIMIT2,REMOVALS2,..")
       ('m', "min-length=INT", "arg", "2", "Minimum length of subwords to remove, DEFAULT: 2")

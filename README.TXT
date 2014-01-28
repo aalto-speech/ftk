@@ -59,4 +59,4 @@ iterate -i 5 -f wordcounts.txt substrings.scored.txt initial.vocab
 
 4) Prune the vocabulary with cutoff + greedy likelihood pruning.
 It may be a good idea to experiment with the parameters. The following should work reasonably:
-g1g -c 50000 -l 100000,250,50000,100 -v 20000 -t 5000 wordcounts.txt initial.vocab final.vocab
+g1g -l 100000,250,50000,100 -v 20000 -t 5000 wordcounts.txt initial.vocab final.vocab
