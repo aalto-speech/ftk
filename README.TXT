@@ -43,9 +43,20 @@ g2g: train a subword bigram model over a multi string factor graph
 g2gr: train a subword bigram model over a multi string factor graph
 
 EXAMPLE USAGE (subword unigram model):
+1) Get substrings up to some suitable length defined by -l
 substrings -l 17 wordcounts.txt substrings.txt
+
+2a) Initialize substrings with a letter n-gram model
 cat substrings.txt | wlist2srilm.py > srilm.txt
 ngram-count -text srilm.txt -text-has-weights -order 8 -lm srilm_gt_8g.arpa
 strscore srilm_gt_8g.arpa substrings.txt substrings.scored.txt
+
+2b) Initialize substrings with 0-gram scores
+flatinit.py substrings.txt > substrings.scored.txt
+
+3) Iterate forward-backward a few times to get a local maximum for the initial vocabulary (optional)
 iterate -i 5 -f wordcounts.txt substrings.scored.txt initial.vocab
-g1g -u 50 -c 50000 -r 500 -v 20000 -t wordcounts.txt initial.vocab final.vocab  (-f for forward-backward)
+
+4) Prune the vocabulary with cutoff + greedy likelihood pruning.
+It may be a good idea to experiment with the parameters. The following should work reasonably:
+g1g -c 50000 -l 100000,250,50000,100 -v 20000 -t 5000 wordcounts.txt initial.vocab final.vocab

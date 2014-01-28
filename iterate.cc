@@ -26,6 +26,14 @@ void assert_single_chars(map<string, flt_type> &vocab,
             vocab[it->first] = val;
 }
 
+void floor_values(map<string, flt_type> &vocab,
+                  flt_type floor_val)
+{
+    for (auto it = vocab.begin(); it != vocab.end(); ++it)
+        if (it->second < floor_val) it->second = floor_val;
+}
+
+
 
 int main(int argc, char* argv[]) {
 
@@ -93,6 +101,7 @@ int main(int argc, char* argv[]) {
         cerr << "cost: " << cost << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
+        floor_values(vocab, SMALL_LP);
         assert_single_chars(vocab, all_chars, one_char_min_lp);
     }
     time ( &rawtime );
