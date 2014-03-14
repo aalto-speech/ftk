@@ -234,7 +234,7 @@ MultiStringFactorGraph::write(const std::string &filename) const
     vector<Arc*> arcs; collect_arcs(arcs);
 
     outfile << nodes.size() << " " << arcs.size() << " " << string_end_nodes.size() << endl;
-    for (int i=0; i<nodes.size(); i++)
+    for (unsigned int i=0; i<nodes.size(); i++)
         outfile << "n " << i << " " << nodes[i].factor << endl;
     for (auto it = arcs.begin(); it != arcs.end(); ++it)
         outfile << "a " << (**it).source_node << " " << (**it).target_node << endl;

@@ -13,7 +13,7 @@
 
 // 1-GRAM
 flt_type viterbi(const std::map<std::string, flt_type> &vocab,
-                 int maxlen,
+                 unsigned int maxlen,
                  const std::string &text,
                  std::vector<std::string> &best_path,
                  bool reverse=true);

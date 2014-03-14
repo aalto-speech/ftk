@@ -72,7 +72,8 @@ public:
     bool assert_equal(const FactorGraph &other) const;
     int num_paths() const;
     void get_paths(std::vector<std::vector<std::string> > &paths) const;
-    void remove_arcs(const std::string &source, const std::string &target);
+    void remove_arcs(const std::string &source,
+                     const std::string &target);
     void remove_arcs(const std::string &remstr);
 
     std::string text;
@@ -82,14 +83,18 @@ public:
 
 private:
     // Constructor helpers
-    void create_nodes(const std::string &text, const std::map<std::string, flt_type> &vocab,
-                      int maxlen, std::vector<std::unordered_set<fg_node_idx_t> > &incoming);
-    void create_nodes(const std::string &text, const StringSet &vocab,
+    void create_nodes(const std::string &text,
+                      const std::map<std::string, flt_type> &vocab,
+                      unsigned int maxlen,
+                      std::vector<std::unordered_set<fg_node_idx_t> > &incoming);
+    void create_nodes(const std::string &text,
+                      const StringSet &vocab,
                       std::vector<std::unordered_set<fg_node_idx_t> > &incoming);
     void prune_and_create_arcs(std::vector<std::unordered_set<fg_node_idx_t> > &incoming);
     // Helper for enumerating paths
     void advance(std::vector<std::vector<std::string> > &paths,
-                 std::vector<std::string> &curr_string, fg_node_idx_t node) const;
+                 std::vector<std::string> &curr_string,
+                 fg_node_idx_t node) const;
     // Helper for removing arcs
     void remove_arc(Arc *arc);
 };

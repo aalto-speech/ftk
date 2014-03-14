@@ -33,7 +33,7 @@ StringSet::insert(char letter,
     // No existing arc: create a new arc
     if (arc == nullptr) {
         Node *new_node = new Node();
-        unsigned char remapped = remap_char(letter);
+        unsigned int remapped = remap_char(letter); // unsigned char!
         if (node->arcs.size() < remapped+1) node->arcs.resize(remapped+1, nullptr);
         arc = new Arc(letter, factor, new_node, cost);
         node->arcs[remapped] = arc;

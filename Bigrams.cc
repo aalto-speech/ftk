@@ -224,7 +224,7 @@ Bigrams::cutoff(const map<string, flt_type> &unigram_stats,
     remove_transitions(to_remove, transitions);
 
     for (auto fgit = fg_words.begin(); fgit != fg_words.end(); ++fgit) {
-        for (int i=0; i<to_remove.size(); i++) {
+        for (unsigned int i=0; i<to_remove.size(); i++) {
             size_t found = fgit->first.find(to_remove[i]);
             if (found != std::string::npos) fgit->second->remove_arcs(to_remove[i]);
         }
@@ -246,7 +246,7 @@ Bigrams::cutoff(const map<string, flt_type> &unigram_stats,
 
     remove_transitions(to_remove, transitions);
 
-    for (int i=0; i<to_remove.size(); i++)
+    for (unsigned int i=0; i<to_remove.size(); i++)
         msfg.remove_arcs(to_remove[i]);
 
     return to_remove.size();
@@ -255,7 +255,7 @@ Bigrams::cutoff(const map<string, flt_type> &unigram_stats,
 
 int
 Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
-                             int num_removals,
+                             unsigned int num_removals,
                              transitions_t &transitions,
                              map<string, FactorGraph*> &fg_words)
 {
@@ -271,7 +271,7 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
     remove_transitions(to_remove, transitions);
 
     for (auto fgit = fg_words.begin(); fgit != fg_words.end(); ++fgit) {
-        for (int i=0; i<num_removals; i++) {
+        for (unsigned int i=0; i<num_removals; i++) {
             size_t found = fgit->first.find(sorted_stats[i].first);
             if (found != std::string::npos) fgit->second->remove_arcs(sorted_stats[i].first);
         }
@@ -283,7 +283,7 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
 
 int
 Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
-                             int num_removals,
+                             unsigned int num_removals,
                              transitions_t &transitions,
                              MultiStringFactorGraph &msfg)
 {
@@ -298,7 +298,7 @@ Bigrams::remove_least_common(const map<string, flt_type> &unigram_stats,
 
     remove_transitions(to_remove, transitions);
 
-    for (int i=0; i<to_remove.size(); i++)
+    for (unsigned int i=0; i<to_remove.size(); i++)
         msfg.remove_arcs(to_remove[i]);
 
     return to_remove.size();
@@ -328,11 +328,11 @@ Bigrams::trans_to_vocab(const transitions_t &transitions,
 
 flt_type
 Bigrams::score(const transitions_t &transitions,
-               std::vector<std::string> &path)
+               vector<string> &path)
 {
     flt_type ll = 0.0;
 
-    for (int i=0; i<path.size()-1; i++) {
+    for (unsigned int i=0; i<path.size()-1; i++) {
         try {
             ll += transitions.at(path[i]).at(path[i+1]);
         }
@@ -461,7 +461,7 @@ Bigrams::get_backpointers(const MultiStringFactorGraph &msfg,
 
 
 int
-Bigrams::init_removal_candidates(int n_candidates,
+Bigrams::init_removal_candidates(unsigned int n_candidates,
                                  const map<string, flt_type> &unigram_stats,
                                  map<string, flt_type> &candidates)
 {
@@ -483,7 +483,7 @@ Bigrams::rank_removal_candidates(const map<string, flt_type> &words,
                                  const MultiStringFactorGraph &msfg,
                                  const map<string, flt_type> &unigram_stats,
                                  transitions_t &transitions,
-                                 map<std::string, flt_type> &candidates)
+                                 map<string, flt_type> &candidates)
 {
     map<string, set<string> > backpointers;
     Bigrams::get_backpointers(msfg, backpointers, 1);

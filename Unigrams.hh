@@ -67,23 +67,23 @@ public:
 
     static int cutoff(std::map<std::string, flt_type> &vocab,
                       flt_type limit,
-                      int min_length=2);
+                      unsigned int min_length=2);
 
     int init_candidates(const std::map<std::string, flt_type> &vocab,
                         std::set<std::string> &candidates,
-                        int n_candidates,
-                        int min_length=2);
+                        unsigned int n_candidates,
+                        unsigned int min_length=2);
 
     int init_candidates_by_random(const std::map<std::string, flt_type> &vocab,
                                   std::set<std::string> &candidates,
-                                  int n_candidates,
-                                  int min_length=2);
+                                  unsigned int n_candidates,
+                                  unsigned int min_length=2);
 
     int init_candidates_by_usage(const std::map<std::string, flt_type> &words,
                                  const std::map<std::string, flt_type> &vocab,
                                  std::set<std::string> &candidates,
-                                 int n_candidates,
-                                 int min_length=2,
+                                 unsigned int n_candidates,
+                                 unsigned int min_length=2,
                                  flt_type max_usage=std::numeric_limits<flt_type>::max());
 
     flt_type rank_candidates(const std::map<std::string, flt_type> &words,

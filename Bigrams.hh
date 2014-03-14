@@ -60,12 +60,12 @@ static int cutoff(const std::map<std::string, flt_type> &unigram_stats,
                   MultiStringFactorGraph &msfg);
 
 static int remove_least_common(const std::map<std::string, flt_type> &unigram_stats,
-                               int num_removals,
+                               unsigned int num_removals,
                                transitions_t &transitions,
                                std::map<std::string, FactorGraph*> &fg_words);
 
 static int remove_least_common(const std::map<std::string, flt_type> &unigram_stats,
-                               int num_removals,
+                               unsigned int num_removals,
                                transitions_t &transitions,
                                MultiStringFactorGraph &msfg);
 
@@ -101,7 +101,7 @@ static void get_backpointers(const MultiStringFactorGraph &msfg,
 static void remove_transitions(std::vector<std::string> &to_remove,
                                transitions_t &transitions);
 
-static int init_removal_candidates(int n_candidates,
+static int init_removal_candidates(unsigned int n_candidates,
                                    const std::map<std::string, flt_type> &unigram_stats,
                                    std::map<std::string, flt_type> &candidates);
 

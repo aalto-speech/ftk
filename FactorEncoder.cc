@@ -11,7 +11,7 @@ using namespace std;
 
 
 flt_type viterbi(const map<string, flt_type> &vocab,
-                 int maxlen,
+                 unsigned int maxlen,
                  const string &text,
                  vector<string> &best_path,
                  bool reverse)
@@ -26,7 +26,7 @@ flt_type viterbi(const map<string, flt_type> &vocab,
     for (int i=0; i<text.length(); i++) {
 
         // Iterate all factors ending in this position
-        for (int j=max(0, i-maxlen); j<=i; j++) {
+        for (int j=max(0, (int)(i-maxlen)); j<=i; j++) {
 
             start_pos = j;
             end_pos = i+1;
@@ -72,17 +72,17 @@ flt_type viterbi(const StringSet &vocab,
     if (text.length() == 0) return MIN_FLOAT;
     vector<Token> search(text.length());
 
-    for (int i=0; i<text.length(); i++) {
+    for (unsigned int i=0; i<text.length(); i++) {
 
         // Iterate all factors starting from this position
         const StringSet::Node *node = &vocab.root_node;
-        for (int j=i; j<text.length(); j++) {
+        for (unsigned int j=i; j<text.length(); j++) {
 
             StringSet::Arc *arc = vocab.find_arc(text[j], node);
             if (arc == nullptr) break;
             node = arc->target_node;
 
-            // Morph associated with this node
+            // Factor associated with this node
             if (arc->factor.length() > 0) {
                 flt_type cost = arc->cost;
                 if (i>0) cost += search[i-1].cost;
@@ -143,14 +143,14 @@ void forward(const StringSet &vocab,
 
         // Iterate all factors starting from this position
         const StringSet::Node *node = &vocab.root_node;
-        for (int j=i; j<text.length(); j++) {
+        for (unsigned int j=i; j<text.length(); j++) {
 
             StringSet::Arc *arc = vocab.find_arc(text[j], node);
 
             if (arc == nullptr) break;
             node = arc->target_node;
 
-            // Morph associated with this node
+            // Factor associated with this node
             if (arc->factor.length() > 0) {
                 flt_type cost = arc->cost;
                 if (i>0) cost += fw[i-1];
@@ -164,7 +164,7 @@ void forward(const StringSet &vocab,
     if (search[len-1].size() == 0) return;
 
     fw[len-1] = search[len-1][0].cost;
-    for (int j=1; j<search[len-1].size(); j++)
+    for (unsigned int j=1; j<search[len-1].size(); j++)
         fw[len-1] = add_log_domain_probs(fw[len-1], search[len-1][j].cost);
 }
 
@@ -253,7 +253,7 @@ flt_type viterbi(const StringSet &vocab,
     if (best_path.size() == 0) return MIN_FLOAT;
     best_path.insert(best_path.begin(), start_end_symbol);
     best_path.push_back(start_end_symbol);
-    for (int i=1; i<best_path.size(); i++)
+    for (unsigned int i=1; i<best_path.size(); i++)
         stats[best_path[i-1]][best_path[i]] += 1.0;
     return lp;
 }
@@ -273,7 +273,7 @@ flt_type viterbi(const transitions_t &transitions,
     costs[0] = 0.0; source_nodes[0] = -1;
 
     // Traverse paths
-    for (int i=0; i<text.nodes.size(); i++) {
+    for (unsigned int i=0; i<text.nodes.size(); i++) {
 
         FactorGraph::Node &node = text.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {

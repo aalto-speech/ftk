@@ -7,8 +7,10 @@ using namespace std;
 
 
 void
-FactorGraph::create_nodes(const string &text, const map<string, flt_type> &vocab,
-                          int maxlen, vector<unordered_set<fg_node_idx_t> > &incoming)
+FactorGraph::create_nodes(const string &text,
+                          const map<string, flt_type> &vocab,
+                          unsigned int maxlen,
+                          vector<unordered_set<fg_node_idx_t> > &incoming)
 {
     nodes.push_back(Node(0,0));
     for (unsigned int i=0; i<text.length(); i++) {
@@ -76,15 +78,15 @@ FactorGraph::prune_and_create_arcs(vector<unordered_set<fg_node_idx_t> > &incomi
     nodes.push_back(Node(text.size(),0));
 
     // Collect nodes by start position
-    vector<vector<int> > nodes_by_start_pos(text.size()+1);
-    for (int i=1; i<nodes.size(); i++)
+    vector<vector<unsigned int> > nodes_by_start_pos(text.size()+1);
+    for (unsigned int i=1; i<nodes.size(); i++)
         nodes_by_start_pos[nodes[i].start_pos].push_back(i);
 
     // Set arcs
-    for (int i=0; i<nodes.size()-1; i++) {
-        int end_pos = nodes[i].start_pos + nodes[i].len;
-        for (int j=0; j<nodes_by_start_pos[end_pos].size(); j++) {
-            int nodei = nodes_by_start_pos[end_pos][j];
+    for (unsigned int i=0; i<nodes.size()-1; i++) {
+        unsigned int end_pos = nodes[i].start_pos + nodes[i].len;
+        for (unsigned int j=0; j<nodes_by_start_pos[end_pos].size(); j++) {
+            unsigned int nodei = nodes_by_start_pos[end_pos][j];
             Arc *arc = new Arc(i, nodei, 0.0);
             arcs.push_back(arc);
             nodes[i].outgoing.push_back(arc);
@@ -173,9 +175,9 @@ FactorGraph::assert_equal(const FactorGraph &other) const
         if (it->len != it2->len) return false;
         if (it->incoming.size() != it2->incoming.size()) return false;
         if (it->outgoing.size() != it2->outgoing.size()) return false;
-        for (int i=0; i<it->incoming.size(); i++)
+        for (unsigned int i=0; i<it->incoming.size(); i++)
             if (*(it->incoming[i]) != *(it2->incoming[i])) return false;
-        for (int i=0; i<it->outgoing.size(); i++)
+        for (unsigned int i=0; i<it->outgoing.size(); i++)
             if (*(it->outgoing[i]) != *(it2->outgoing[i])) return false;
         it++;
         it2++;
@@ -193,7 +195,7 @@ FactorGraph::num_paths() const
     vector<int> path_counts(nodes.size());
     path_counts[0] = 1;
 
-    for (int i=0; i<nodes.size(); i++) {
+    for (unsigned int i=0; i<nodes.size(); i++) {
         const FactorGraph::Node &node = nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc)
             path_counts[(**arc).target_node] += path_counts[i];
@@ -259,7 +261,7 @@ FactorGraph::remove_arcs(const std::string &source,
 {
     for (auto node = nodes.begin(); node != nodes.end(); ++node) {
         if (source != this->get_factor(*node)) continue;
-        for (int i=0; i<node->outgoing.size(); i++) {
+        for (unsigned int i=0; i<node->outgoing.size(); i++) {
             FactorGraph::Arc *arc = node->outgoing[i];
             if (target != this->get_factor(arc->target_node)) continue;
             this->remove_arc(arc);

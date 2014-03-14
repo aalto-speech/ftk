@@ -251,7 +251,7 @@ Unigrams::freqs_to_logprobs(map<string, flt_type> &vocab)
 int
 Unigrams::cutoff(map<string, flt_type> &vocab,
                  flt_type limit,
-                 int min_length)
+                 unsigned int min_length)
 {
     int nremovals = 0;
     auto iter = vocab.begin();
@@ -271,8 +271,8 @@ Unigrams::cutoff(map<string, flt_type> &vocab,
 int
 Unigrams::init_candidates(const map<string, flt_type> &vocab,
                           set<string> &candidates,
-                          int n_candidates,
-                          int min_length)
+                          unsigned int n_candidates,
+                          unsigned int min_length)
 {
 
     vector<pair<string, flt_type> > sorted_vocab;
@@ -297,8 +297,8 @@ Unigrams::init_candidates(const map<string, flt_type> &vocab,
 int
 Unigrams::init_candidates_by_random(const map<string, flt_type> &vocab,
                                     set<string> &candidates,
-                                    int n_candidates,
-                                    int min_length)
+                                    unsigned int n_candidates,
+                                    unsigned int min_length)
 {
     vector<string> shuffled_vocab;
     for (auto it = vocab.cbegin(); it != vocab.cend(); ++it)
@@ -325,8 +325,8 @@ int
 Unigrams::init_candidates_by_usage(const map<string, flt_type> &words,
                                    const map<string, flt_type> &vocab,
                                    set<string> &candidates,
-                                   int n_candidates,
-                                   int min_length,
+                                   unsigned int n_candidates,
+                                   unsigned int min_length,
                                    flt_type max_usage)
 {
     map<string, flt_type> words_type = words;
