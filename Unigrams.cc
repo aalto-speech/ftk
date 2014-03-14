@@ -391,10 +391,10 @@ Unigrams::rank_candidates(const map<string, flt_type> &words,
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
             new_freqs[it->first] += worditer->second * it->second;
 
-        // Hypothesize what the segmentation would be if some subword didn't exist
+        // Hypothesize what the segmentation would be if some string didn't exist
         for (auto hypoiter = stats.cbegin(); hypoiter != stats.cend(); ++hypoiter) {
 
-            // If wanting to hypothesize removal of this subword
+            // If wanting to hypothesize removal of this string
             if (candidates.find(hypoiter->first) != candidates.end()) {
 
                 flt_type stored_value = ss_vocab.remove(hypoiter->first);
@@ -492,7 +492,7 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
         flt_type renormalizer = sub_log_domain_probs(0, vocab.at(iter->first));
         flt_type hypo_token_count = (token_count + token_diffs[iter->first]);
         flt_type normalizer_ll_diff = hypo_token_count * -renormalizer;
-        pair<string, flt_type> removal_score = make_pair(iter->first, iter->second);
+        pair<string, flt_type> removal_score = make_pair(iter->first, iter->second + normalizer_ll_diff);
         removal_scores.push_back(removal_score);
     }
 

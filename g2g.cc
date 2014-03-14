@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
     cerr << "parameters, floor lp: " << FLOOR_LP << endl;
 
-    int maxlen, word_maxlen;
+    int word_maxlen;
     map<string, flt_type> all_chars;
     map<string, flt_type> freqs;
     map<string, flt_type> words;

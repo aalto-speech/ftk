@@ -36,7 +36,6 @@ MultiStringFactorGraph::add(const FactorGraph &text)
 
         auto arc_to_process = arcs_to_process.begin();
         FactorGraph::Arc *arc = (*arc_to_process).second.second;
-        fg_node_idx_t fg_source_node = arc->source_node;
         fg_node_idx_t fg_target_node = arc->target_node;
         msfg_node_idx_t msfg_source_node = (*arc_to_process).second.first;
         arcs_to_process.erase(arc_to_process);
