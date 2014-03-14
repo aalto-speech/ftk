@@ -15,7 +15,7 @@ public:
     /** Arc of a multi string factor graph. */
     class Arc {
     public:
-        Arc(unsigned int source_node, unsigned int target_node,
+        Arc(msfg_node_idx_t source_node, msfg_node_idx_t target_node,
             flt_type *cost=NULL)
         : source_node(source_node), target_node(target_node), cost(cost) {}
         bool operator==(Arc& rhs) const {
@@ -57,7 +57,7 @@ public:
     { nstr.assign(nodes[node].factor); }
     std::string get_factor(const Node &node) const
     { return node.factor; }
-    std::string get_factor(int node) const
+    std::string get_factor(msfg_node_idx_t node) const
     { return nodes[node].factor; }
     int num_paths(const std::string &text) const;
     void get_paths(const std::string &text, std::vector<std::vector<std::string> > &paths) const;
@@ -73,7 +73,7 @@ public:
 
     std::string start_end_symbol;
     std::vector<Node> nodes;
-    std::map<std::string, int> string_end_nodes;
+    std::map<std::string, msfg_node_idx_t> string_end_nodes;
     std::map<std::string, std::vector<msfg_node_idx_t> > factor_node_map;
 
 private:

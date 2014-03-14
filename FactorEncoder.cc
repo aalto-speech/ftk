@@ -298,7 +298,7 @@ flt_type viterbi(const transitions_t &transitions,
     }
 
     // Find best path
-    unsigned int node = text.nodes.size()-1;
+    int node = text.nodes.size()-1;
     best_path.push_back(text.get_factor(node));
     while (true) {
         node = source_nodes[node];
@@ -319,7 +319,7 @@ flt_type viterbi(const transitions_t &transitions,
     vector<string> best_path;
     flt_type lp = viterbi(transitions, text, best_path, true);
     if (best_path.size() < 2) return MIN_FLOAT;
-    for (int i=1; i<best_path.size(); i++)
+    for (unsigned int i=1; i<best_path.size(); i++)
         stats[best_path[i-1]][best_path[i]] += 1.0;
     return lp;
 }
@@ -329,7 +329,7 @@ void forward(const transitions_t &transitions,
              FactorGraph &text,
              vector<flt_type> &fw)
 {
-    for (int i=0; i<text.nodes.size(); i++) {
+    for (unsigned int i=0; i<text.nodes.size(); i++) {
 
         if (fw[i] == MIN_FLOAT) continue;
 
@@ -410,7 +410,7 @@ flt_type forward_backward(const transitions_t &transitions,
 
     post_scores.clear();
     post_scores.resize(text.text.size());
-    for (int i=1; i<text.nodes.size()-1; i++) {
+    for (unsigned int i=1; i<text.nodes.size()-1; i++) {
         int idx = int(text.nodes[i].start_pos) + int(text.nodes[i].len) - 1;
         if (post_scores[idx] == 0.0) post_scores[idx] = bw[i];
         else post_scores[idx] = add_log_domain_probs(post_scores[idx], bw[i]);
@@ -435,7 +435,7 @@ flt_type forward_backward(const transitions_t &transitions,
     string source_node_str, target_node_str;
 
     // Forward
-    for (int i=0; i<text.nodes.size(); i++) {
+    for (unsigned int i=0; i<text.nodes.size(); i++) {
 
         if (fw[i] == MIN_FLOAT) continue;
 
@@ -479,7 +479,7 @@ flt_type forward_backward(const map<string, flt_type> &vocab,
     fw[0] = 0.0; bw[text.nodes.size()-1] = 0.0;
 
     // Forward
-    for (int i=0; i<text.nodes.size(); i++) {
+    for (unsigned int i=0; i<text.nodes.size(); i++) {
 
         if (fw[i] == MIN_FLOAT) continue;
 
@@ -521,7 +521,7 @@ flt_type posterior_decode(const transitions_t &transitions,
     costs[0] = 0.0; source_nodes[0] = -1;
 
     // Traverse paths
-    for (int i=0; i<text.nodes.size(); i++) {
+    for (unsigned int i=0; i<text.nodes.size(); i++) {
 
         FactorGraph::Node &node = text.nodes[i];
         for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
@@ -537,7 +537,7 @@ flt_type posterior_decode(const transitions_t &transitions,
     }
 
     // Find best path
-    unsigned int node = text.nodes.size()-1;
+    int node = text.nodes.size()-1;
     path.push_back(text.get_factor(node));
     while (true) {
         node = source_nodes[node];
@@ -588,7 +588,7 @@ void
 forward(const MultiStringFactorGraph &msfg,
         vector<flt_type> &fw)
 {
-    for (int i=0; i<msfg.nodes.size(); i++) {
+    for (unsigned int i=0; i<msfg.nodes.size(); i++) {
 
         if (fw[i] == MIN_FLOAT) continue;
 
@@ -826,8 +826,8 @@ viterbi(const MultiStringFactorGraph &msfg,
 {
     map<msfg_node_idx_t, flt_type> scores;
     map<msfg_node_idx_t, msfg_node_idx_t> sources;
-    int text_end_node = msfg.string_end_nodes.at(text);
-    set<int> nodes_to_process; nodes_to_process.insert(text_end_node);
+    unsigned int text_end_node = msfg.string_end_nodes.at(text);
+    set<unsigned int> nodes_to_process; nodes_to_process.insert(text_end_node);
     scores[text_end_node] = 0.0;
 
     while(nodes_to_process.size() > 0) {
