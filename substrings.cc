@@ -14,7 +14,7 @@ bool desc_sort(pair<string, int> i, pair<string, int> j) { return (i.second > j.
 
 
 int get_substrings(const string &infname,
-                   int maxlen,
+                   unsigned int maxlen,
                    map<string,int> &substrs) {
 
     ifstream infile(infname);
@@ -31,8 +31,8 @@ int get_substrings(const string &infname,
         ss >> count;
         ss >> word;
 
-        for (int i=0; i<word.length(); i++)
-            for (int j=i; j<word.length() && j-i+1 <= maxlen; j++)
+        for (unsigned int i=0; i<word.length(); i++)
+            for (unsigned int j=i; j<word.length() && j-i+1 <= maxlen; j++)
                 substrs[word.substr(i, j-i+1)] += count;
     }
 
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
 
     string infname = config.arguments[0];
     string outfname = config.arguments[1];
-    int maxlen = config["max-length"].get_int();
+    unsigned int maxlen = config["max-length"].get_int();
 
     map<string, int> substrs;
     int substr_count = get_substrings(infname, maxlen, substrs);

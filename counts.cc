@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
             line.assign(remainder);
         }
 
-        for (int i=0; i<line.size(); i++) {
+        for (unsigned int i=0; i<line.size(); i++) {
             string currchr {line[i]};
             if (!ss_vocab->includes(currchr))
                 ss_vocab->add(currchr, one_char_min_lp);

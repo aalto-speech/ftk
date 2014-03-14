@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
 
         float total_prob = 0.0;
         int node_id = lm.empty_node_id();
-        for (int i=0; i<lstr.length(); i++) {
+        for (unsigned int i=0; i<lstr.length(); i++) {
             int sym = lm.symbol_map().index(lstr.substr(i, 1));
             float curr_prob = 0.0;
             node_id = lm.walk(node_id, sym, &curr_prob);

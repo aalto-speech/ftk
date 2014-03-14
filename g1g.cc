@@ -26,11 +26,11 @@ void assert_short_subwords(map<string, flt_type> &vocab,
             vocab[*it] = val;
 }
 
-void parse_limits(string limitstr, map<int,int> &limits) {
+void parse_limits(string limitstr, map<unsigned int, unsigned int> &limits) {
     vector<string> fields;
     str::split_with_quotes(&limitstr, " ,", true, &fields);
     if (fields.size() % 2 != 0) throw string("Problem parsing the removal limits");
-    for (int i=0; i<fields.size(); i=i+2)
+    for (unsigned int i=0; i<fields.size(); i=i+2)
         limits[stoi(fields[i])] = stoi(fields[i+1]);
 }
 
@@ -58,14 +58,14 @@ int main(int argc, char* argv[]) {
     string out_vocab_fname = config.arguments[2];
     float cutoff_target = config["cutoff-target"].get_float();
     float cutoff_increment = config["cutoff-increment"].get_float();
-    int n_candidates_per_iter = config["candidates"].get_int();
-    int removals_per_iter = config["removals"].get_int();
-    int min_removal_length = config["min-length"].get_int();
-    int target_vocab_size = config["vocab-size"].get_int();
-    int temp_vocab_interval = config["temp-vocabs"].get_int();
+    unsigned int n_candidates_per_iter = config["candidates"].get_int();
+    unsigned int removals_per_iter = config["removals"].get_int();
+    unsigned int min_removal_length = config["min-length"].get_int();
+    unsigned int target_vocab_size = config["vocab-size"].get_int();
+    unsigned int temp_vocab_interval = config["temp-vocabs"].get_int();
     bool enable_forward_backward = config["forward-backward"].specified;
 
-    map<int,int> removal_limits;
+    map<unsigned int, unsigned int> removal_limits;
     if (config["removal-limits"].specified)
         parse_limits(config["removal-limits"].get_str(), removal_limits);
 

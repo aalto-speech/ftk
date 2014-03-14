@@ -29,9 +29,9 @@ int main(int argc, char* argv[]) {
     config.default_parse(argc, argv);
     if (config.arguments.size() != 4) config.print_help(stderr, 1);
 
-    int n_candidates_per_iter = config["candidates"].get_int();
-    int removals_per_iter = config["removals"].get_int();
-    int target_vocab_size = config["vocab-size"].get_int();
+    unsigned int n_candidates_per_iter = config["candidates"].get_int();
+    unsigned int removals_per_iter = config["removals"].get_int();
+    unsigned int target_vocab_size = config["vocab-size"].get_int();
     string wordlist_fname = config.arguments[0];
     string initial_transitions_fname = config.arguments[1];
     string msfg_fname = config.arguments[2];

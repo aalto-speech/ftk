@@ -34,7 +34,7 @@ void fetest :: viterbiChecks(const map<string, flt_type> &vocab,
     flt_type result_lp = viterbi(vocab, maxlen, sentence, result_path);
     CPPUNIT_ASSERT_EQUAL( correct_path.size(), result_path.size() );
     CPPUNIT_ASSERT_EQUAL( correct_lp, result_lp );
-    for (int i=0; i<correct_path.size(); i++)
+    for (unsigned int i=0; i<correct_path.size(); i++)
         CPPUNIT_ASSERT_EQUAL( correct_path[i], result_path[i] );
 
     result_path.clear();
@@ -42,7 +42,7 @@ void fetest :: viterbiChecks(const map<string, flt_type> &vocab,
     result_lp = viterbi(ssvocab, sentence, result_path);
     CPPUNIT_ASSERT_EQUAL( correct_path.size(), result_path.size() );
     CPPUNIT_ASSERT_EQUAL( correct_lp, result_lp );
-    for (int i=0; i<correct_path.size(); i++)
+    for (unsigned int i=0; i<correct_path.size(); i++)
         CPPUNIT_ASSERT_EQUAL( correct_path[i], result_path[i] );
 }
 
@@ -430,9 +430,9 @@ void fetest :: FactorGraphTest4 (void)
 
 
 bool includes_path(vector<vector<string> > &all_paths, vector<string> &path) {
-    for (int i=0; i<all_paths.size(); i++) {
+    for (unsigned int i=0; i<all_paths.size(); i++) {
         if (path.size() != all_paths[i].size()) continue;
-        int j=0;
+        unsigned int j=0;
         for (; j<path.size(); j++)
             if (all_paths[i][j] != path[j]) break;
         if (j==path.size()) return true;

@@ -45,8 +45,8 @@ int main(int argc, char* argv[]) {
     string out_vocab_fname = config.arguments[2];
     float cutoff_value = config["cutoff"].get_float();
     int n_candidates_per_iter = config["candidates"].get_int();
-    int removals_per_iter = config["removals"].get_int();
-    int target_vocab_size = config["vocab-size"].get_int();
+    unsigned int removals_per_iter = config["removals"].get_int();
+    unsigned int target_vocab_size = config["vocab-size"].get_int();
     bool enable_forward_backward = config["forward-backward"].specified;
 
     cerr << "parameters, initial vocabulary: " << vocab_fname << endl;

@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
         }
 
         fprintf(outfile.file, "%s\t", line.c_str());
-        for (int i=0; i<post_scores.size()-1; i++)
+        for (unsigned int i=0; i<post_scores.size()-1; i++)
             fprintf(outfile.file, "%f ", post_scores[i]);
         fprintf(outfile.file, "\n");
     }
