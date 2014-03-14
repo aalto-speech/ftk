@@ -23,11 +23,11 @@ float log10_to_ln(float f)
 }
 
 template <class myVec>
-void vec_resize(myVec &vec, int sz) {
+void vec_resize(myVec &vec, unsigned int sz) {
     if (sz > vec.size()) {
-        int cap = vec.capacity();
+        unsigned int cap = vec.capacity();
         if (sz >= cap) {
-            int new_cap = cap * 2;
+            unsigned int new_cap = cap * 2;
             if (sz >= new_cap)
                 new_cap = sz + 1;
             vec.reserve(new_cap);
@@ -132,7 +132,7 @@ int LM::num_children(int node_id) const
 string LM::str(const vector<int> &vec) const
 {
     string ret;
-    for (int i=0; i<vec.size(); i++) {
+    for (unsigned int i=0; i<vec.size(); i++) {
         if (i > 0)
             ret.append(" ");
         ret.append(m_symbol_map.at(vec[i]));
@@ -186,7 +186,7 @@ int LM::walk_no_bo(int node_id, int symbol, float *score) const
 
 int LM::walk_no_bo(int node_id, const vector<int> &vec, float *score) const
 {
-    for (int i=0; i<vec.size(); i++) {
+    for (unsigned int i=0; i<vec.size(); i++) {
         node_id = walk_no_bo(node_id, vec[i], score);
         if (node_id < 0)
             return -1;
@@ -198,7 +198,7 @@ vector<int> LM::walk_no_bo_vec(int node_id, const vector<int> &vec, float *score
 {
     vector<int> ret;
     ret.reserve(vec.size());
-    for (int i=0; i<vec.size(); i++) {
+    for (unsigned int i=0; i<vec.size(); i++) {
         node_id = walk_no_bo(node_id, vec[i], score);
         if (node_id < 0)
             break;
@@ -224,7 +224,7 @@ int LM::walk(int node_id, int symbol, float *score) const
 
 int LM::walk(int node_id, const vector<int> &vec, float *score) const
 {
-    for (int i=0; i<vec.size(); i++) {
+    for (unsigned int i=0; i<vec.size(); i++) {
         node_id = walk(node_id, vec[i], score);
     }
     return node_id;
@@ -286,7 +286,7 @@ void LM::new_ngram(const vector<int> &vec, float score, float bo_score)
 
         // For highest order n-grams, an arc to the backoff node will be created.
         // For other n-grams, a new target node is created.
-        if (vec.size() == order()) {
+        if (vec.size() == (unsigned int)order()) {
             tgt_node_id = bo_node_id;
             assert(bo_score == 0);
         }
@@ -440,7 +440,7 @@ void LM::compute_potential(vector<float> &d)
         r.at(q) = semiring->zero;
 
         vector<InArc> &in_arcs_q = in_arcs.at(q);
-        for (int a=0; a<in_arcs_q.size(); a++) {
+        for (unsigned int a=0; a<in_arcs_q.size(); a++) {
             InArc &in_arc = in_arcs_q[a];
             int n = in_arc.source;
 
@@ -469,7 +469,7 @@ void LM::push()
     vector<float> potential;
     compute_potential(potential);
 
-    assert(potential.size() == num_nodes());
+    assert(potential.size() == (unsigned int)num_nodes());
     assert(potential.at(m_final_node_id) == semiring->one);
 
     m_final_score = potential.at(m_initial_node_id);
