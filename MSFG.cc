@@ -78,6 +78,7 @@ MultiStringFactorGraph::add(const FactorGraph &text)
     }
 
     string_end_nodes[text.text] = visited_nodes[text.nodes.size()-1];
+    reverse_string_end_nodes[visited_nodes[text.nodes.size()-1]] = text.text;
 }
 
 
@@ -257,7 +258,9 @@ MultiStringFactorGraph::read(const std::string &filename)
     stringstream ss(line);
     ss >> node_count >> arc_count >> end_node_count;
 
-    nodes.clear(); string_end_nodes.clear();
+    nodes.clear();
+    string_end_nodes.clear();
+    reverse_string_end_nodes.clear();
     nodes.resize(node_count);
 
     msfg_node_idx_t node_idx;
@@ -300,6 +303,7 @@ MultiStringFactorGraph::read(const std::string &filename)
         }
         endnss >> curr_string >> end_node_idx;
         string_end_nodes[curr_string] = end_node_idx;
+        reverse_string_end_nodes[end_node_idx] = curr_string;
     }
 
     infile.close();
@@ -365,7 +369,13 @@ void MultiStringFactorGraph::print_dot_digraph(ostream &fstr)
 
     for (msfg_node_idx_t ni=0; ni<nodes.size(); ++ni) {
         fstr << "\t" << ni;
-        fstr << " [label=\"" << nodes[ni].factor << "\"]" << endl;
+        string label = nodes[ni].factor;
+        if (label == start_end_symbol && ni > 0) {
+            label += " / " + reverse_string_end_nodes[ni];
+            fstr << " [label=\"" << label << "\", style=filled, fillcolor=grey]" << endl;
+        }
+        else
+            fstr << " [label=\"" << label << "\"]" << endl;
     }
     fstr << endl;
 

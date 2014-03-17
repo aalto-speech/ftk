@@ -77,6 +77,7 @@ public:
     std::string start_end_symbol;
     std::vector<Node> nodes;
     std::map<std::string, msfg_node_idx_t> string_end_nodes;
+    std::map<msfg_node_idx_t, std::string> reverse_string_end_nodes;
     std::map<std::string, std::vector<msfg_node_idx_t> > factor_node_map;
 
 private:
