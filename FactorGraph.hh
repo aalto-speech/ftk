@@ -1,6 +1,8 @@
 #ifndef FACTOR_GRAPH
 #define FACTOR_GRAPH
 
+#include <fstream>
+#include <iostream>
 #include <string>
 #include <unordered_set>
 
@@ -75,6 +77,7 @@ public:
     void remove_arcs(const std::string &source,
                      const std::string &target);
     void remove_arcs(const std::string &remstr);
+    void print_dot_digraph(std::ostream &fstr = std::cout);
 
     std::string text;
     std::string start_end_symbol;

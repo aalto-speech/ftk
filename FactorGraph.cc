@@ -28,7 +28,8 @@ FactorGraph::create_nodes(const string &text,
 
 
 void
-FactorGraph::create_nodes(const string &text, const StringSet &vocab,
+FactorGraph::create_nodes(const string &text,
+                          const StringSet &vocab,
                           vector<unordered_set<fg_node_idx_t> > &incoming)
 {
     nodes.push_back(Node(0,0));
@@ -307,6 +308,30 @@ FactorGraph::remove_arcs(const std::string &remstr)
                 remove_arc(it->incoming[0]);
         }
     }
+}
+
+
+void FactorGraph::print_dot_digraph(ostream &fstr)
+{
+    fstr << "digraph {" << endl << endl;
+    fstr << "\tnode [shape=ellipse,fontsize=30,fixedsize=false,width=0.95];" << endl;
+    fstr << "\tedge [fontsize=12];" << endl;
+    fstr << "\trankdir=LR;" << endl << endl;
+
+    for (fg_node_idx_t ni=0; ni<nodes.size(); ++ni) {
+        fstr << "\t" << ni;
+        fstr << " [label=\"" << get_factor(ni) << "\"]" << endl;
+    }
+    fstr << endl;
+
+    for (fg_node_idx_t ni=0; ni<nodes.size(); ++ni) {
+        Node &nd = nodes[ni];
+        for (auto ait = nd.outgoing.begin(); ait != nd.outgoing.end(); ++ait) {
+            fstr << "\t" << (*ait)->source_node << " -> " << (*ait)->target_node;
+            fstr << "[label=\"" << (*ait)->cost << "\"];" << endl;
+        }
+    }
+    fstr << "}" << endl;
 }
 
 
