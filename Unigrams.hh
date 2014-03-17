@@ -6,7 +6,7 @@
 
 #include "defs.hh"
 #include "StringSet.hh"
-#include "FactorEncoder.hh"
+#include "EM.hh"
 
 class Unigrams {
 public:

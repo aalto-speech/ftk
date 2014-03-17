@@ -1,5 +1,5 @@
-#ifndef FACTOR_ENCODER
-#define FACTOR_ENCODER
+#ifndef EM
+#define EM
 
 #include <map>
 #include <string>
@@ -187,4 +187,4 @@ flt_type viterbi(const MultiStringFactorGraph &msfg,
                  std::vector<std::string> &best_path);
 
 
-#endif /* FACTOR_ENCODER */
+#endif /* EM */

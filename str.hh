@@ -1,20 +1,19 @@
 #ifndef STR_HH
 #define STR_HH
 
-#include <cstddef> // NULL
+#include <cstddef>
 #include <cstring>
 #include <climits>
 #include <cfloat>
-#include <assert.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
+#include <cmath>
+#include <cassert>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <stdexcept>
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <math.h>
 
 
 /** Functions for handling strings of the Standard Template Library.

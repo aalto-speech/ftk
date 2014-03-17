@@ -11,7 +11,7 @@
 #include "conf.hh"
 #include "str.hh"
 #include "StringSet.hh"
-#include "FactorEncoder.hh"
+#include "EM.hh"
 #include "Unigrams.hh"
 
 using namespace std;

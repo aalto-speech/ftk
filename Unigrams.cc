@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "FactorEncoder.hh"
+#include "EM.hh"
 #include "Unigrams.hh"
 #include "io.hh"
 

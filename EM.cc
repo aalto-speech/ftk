@@ -5,7 +5,7 @@
 #include <queue>
 #include <iostream>
 
-#include "FactorEncoder.hh"
+#include "EM.hh"
 
 using namespace std;
 

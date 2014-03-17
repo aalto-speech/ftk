@@ -1,11 +1,12 @@
 #ifndef SYMBOLMAP_HH
 #define SYMBOLMAP_HH
 
-#include <cstddef>  // NULL
+#include <cstddef>
 #include <sstream>
 #include <map>
 #include <string>
 #include <vector>
+
 #include "str.hh"
 
 namespace misc {

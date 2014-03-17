@@ -23,7 +23,7 @@ results with unigram statistics
 Matti Varjokallio, Mikko Kurimo and Sami Virpioja: "Learning a Subword Vocabulary Based on Unigram Likelihood", In IEEE Workshop on Automatic Speech Recognition and Understanding, ASRU2013.
 
 Implementation: C++11, GCC 4.6 or newer recommended.
-        EM layer: FactorEncoder, FactorGraph, MSFG
+        EM layer: EM, FactorGraph, MSFG
         Model selection layer: Unigrams, Bigrams
         Current executables roughly cover all the functionality
         but the idea is to write new ones as needed
