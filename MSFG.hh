@@ -1,6 +1,8 @@
 #ifndef MSFG
 #define MSFG
 
+#include <fstream>
+#include <iostream>
 #include <map>
 #include <set>
 #include <vector>
@@ -70,6 +72,7 @@ public:
     void prune_unreachable();
     void write(const std::string &filename) const;
     void read(const std::string &filename);
+    void print_dot_digraph(std::ostream &fstr = std::cout);
 
     std::string start_end_symbol;
     std::vector<Node> nodes;

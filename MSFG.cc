@@ -355,3 +355,31 @@ MultiStringFactorGraph::collect_factors(const string &text, set<string> &factors
     }
 }
 
+
+void MultiStringFactorGraph::print_dot_digraph(ostream &fstr)
+{
+    fstr << "digraph {" << endl << endl;
+    fstr << "\tnode [shape=ellipse,fontsize=30,fixedsize=false,width=0.95];" << endl;
+    fstr << "\tedge [fontsize=12];" << endl;
+    fstr << "\trankdir=LR;" << endl << endl;
+
+    for (msfg_node_idx_t ni=0; ni<nodes.size(); ++ni) {
+        fstr << "\t" << ni;
+        fstr << " [label=\"" << nodes[ni].factor << "\"]" << endl;
+    }
+    fstr << endl;
+
+    for (msfg_node_idx_t ni=0; ni<nodes.size(); ++ni) {
+        Node &nd = nodes[ni];
+        for (auto ait = nd.outgoing.begin(); ait != nd.outgoing.end(); ++ait) {
+            fstr << "\t" << (*ait)->source_node << " -> " << (*ait)->target_node;
+            flt_type *cost = (*(*ait)).cost;
+            if (cost != nullptr)
+                fstr << "[label=\"" << *cost << "\"];";
+            fstr << endl;
+        }
+    }
+    fstr << "}" << endl;
+}
+
+
