@@ -13,14 +13,14 @@ using namespace std;
 bool desc_sort(pair<string, int> i, pair<string, int> j) { return (i.second > j.second); }
 
 
-int get_character_positions(string word, vector<unsigned int> &positions) {
+void get_character_positions(string word, vector<unsigned int> &positions) {
     positions.clear();
     for (unsigned int i=0; i<word.length()+1; i++)
         positions.push_back(i);
 }
 
 
-int get_character_positions_utf8(string word, vector<unsigned int> &positions) {
+void get_character_positions_utf8(string word, vector<unsigned int> &positions) {
     positions.clear();
     positions.push_back(0);
     unsigned int charpos=0;
