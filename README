@@ -14,7 +14,7 @@ Vocabulary selection is greedy in the sense that in each iteration strings which
 least effect on total data likelihood, are removed.
 
 Licence: BSD-3
-There is a patent on bi-multigrams for class information which may or may not apply for commercial use.
+There is a patent on bi-multigrams for class information which may or may not apply for commercial use in the bigram case.
 
 Citations for publications:
 Matti Varjokallio and Mikko Kurimo: "A Toolkit For Efficient Learning of Lexical Units for Speech Recognition", in the proceedings of The 9th edition of the Language Resources and Evaluation Conference (LREC 2014), 26-31 May, Reykjavik, Iceland. (to appear)
@@ -31,8 +31,7 @@ Implementation: C++11, GCC 4.6 or newer recommended.
 Dependencies: CPPUnit needed for running unit tests, may be commented out in Makefile
               Unit tests mainly for Expectation-Maximization and related data structures
 
-Character encoding: core functionality supports all normal fixed-length and UTF8-style encodings.
-        Initialization programs substrings and strscore currently only 1-byte encoding
+Character encoding: at the moment only 1-byte encodings, support for other encodings under work.
 
 PROGRAMS:
 substrings: get all substrings from a set of strings
