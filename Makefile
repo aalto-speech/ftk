@@ -11,7 +11,7 @@ progs_objs = $(progs:=.o)
 srcs = io.cc conf.cc ArpaReader.cc LM.cc StringSet.cc FactorGraph.cc MSFG.cc EM.cc Unigrams.cc Bigrams.cc
 objs = $(srcs:.cc=.o)
 
-test_progs = test_em
+test_progs = runtests
 test_progs_srcs = $(test_progs:=.cc)
 test_progs_objs = $(test_progs:=.o)
 test_srcs = emtest.cc msfgtest.cc sstest.cc
