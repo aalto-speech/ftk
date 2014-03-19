@@ -4,7 +4,7 @@
 #include <cmath>
 
 #include "defs.hh"
-#include "fetest.hh"
+#include "emtest.hh"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -13,18 +13,18 @@ using namespace std;
 
 double DBL_ACCURACY = 0.0001;
 
-CPPUNIT_TEST_SUITE_REGISTRATION (fetest);
+CPPUNIT_TEST_SUITE_REGISTRATION (emtest);
 
-void fetest :: setUp (void)
+void emtest :: setUp (void)
 {
 }
 
-void fetest :: tearDown (void)
+void emtest :: tearDown (void)
 {
 }
 
 
-void fetest :: viterbiChecks(const map<string, flt_type> &vocab,
+void emtest :: viterbiChecks(const map<string, flt_type> &vocab,
                              int maxlen,
                              string &sentence,
                              vector<string> &correct_path,
@@ -47,7 +47,7 @@ void fetest :: viterbiChecks(const map<string, flt_type> &vocab,
 }
 
 
-void fetest :: viterbiTest1 (void)
+void emtest :: viterbiTest1 (void)
 {
     map<string, flt_type> vocab;
     string str1("a"); string str2("bc");
@@ -61,7 +61,7 @@ void fetest :: viterbiTest1 (void)
     viterbiChecks(vocab, maxlen, sentence, correct_path, -3.0);
 }
 
-void fetest :: viterbiTest2 (void)
+void emtest :: viterbiTest2 (void)
 {
     map<string, flt_type> vocab;
     string str1("a"); string str2("bc");
@@ -79,7 +79,7 @@ void fetest :: viterbiTest2 (void)
 }
 
 // No possible segmentation
-void fetest :: viterbiTest3 (void)
+void emtest :: viterbiTest3 (void)
 {
     map<string, flt_type> vocab;
     string str1("a");
@@ -91,7 +91,7 @@ void fetest :: viterbiTest3 (void)
 }
 
 // Empty string
-void fetest :: viterbiTest4 (void)
+void emtest :: viterbiTest4 (void)
 {
     map<string, flt_type> vocab;
     string str1("a");
@@ -103,7 +103,7 @@ void fetest :: viterbiTest4 (void)
 }
 
 // One character sentence
-void fetest :: viterbiTest5 (void)
+void emtest :: viterbiTest5 (void)
 {
     map<string, flt_type> vocab;
     string str1("a");
@@ -116,7 +116,7 @@ void fetest :: viterbiTest5 (void)
 }
 
 // No segmentation
-void fetest :: viterbiTest6 (void)
+void emtest :: viterbiTest6 (void)
 {
     map<string, flt_type> vocab;
     string str1("a"); string str2("b");
@@ -131,7 +131,7 @@ void fetest :: viterbiTest6 (void)
     viterbiChecks(vocab, maxlen, sentence, correct_path, MIN_FLOAT);
 }
 
-void fetest :: viterbiTest7 (void)
+void emtest :: viterbiTest7 (void)
 {
     map<string, flt_type> vocab;
     string str1("k"); string str2("i");
@@ -160,7 +160,7 @@ void fetest :: viterbiTest7 (void)
 
 
 // Empty string
-void fetest :: ForwardBackwardTest1 (void)
+void emtest :: ForwardBackwardTest1 (void)
 {
     map<string, flt_type> vocab;
     string str1("a");
@@ -173,7 +173,7 @@ void fetest :: ForwardBackwardTest1 (void)
 }
 
 // No segmentation
-void fetest :: ForwardBackwardTest2 (void)
+void emtest :: ForwardBackwardTest2 (void)
 {
     map<string, flt_type> vocab;
     string str1("a"); string str2("b");
@@ -190,7 +190,7 @@ void fetest :: ForwardBackwardTest2 (void)
 }
 
 // One character string
-void fetest :: ForwardBackwardTest3 (void)
+void emtest :: ForwardBackwardTest3 (void)
 {
     map<string, flt_type> vocab;
     vocab["a"] = -1.0;
@@ -203,7 +203,7 @@ void fetest :: ForwardBackwardTest3 (void)
 }
 
 // Two character string, one segmentation
-void fetest :: ForwardBackwardTest4 (void)
+void emtest :: ForwardBackwardTest4 (void)
 {
     map<string, flt_type> vocab;
     vocab["a"] = -1.0;
@@ -219,7 +219,7 @@ void fetest :: ForwardBackwardTest4 (void)
 
 // Two character string, two segmentations
 // Independent paths
-void fetest :: ForwardBackwardTest5 (void)
+void emtest :: ForwardBackwardTest5 (void)
 {
     map<string, flt_type> vocab;
     vocab["a"] = -1.0;
@@ -238,7 +238,7 @@ void fetest :: ForwardBackwardTest5 (void)
 
 // Three character string, two segmentations
 // Dependent paths
-void fetest :: ForwardBackwardTest6 (void)
+void emtest :: ForwardBackwardTest6 (void)
 {
     map<string, flt_type> vocab;
     vocab["a"] = -1.0;
@@ -259,7 +259,7 @@ void fetest :: ForwardBackwardTest6 (void)
 }
 
 // Multiple paths
-void fetest :: ForwardBackwardTest7 (void)
+void emtest :: ForwardBackwardTest7 (void)
 {
     map<string, flt_type> vocab;
     vocab["a"] = log(0.25);
@@ -280,7 +280,7 @@ void fetest :: ForwardBackwardTest7 (void)
 }
 
 // Multiple paths
-void fetest :: ForwardBackwardTest8 (void)
+void emtest :: ForwardBackwardTest8 (void)
 {
     map<string, flt_type> vocab;
     vocab["a"] = log(0.25);
@@ -321,7 +321,7 @@ string start_end("*");
 
 // Testing constructor
 // only forward possible routes in the graph
-void fetest :: FactorGraphTest1 (void)
+void emtest :: FactorGraphTest1 (void)
 {
     map<std::string, flt_type> vocab;
     vocab.insert(make_pair("hal", 0.0));
@@ -339,7 +339,7 @@ void fetest :: FactorGraphTest1 (void)
 
 // Testing constructor
 // pruning out impossible paths, simple case
-void fetest :: FactorGraphTest2 (void)
+void emtest :: FactorGraphTest2 (void)
 {
     map<std::string, flt_type> vocab;
     vocab.insert(make_pair("hal", 0.0));
@@ -357,7 +357,7 @@ void fetest :: FactorGraphTest2 (void)
 
 // Testing constructor
 // No possible segmentations
-void fetest :: FactorGraphTest3 (void)
+void emtest :: FactorGraphTest3 (void)
 {
     map<std::string, flt_type> vocab;
     vocab.insert(make_pair("hal", 0.0));
@@ -375,7 +375,7 @@ void fetest :: FactorGraphTest3 (void)
 
 // Testing constructor
 // Normal case
-void fetest :: FactorGraphTest4 (void)
+void emtest :: FactorGraphTest4 (void)
 {
     map<std::string, flt_type> vocab;
     vocab.insert(make_pair("k", 0.0));
@@ -441,7 +441,7 @@ bool includes_path(vector<vector<string> > &all_paths, vector<string> &path) {
 }
 
 // Test number of paths
-void fetest :: FactorGraphTestNumPaths (void)
+void emtest :: FactorGraphTestNumPaths (void)
 {
     map<string, flt_type> vocab;
     vocab["k"] = 0.0;
@@ -461,7 +461,7 @@ void fetest :: FactorGraphTestNumPaths (void)
 }
 
 // Enumerating paths
-void fetest :: FactorGraphTestGetList (void)
+void emtest :: FactorGraphTestGetList (void)
 {
     map<string, flt_type> vocab;
     vocab["k"] = 0.0;
@@ -495,7 +495,7 @@ void fetest :: FactorGraphTestGetList (void)
 }
 
 // Enumerating paths after removing some arcs
-void fetest :: FactorGraphTestRemoveArcs (void)
+void emtest :: FactorGraphTestRemoveArcs (void)
 {
     map<string, flt_type> vocab;
     vocab["k"] = 0.0;
@@ -524,7 +524,7 @@ void fetest :: FactorGraphTestRemoveArcs (void)
 
 
 // Enumerating paths after removing some arcs
-void fetest :: FactorGraphTestRemoveArcs2 (void)
+void emtest :: FactorGraphTestRemoveArcs2 (void)
 {
     map<string, flt_type> vocab;
     vocab["k"] = 0.0;
@@ -561,7 +561,7 @@ int transition_count(const transitions_t &transitions) {
 }
 
 
-void fetest :: TransitionViterbiTest1 (void)
+void emtest :: TransitionViterbiTest1 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -584,7 +584,7 @@ void fetest :: TransitionViterbiTest1 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( -3.0, lp, DBL_ACCURACY );
 }
 
-void fetest :: TransitionViterbiTest2 (void)
+void emtest :: TransitionViterbiTest2 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -614,7 +614,7 @@ void fetest :: TransitionViterbiTest2 (void)
 }
 
 // No possible segmentation
-void fetest :: TransitionViterbiTest3 (void)
+void emtest :: TransitionViterbiTest3 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -632,7 +632,7 @@ void fetest :: TransitionViterbiTest3 (void)
 }
 
 // Empty string
-void fetest :: TransitionViterbiTest4 (void)
+void emtest :: TransitionViterbiTest4 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -650,7 +650,7 @@ void fetest :: TransitionViterbiTest4 (void)
 }
 
 // One character sentence
-void fetest :: TransitionViterbiTest5 (void)
+void emtest :: TransitionViterbiTest5 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -671,7 +671,7 @@ void fetest :: TransitionViterbiTest5 (void)
 }
 
 // No segmentation
-void fetest :: TransitionViterbiTest6 (void)
+void emtest :: TransitionViterbiTest6 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -696,7 +696,7 @@ void fetest :: TransitionViterbiTest6 (void)
 }
 
 // Normal scenario with few variations
-void fetest :: TransitionViterbiTest7 (void)
+void emtest :: TransitionViterbiTest7 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -755,7 +755,7 @@ void fetest :: TransitionViterbiTest7 (void)
 }
 
 // Check that non-existing transitions are ok
-void fetest :: TransitionViterbiTest8 (void)
+void emtest :: TransitionViterbiTest8 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -805,7 +805,7 @@ void fetest :: TransitionViterbiTest8 (void)
 }
 
 
-void fetest :: TransitionForwardBackwardTest1 (void)
+void emtest :: TransitionForwardBackwardTest1 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -827,7 +827,7 @@ void fetest :: TransitionForwardBackwardTest1 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( -3.0, lp, DBL_ACCURACY );
 }
 
-void fetest :: TransitionForwardBackwardTest2 (void)
+void emtest :: TransitionForwardBackwardTest2 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -862,7 +862,7 @@ void fetest :: TransitionForwardBackwardTest2 (void)
 
 
 // No possible segmentation
-void fetest :: TransitionForwardBackwardTest3 (void)
+void emtest :: TransitionForwardBackwardTest3 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -880,7 +880,7 @@ void fetest :: TransitionForwardBackwardTest3 (void)
 }
 
 // Empty string
-void fetest :: TransitionForwardBackwardTest4 (void)
+void emtest :: TransitionForwardBackwardTest4 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -898,7 +898,7 @@ void fetest :: TransitionForwardBackwardTest4 (void)
 }
 
 // One character sentence
-void fetest :: TransitionForwardBackwardTest5 (void)
+void emtest :: TransitionForwardBackwardTest5 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -918,7 +918,7 @@ void fetest :: TransitionForwardBackwardTest5 (void)
 }
 
 // No segmentation
-void fetest :: TransitionForwardBackwardTest6 (void)
+void emtest :: TransitionForwardBackwardTest6 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -943,7 +943,7 @@ void fetest :: TransitionForwardBackwardTest6 (void)
 }
 
 // Multiple paths
-void fetest :: TransitionForwardBackwardTest7 (void)
+void emtest :: TransitionForwardBackwardTest7 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -995,7 +995,7 @@ void fetest :: TransitionForwardBackwardTest7 (void)
 }
 
 // Multiple paths, some non-scored arcs
-void fetest :: TransitionForwardBackwardTest8 (void)
+void emtest :: TransitionForwardBackwardTest8 (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -1048,7 +1048,7 @@ void fetest :: TransitionForwardBackwardTest8 (void)
 
 
 // Multiple paths, remove some arcs
-void fetest :: TransitionForwardBackwardRemoveArcs (void)
+void emtest :: TransitionForwardBackwardRemoveArcs (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;
@@ -1096,7 +1096,7 @@ void fetest :: TransitionForwardBackwardRemoveArcs (void)
 
 
 // Multiple paths, block a factor
-void fetest :: TransitionForwardBackwardBlockFactor (void)
+void emtest :: TransitionForwardBackwardBlockFactor (void)
 {
     map<string, flt_type> vocab;
     transitions_t transitions;

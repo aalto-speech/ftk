@@ -6,9 +6,9 @@
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-class fetest : public CPPUNIT_NS :: TestFixture
+class emtest : public CPPUNIT_NS :: TestFixture
 {
-    CPPUNIT_TEST_SUITE (fetest);
+    CPPUNIT_TEST_SUITE (emtest);
     CPPUNIT_TEST (viterbiTest1);
     CPPUNIT_TEST (viterbiTest2);
     CPPUNIT_TEST (viterbiTest3);

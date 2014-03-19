@@ -5,16 +5,16 @@ cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-unused-function
 
 ##################################################
 
-progs = fe substrings strscore g1g g2g g2gr segposts iterate cmsfg ll counts iterate-sents g1g-sents
+progs = segtext substrings strscore g1g g2g g2gr segposts iterate cmsfg ll counts iterate-sents g1g-sents
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
 srcs = io.cc conf.cc ArpaReader.cc LM.cc StringSet.cc FactorGraph.cc MSFG.cc EM.cc Unigrams.cc Bigrams.cc
 objs = $(srcs:.cc=.o)
 
-test_progs = test_fe
+test_progs = test_em
 test_progs_srcs = $(test_progs:=.cc)
 test_progs_objs = $(test_progs:=.o)
-test_srcs = fetest.cc msfgtest.cc sstest.cc
+test_srcs = emtest.cc msfgtest.cc sstest.cc
 test_objs = $(test_srcs:.cc=.o)
 
 ##################################################
