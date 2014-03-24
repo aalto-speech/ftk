@@ -9,6 +9,7 @@
 
 #include "defs.hh"
 #include "conf.hh"
+#include "str.hh"
 #include "StringSet.hh"
 #include "EM.hh"
 #include "Unigrams.hh"
@@ -16,51 +17,85 @@
 using namespace std;
 
 
-void assert_single_chars(map<string, flt_type> &vocab,
-                         const map<string, flt_type> &chars,
-                         flt_type val)
+void assert_short_subwords(map<string, flt_type> &vocab,
+                          const set<string> &chars,
+                          flt_type val)
 {
     for (auto it = chars.cbegin(); it != chars.cend(); ++it)
-        if (vocab.find(it->first) == vocab.end())
-            vocab[it->first] = val;
+        if (vocab.find(*it) == vocab.end())
+            vocab[*it] = val;
+}
+
+void parse_limits(string limitstr, map<unsigned int, unsigned int> &limits) {
+    vector<string> fields;
+    str::split_with_quotes(&limitstr, " ,", true, &fields);
+    if (fields.size() % 2 != 0) throw string("Problem parsing the removal limits");
+    for (unsigned int i=0; i<fields.size(); i=i+2)
+        limits[stoi(fields[i])] = stoi(fields[i+1]);
 }
 
 
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: g1g-sents [OPTION...] CORPUS VOCAB_INIT VOCAB_OUTNAME\n")
+    config("usage: g1g-sents [OPTION...] CORPUS VOCAB_INIT VOCAB_FINAL\n")
       ('h', "help", "", "", "display help")
-      ('u', "cutoff=INT", "arg", "0", "Cutoff value for each iteration")
-      ('c', "candidates=INT", "arg", "5000", "Number of candidate strings to try to remove per iteration")
-      ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
+      ('u', "cutoff-target=INT", "arg", "200000", "Iterate cutoff while this vocabulary size is reached, DEFAULT: 200 000")
+      ('i', "cutoff-increment=FLOAT", "arg", "1.0", "Cutoff increment for each iteration, DEFAULT: 1.0")
+      ('c', "candidates=INT", "arg", "25000", "Number of factors to consider for removal per iteration, DEFAULT: 25 000")
+      ('r', "removals=INT", "arg", "500", "Number of removals per iteration, DEFAULT: 500")
+      ('l', "removal-limits=STRING", "arg", "", "Extra limits for factor removal LIMIT1,REMOVALS1,LIMIT2,REMOVALS2,..")
+      ('m', "min-length=INT", "arg", "2", "Minimum length of factors to remove, DEFAULT: 2")
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
+      ('t', "temp-vocabs=INT", "arg", "0", "Write out intermediate vocabularies for #V mod INT == 0")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
 
-    flt_type one_char_min_lp = -25.0;
+    flt_type short_factor_min_lp = -25.0;
     string corpus_fname = config.arguments[0];
     string vocab_fname = config.arguments[1];
     string out_vocab_fname = config.arguments[2];
-    float cutoff_value = config["cutoff"].get_float();
-    int n_candidates_per_iter = config["candidates"].get_int();
+    float cutoff_target = config["cutoff-target"].get_float();
+    float cutoff_increment = config["cutoff-increment"].get_float();
+    unsigned int n_candidates_per_iter = config["candidates"].get_int();
     unsigned int removals_per_iter = config["removals"].get_int();
+    unsigned int min_removal_length = config["min-length"].get_int();
     unsigned int target_vocab_size = config["vocab-size"].get_int();
+    unsigned int temp_vocab_interval = config["temp-vocabs"].get_int();
     bool enable_forward_backward = config["forward-backward"].specified;
 
-    cerr << "parameters, initial vocabulary: " << vocab_fname << endl;
+    map<unsigned int, unsigned int> removal_limits;
+    if (config["removal-limits"].specified)
+        parse_limits(config["removal-limits"].get_str(), removal_limits);
+
+    cerr << setprecision(15) << std::boolalpha;
     cerr << "parameters, training corpus: " << corpus_fname << endl;
-    cerr << "parameters, cutoff: " << setprecision(15) << cutoff_value << endl;
+    cerr << "parameters, initial vocabulary: " << vocab_fname << endl;
+    cerr << "parameters, final vocabulary: " << out_vocab_fname << endl;
+    cerr << "parameters, cutoff target vocabulary size: " << cutoff_target << endl;
+    cerr << "parameters, cutoff increment: " << cutoff_increment << endl;
     cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
+    cerr << "parameters, minimum length for factors to remove: " << min_removal_length << endl;
     cerr << "parameters, removals per iteration: " << removals_per_iter << endl;
-    cerr << "below 100k.." << endl;
-    cerr << "parameters, removals per iteration: 500" << endl;
+    if (removal_limits.size() > 0) {
+        int limitc = 1;
+        for (auto it = removal_limits.rbegin(); it != removal_limits.rend(); ++it) {
+            cerr << "parameters, removal limit " << limitc << ": "
+            << it->second << " removals per iteration below vocabulary size " << it->first << endl;
+            limitc++;
+        }
+    }
+
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
+    if (temp_vocab_interval > 0)
+        cerr << "parameters, write temporary vocabularies whenever #V modulo " << temp_vocab_interval << " == 0" << endl;
+    else
+        cerr << "parameters, write temp vocabularies: NO" << endl;
     cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
 
     int maxlen;
-    map<string, flt_type> all_chars;
+    set<string> short_factors;
     map<string, flt_type> vocab;
     map<string, flt_type> freqs;
     vector<string> sents;
@@ -73,9 +108,18 @@ int main(int argc, char* argv[]) {
     }
     cerr << "\t" << "size: " << vocab.size() << endl;
     cerr << "\t" << "maximum string length: " << maxlen << endl;
-    for (auto it = vocab.cbegin(); it != vocab.end(); ++it)
-        if (it->first.length() == 1)
-            all_chars[it->first] = 0.0;
+    for (auto it = vocab.cbegin(); it != vocab.end(); ++it) {
+        if (it->first.length() < min_removal_length)
+            short_factors.insert(it->first);
+    }
+
+    cerr << "Reading training corpus " << corpus_fname << endl;
+    retval = Unigrams::read_sents(corpus_fname, sents);
+    if (retval < 0) {
+        cerr << "something went wrong reading training corpus" << endl;
+        exit(0);
+    }
+    cerr << "\t" << "number of sentences in corpus: " << sents.size() << endl;
 
     Unigrams gg;
     if (enable_forward_backward)
@@ -83,52 +127,42 @@ int main(int argc, char* argv[]) {
     else
         gg.set_segmentation_method(viterbi);
 
-    cerr << "Reading training corpus " << corpus_fname << endl;
-    Unigrams::read_sents(corpus_fname, sents);
+    cerr << endl << "Initial cutoff" << endl;
+    flt_type cost = gg.resegment_sents(sents, vocab, freqs);
+    cerr << "likelihood: " << cost << endl;
 
-    cerr << "Iterating cutoff" << endl;
-    flt_type temp_cutoff = 0.0;
-    flt_type cost = 0.0;
-    while (true) {
-
-        if (temp_cutoff >= cutoff_value) break;
-
+    flt_type cutoff_value = 0.0;
+    while (vocab.size() > cutoff_target) {
+        cutoff_value += cutoff_increment;
+        gg.cutoff(freqs, cutoff_value, min_removal_length);
+        cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
+        vocab = freqs;
+        Unigrams::freqs_to_logprobs(vocab);
+        assert_short_subwords(vocab, short_factors, short_factor_min_lp);
         cost = gg.resegment_sents(sents, vocab, freqs);
-        cerr << "cost: " << cost << endl;
-        vocab = freqs;
-        Unigrams::freqs_to_logprobs(vocab);
-        assert_single_chars(vocab, all_chars, one_char_min_lp);
-
-        ostringstream tempfname;
-        tempfname << "cutoff." << temp_cutoff << ".vocab";
-        Unigrams::write_vocab(tempfname.str(), vocab);
-
-        Unigrams::cutoff(freqs, temp_cutoff);
-        cerr << "\tcutoff: " << temp_cutoff << "\t" << "vocabulary size: " << freqs.size() << endl;
-        vocab = freqs;
-        Unigrams::freqs_to_logprobs(vocab);
-        assert_single_chars(vocab, all_chars, one_char_min_lp);
-
-        if (vocab.size() <= target_vocab_size) break;
-        temp_cutoff += 1.0;
+        cerr << "likelihood: " << cost << endl;
     }
 
-    cerr << "Pruning factors" << endl;
+    cerr << endl << "Removing factors by likelihood based pruning" << endl;
     int itern = 1;
     while (true) {
 
         cerr << "iteration " << itern << endl;
 
-        cerr << "candidates for removal: " << n_candidates_per_iter << endl;
-        set<string> candidates;
-        gg.init_candidates(vocab, candidates, n_candidates_per_iter);
+        for (auto it = removal_limits.rbegin(); it != removal_limits.rend(); it++)
+            if (vocab.size() <= it->first) removals_per_iter = it->second;
 
-        cerr << "ranking candidate factors" << endl;
+        cerr << "collecting candidate factors" << endl;
+        set<string> candidates;
+        gg.init_candidates(vocab, candidates, n_candidates_per_iter, min_removal_length);
+
+        cerr << "ranking candidate factors (" << candidates.size() << ")" << endl;
         vector<pair<string, flt_type> > removal_scores;
         cost = gg.rank_candidates(sents, vocab, candidates, freqs, removal_scores);
-        cerr << "cost: " << cost << endl;
 
-        // Perform removals one by one
+        cerr << "initial likelihood before removing factors: " << cost << endl;
+
+        // Remove factors one by one
         unsigned int n_removals = 0;
         for (unsigned int i=0; i<removal_scores.size(); i++) {
 
@@ -141,12 +175,11 @@ int main(int argc, char* argv[]) {
             freqs.erase(removal_scores[i].first);
             n_removals++;
 
-            if (vocab.size() % 5000 == 0) {
+            if (temp_vocab_interval > 0 && freqs.size() % temp_vocab_interval == 0) {
                 vocab = freqs;
                 Unigrams::freqs_to_logprobs(vocab);
-                assert_single_chars(vocab, all_chars, one_char_min_lp);
                 ostringstream vocabfname;
-                vocabfname << "iter" << itern << "_" << vocab.size() << ".vocab";
+                vocabfname << "iteration_" << itern << "_" << vocab.size() << ".vocab";
                 Unigrams::write_vocab(vocabfname.str(), vocab);
             }
 
@@ -154,21 +187,12 @@ int main(int argc, char* argv[]) {
             if (vocab.size() <= target_vocab_size) break;
         }
 
-        int n_cutoff = Unigrams::cutoff(freqs, cutoff_value);
-        vocab = freqs;
-        Unigrams::freqs_to_logprobs(vocab);
-        assert_single_chars(vocab, all_chars, one_char_min_lp);
-        cost = gg.iterate(sents, vocab, 2);
-        assert_single_chars(vocab, all_chars, one_char_min_lp);
+        cost = gg.iterate(sents, vocab, 1);
+        assert_short_subwords(vocab, short_factors, short_factor_min_lp);
 
         cerr << "factors removed in this iteration: " << n_removals << endl;
-        cerr << "factors removed with cutoff this iteration: " << n_cutoff << endl;
         cerr << "current vocabulary size: " << vocab.size() << endl;
         cerr << "likelihood after the removals: " << cost << endl;
-
-        ostringstream vocabfname;
-        vocabfname << "iter" << itern << ".vocab";
-        Unigrams::write_vocab(vocabfname.str(), vocab);
 
         itern++;
 
@@ -176,9 +200,8 @@ int main(int argc, char* argv[]) {
             cerr << "stopping by min_vocab_size." << endl;
             break;
         }
-
-
     }
 
+    Unigrams::write_vocab(out_vocab_fname, vocab);
     exit(1);
 }
