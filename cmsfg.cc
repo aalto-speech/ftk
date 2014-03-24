@@ -13,6 +13,7 @@
 #include "StringSet.hh"
 #include "FactorGraph.hh"
 #include "MSFG.hh"
+#include "Unigrams.hh"
 
 using namespace std;
 
@@ -22,6 +23,7 @@ int main(int argc, char* argv[]) {
     conf::Config config;
     config("usage: cmsfg [OPTION...] WORDLIST VOCAB MSFG\n")
       ('h', "help", "", "", "display help")
+      ('n', "no-lookahead", "", "", "don't use lookahead, uses less memory but much slower")
       ('t', "temp-graphs=INT", "arg", "0", "Write out intermediate graphs for #G mod INT == 0");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
@@ -30,10 +32,13 @@ int main(int argc, char* argv[]) {
     string vocab_fname = config.arguments[1];
     string msfg_fname = config.arguments[2];
     unsigned int temp_graph_interval = config["temp-graphs"].get_int();
+    bool lookahead = !config["no-lookahead"].specified;
 
+    cerr << std::boolalpha;
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
     cerr << "parameters, initial vocabulary: " << vocab_fname << endl;
     cerr << "parameters, msfg to write: " << msfg_fname << endl;
+    cerr << "parameters, lookahead: " << lookahead << endl;
     if (temp_graph_interval > 0)
         cerr << "parameters, write intermediate graphs whenever #V modulo " << temp_graph_interval << " == 0" << endl;
     else
@@ -70,7 +75,7 @@ int main(int argc, char* argv[]) {
     unsigned int curr_word_idx = 0;
     for (auto it = words.cbegin(); it != words.cend(); ++it) {
         FactorGraph fg(it->first, start_end_symbol, ss_vocab);
-        msfg.add(fg);
+        msfg.add(fg, lookahead);
         num_separate_nodes += fg.nodes.size();
         num_separate_arcs += fg.arcs.size();
         curr_word_idx++;

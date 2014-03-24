@@ -12,6 +12,7 @@ class msfgtest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (MultiStringFactorGraphTest1);
     CPPUNIT_TEST (MultiStringFactorGraphTest2);
     CPPUNIT_TEST (MultiStringFactorGraphTest3);
+    CPPUNIT_TEST (MultiStringFactorGraphTest4);
     CPPUNIT_TEST_SUITE_END ();
 
     public:
@@ -22,6 +23,7 @@ class msfgtest : public CPPUNIT_NS :: TestFixture
         void MultiStringFactorGraphTest1(void);
         void MultiStringFactorGraphTest2(void);
         void MultiStringFactorGraphTest3(void);
+        void MultiStringFactorGraphTest4(void);
 
     private:
         std::string start_end;

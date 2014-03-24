@@ -52,7 +52,7 @@ public:
     : start_end_symbol(start_end_symbol) { nodes.push_back(Node(std::string(start_end_symbol))); };
     ~MultiStringFactorGraph();
 
-    void add(const FactorGraph &text);
+    void add(const FactorGraph &text, bool lookahead=true);
     void get_factor(const Node &node, std::string &nstr) const
     { nstr.assign(node.factor); }
     void get_factor(msfg_node_idx_t node, std::string &nstr) const
@@ -79,6 +79,8 @@ public:
     std::map<std::string, msfg_node_idx_t> string_end_nodes;
     std::map<msfg_node_idx_t, std::string> reverse_string_end_nodes;
     std::map<std::string, std::vector<msfg_node_idx_t> > factor_node_map;
+    // Helper for constructing the graph
+    std::map<msfg_node_idx_t, std::map<std::string, msfg_node_idx_t> > factor_lookahead;
 
 private:
 
