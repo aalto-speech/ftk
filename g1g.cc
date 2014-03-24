@@ -38,7 +38,7 @@ void parse_limits(string limitstr, map<unsigned int, unsigned int> &limits) {
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: g1g [OPTION...] WORDLIST VOCAB_INIT VOCAB_OUTNAME\n")
+    config("usage: g1g [OPTION...] WORDLIST VOCAB_INIT VOCAB_FINAL\n")
       ('h', "help", "", "", "display help")
       ('u', "cutoff-target=INT", "arg", "200000", "Iterate cutoff while this vocabulary size is reached, DEFAULT: 200 000")
       ('i', "cutoff-increment=FLOAT", "arg", "1.0", "Cutoff increment for each iteration, DEFAULT: 1.0")
