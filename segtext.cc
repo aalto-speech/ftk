@@ -131,14 +131,14 @@ int main(int argc, char* argv[]) {
         }
 
         // Print out the best path
-        if (print_sentence_markers) fwrite("<s> ", 1, 4, outfile.file);
+        if (print_sentence_markers) fprintf(outfile.file, "<s> ");
         for (unsigned int i=0; i<best_path.size()-1; i++) {
-            fwrite(best_path[i].c_str(), 1, best_path[i].length(), outfile.file);
-            fwrite(" ", 1, 1, outfile.file);
+            fprintf(outfile.file, best_path[i].c_str());
+            fprintf(outfile.file, " ");
         }
-        fwrite(best_path[best_path.size()-1].c_str(), 1, best_path[best_path.size()-1].length(), outfile.file);
-        if (print_sentence_markers) fwrite(" </s>", 1, 5, outfile.file);
-        fwrite("\n", 1, 1, outfile.file);
+        fprintf(outfile.file, best_path[best_path.size()-1].c_str());
+        if (print_sentence_markers) fprintf(outfile.file, " </s>");
+        fprintf(outfile.file, "\n");
     }
 
     if (ss_vocab != NULL) delete ss_vocab;
