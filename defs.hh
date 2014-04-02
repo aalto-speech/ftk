@@ -5,6 +5,7 @@
 #include <limits>
 #include <map>
 #include <string>
+#include <vector>
 
 typedef double flt_type;
 typedef unsigned short int fg_node_idx_t;
@@ -51,6 +52,41 @@ static void trim(std::string &str, char to_trim)
     else str.erase(str.begin(), str.end());
 }
 
+static void get_character_positions_onebyte(std::string word,
+                                            std::vector<unsigned int> &positions)
+{
+    positions.clear();
+    for (unsigned int i=0; i<word.length()+1; i++)
+        positions.push_back(i);
+}
+
+static void get_character_positions_utf8(std::string word,
+                                         std::vector<unsigned int> &positions)
+{
+    positions.clear();
+    positions.push_back(0);
+    unsigned int charpos=0;
+
+    while (charpos<word.length()) {
+        unsigned int utfseqlen=0;
+        if (!(word[charpos] & 128)) utfseqlen = 1;
+        else if (word[charpos] & 192) utfseqlen = 2;
+        else if (word[charpos] & 224) utfseqlen = 3;
+        else utfseqlen = 4;
+        charpos += utfseqlen;
+        positions.push_back(charpos);
+    }
+}
+
+static void get_character_positions(std::string word,
+                                    std::vector<unsigned int> &positions,
+                                    bool utf8=false)
+{
+    if (utf8)
+        get_character_positions_utf8(word, positions);
+    else
+        get_character_positions_onebyte(word, positions);
+}
 
 #endif /* PROJECT_DEFS */
 

@@ -160,7 +160,7 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, flt_type> stats;
-        ll += worditer->second * segf(vocab, worditer->first, stats);
+        ll += worditer->second * segf(vocab, worditer->first, stats, this->utf8);
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
@@ -197,7 +197,7 @@ Unigrams::resegment_sents(const vector<string> &sents,
     for (auto sent = sents.begin(); sent != sents.end(); ++sent) {
 
         map<string, flt_type> stats;
-        ll += segf(vocab, *sent, stats);
+        ll += segf(vocab, *sent, stats, this->utf8);
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for sentence: " << *sent << endl;
@@ -378,7 +378,7 @@ Unigrams::rank_candidates(const map<string, flt_type> &words,
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, flt_type> stats;
-        flt_type orig_score = segf(ss_vocab, worditer->first, stats);
+        flt_type orig_score = segf(ss_vocab, worditer->first, stats, this->utf8);
         curr_ll += worditer->second * orig_score;
         token_count += worditer->second * stats.size();
 
@@ -400,7 +400,7 @@ Unigrams::rank_candidates(const map<string, flt_type> &words,
                 flt_type stored_value = ss_vocab.remove(hypoiter->first);
                 map<string, flt_type> hypo_stats;
 
-                flt_type hypo_score = segf(ss_vocab, worditer->first, hypo_stats);
+                flt_type hypo_score = segf(ss_vocab, worditer->first, hypo_stats, this->utf8);
 
                 if (hypo_stats.size() == 0) {
                     cerr << "warning, no hypo segmentation for word: " << worditer->first << endl;
@@ -451,7 +451,7 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
     for (auto sentiter = sents.cbegin(); sentiter != sents.cend(); ++sentiter) {
 
         map<string, flt_type> stats;
-        flt_type orig_score = segf(ss_vocab, *sentiter, stats);
+        flt_type orig_score = segf(ss_vocab, *sentiter, stats, this->utf8);
         curr_ll += orig_score;
         token_count += stats.size();
 
@@ -473,7 +473,7 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
                 flt_type stored_value = ss_vocab.remove(hypoiter->first);
                 map<string, flt_type> hypo_stats;
 
-                flt_type hypo_score = segf(ss_vocab, *sentiter, hypo_stats);
+                flt_type hypo_score = segf(ss_vocab, *sentiter, hypo_stats, this->utf8);
 
                 if (hypo_stats.size() == 0) {
                     cerr << "warning, no hypo segmentation for sentence: " << *sentiter << endl;

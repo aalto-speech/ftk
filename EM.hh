@@ -16,16 +16,19 @@ flt_type viterbi(const std::map<std::string, flt_type> &vocab,
                  unsigned int maxlen,
                  const std::string &text,
                  std::vector<std::string> &best_path,
-                 bool reverse=true);
+                 bool reverse=true,
+                 bool utf8=false);
 
 flt_type viterbi(const StringSet &vocab,
                  const std::string &text,
                  std::vector<std::string> &best_path,
-                 bool reverse=true);
+                 bool reverse=true,
+                 bool utf8=false);
 
 flt_type viterbi(const StringSet &vocab,
                  const std::string &text,
-                 std::map<std::string, flt_type> &stats);
+                 std::map<std::string, flt_type> &stats,
+                 bool utf8=false);
 
 // 1-GRAM model, 2-GRAM stats
 flt_type viterbi(const StringSet &vocab,
@@ -56,7 +59,8 @@ void backward(const StringSet &vocab,
 
 flt_type forward_backward(const StringSet &vocab,
                           const std::string &text,
-                          std::map<std::string, flt_type> &stats);
+                          std::map<std::string, flt_type> &stats,
+                          bool utf8=false);
 
 flt_type forward_backward(const StringSet &vocab,
                           const std::string &text,

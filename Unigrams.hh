@@ -11,12 +11,14 @@
 class Unigrams {
 public:
 
-    Unigrams() { this->segf = viterbi; }
-    Unigrams(flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) : segf(segf) {}
+    Unigrams() { this->segf = viterbi; utf8=false; }
+    Unigrams(flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats, bool utf8)) : segf(segf) {}
 
-    void set_segmentation_method(flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats)) {
+    void set_segmentation_method(flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats, bool utf8)) {
         this->segf = segf;
     }
+
+    void set_utf8(bool utf8) { this->utf8 = utf8; }
 
     static int read_vocab(std::string fname,
                           std::map<std::string, flt_type> &vocab,
@@ -99,7 +101,8 @@ public:
                              std::vector<std::pair<std::string, flt_type> > &removal_scores);
 
 private:
-    flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats);
+    flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats, bool utf8);
+    bool utf8;
 };
 
 #endif /* UNIGRAMS */

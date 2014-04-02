@@ -14,7 +14,8 @@ flt_type viterbi(const map<string, flt_type> &vocab,
                  unsigned int maxlen,
                  const string &text,
                  vector<string> &best_path,
-                 bool reverse)
+                 bool reverse,
+                 bool utf8)
 {
     best_path.clear();
     if (text.length() == 0) return MIN_FLOAT;
@@ -66,7 +67,8 @@ flt_type viterbi(const map<string, flt_type> &vocab,
 flt_type viterbi(const StringSet &vocab,
                  const string &text,
                  vector<string> &best_path,
-                 bool reverse)
+                 bool reverse,
+                 bool utf8)
 {
     best_path.clear();
     if (text.length() == 0) return MIN_FLOAT;
@@ -114,7 +116,8 @@ flt_type viterbi(const StringSet &vocab,
 
 flt_type viterbi(const StringSet &vocab,
                  const string &text,
-                 map<string, flt_type> &stats)
+                 map<string, flt_type> &stats,
+                 bool utf8)
 {
     stats.clear();
     vector<string> best_path;
@@ -194,7 +197,8 @@ void backward(const StringSet &vocab,
 
 flt_type forward_backward(const StringSet &vocab,
                           const string &text,
-                          map<string, flt_type> &stats)
+                          map<string, flt_type> &stats,
+                          bool utf8)
 {
     int len = text.length();
     if (len == 0) return MIN_FLOAT;

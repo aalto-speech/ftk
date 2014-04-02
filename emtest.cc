@@ -159,6 +159,34 @@ void emtest :: viterbiTest7 (void)
 }
 
 
+// UTF-8
+void emtest :: viterbiTest8 (void)
+{
+    map<string, flt_type> vocab;
+    string str1("p"); string str2("ö");
+    string str3("l"); string str4("i");
+    string str5("l"); string str6("pölli");
+    string str7("llä"); string str8("pöllillä");
+    vocab[str1] = -1.0;
+    vocab[str2] = -2.0;
+    vocab[str3] = -1.5;
+    vocab[str4] = -2.0;
+    vocab[str6] = -3.0;
+    vocab[str7] = -2.0;
+    vocab[str8] = -1.0;
+    string sentence("pöllillä");
+    int maxlen = 8;
+    vector<string> correct_path;
+    correct_path.push_back(str8);
+    viterbiChecks(vocab, maxlen, sentence, correct_path, -1);
+    correct_path.clear();
+    correct_path.push_back(str6);
+    correct_path.push_back(str7);
+    vocab[str8] = -6.0;
+    viterbiChecks(vocab, maxlen, sentence, correct_path, -5.0);
+}
+
+
 // Empty string
 void emtest :: ForwardBackwardTest1 (void)
 {

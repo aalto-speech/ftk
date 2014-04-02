@@ -6,35 +6,12 @@
 #include <vector>
 
 #include "conf.hh"
+#include "defs.hh"
 
 using namespace std;
 
 
 bool desc_sort(pair<string, int> i, pair<string, int> j) { return (i.second > j.second); }
-
-
-void get_character_positions(string word, vector<unsigned int> &positions) {
-    positions.clear();
-    for (unsigned int i=0; i<word.length()+1; i++)
-        positions.push_back(i);
-}
-
-
-void get_character_positions_utf8(string word, vector<unsigned int> &positions) {
-    positions.clear();
-    positions.push_back(0);
-    unsigned int charpos=0;
-
-    while (charpos<word.length()) {
-        unsigned int utfseqlen=0;
-        if (!(word[charpos] & 128)) utfseqlen = 1;
-        else if (word[charpos] & 192) utfseqlen = 2;
-        else if (word[charpos] & 224) utfseqlen = 3;
-        else utfseqlen = 4;
-        charpos += utfseqlen;
-        positions.push_back(charpos);
-    }
-}
 
 
 int get_substrings(const string &infname,
@@ -57,10 +34,7 @@ int get_substrings(const string &infname,
         ss >> word;
 
         vector<unsigned int> char_positions;
-        if (utf8)
-            get_character_positions_utf8(word, char_positions);
-        else
-            get_character_positions(word, char_positions);
+        get_character_positions(word, char_positions, utf8);
 
         for (unsigned int i=0; i<char_positions.size()-1; i++)
             for (unsigned int j=i+1; j<char_positions.size() && j-i <= maxlen; j++) {

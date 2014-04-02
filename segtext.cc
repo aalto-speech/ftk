@@ -133,10 +133,10 @@ int main(int argc, char* argv[]) {
         // Print out the best path
         if (print_sentence_markers) fprintf(outfile.file, "<s> ");
         for (unsigned int i=0; i<best_path.size()-1; i++) {
-            fprintf(outfile.file, best_path[i].c_str());
+            fprintf(outfile.file, "%s", best_path[i].c_str());
             fprintf(outfile.file, " ");
         }
-        fprintf(outfile.file, best_path[best_path.size()-1].c_str());
+        fprintf(outfile.file, "%s", best_path[best_path.size()-1].c_str());
         if (print_sentence_markers) fprintf(outfile.file, " </s>");
         fprintf(outfile.file, "\n");
     }
