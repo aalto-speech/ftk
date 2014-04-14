@@ -28,10 +28,11 @@ void emtest :: viterbiChecks(const map<string, flt_type> &vocab,
                              int maxlen,
                              string &sentence,
                              vector<string> &correct_path,
-                             flt_type correct_lp)
+                             flt_type correct_lp,
+                             bool utf8)
 {
     vector<string> result_path;
-    flt_type result_lp = viterbi(vocab, maxlen, sentence, result_path);
+    flt_type result_lp = viterbi(vocab, maxlen, sentence, result_path, true, utf8);
     CPPUNIT_ASSERT_EQUAL( correct_path.size(), result_path.size() );
     CPPUNIT_ASSERT_EQUAL( correct_lp, result_lp );
     for (unsigned int i=0; i<correct_path.size(); i++)
@@ -39,7 +40,7 @@ void emtest :: viterbiChecks(const map<string, flt_type> &vocab,
 
     result_path.clear();
     StringSet ssvocab(vocab);
-    result_lp = viterbi(ssvocab, sentence, result_path);
+    result_lp = viterbi(ssvocab, sentence, result_path, true, utf8);
     CPPUNIT_ASSERT_EQUAL( correct_path.size(), result_path.size() );
     CPPUNIT_ASSERT_EQUAL( correct_lp, result_lp );
     for (unsigned int i=0; i<correct_path.size(); i++)
@@ -178,12 +179,12 @@ void emtest :: viterbiTest8 (void)
     int maxlen = 8;
     vector<string> correct_path;
     correct_path.push_back(str8);
-    viterbiChecks(vocab, maxlen, sentence, correct_path, -1);
+    viterbiChecks(vocab, maxlen, sentence, correct_path, -1, true);
     correct_path.clear();
     correct_path.push_back(str6);
     correct_path.push_back(str7);
     vocab[str8] = -6.0;
-    viterbiChecks(vocab, maxlen, sentence, correct_path, -5.0);
+    viterbiChecks(vocab, maxlen, sentence, correct_path, -5.0, true);
 }
 
 

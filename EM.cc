@@ -24,24 +24,27 @@ flt_type viterbi(const map<string, flt_type> &vocab,
     int end_pos = 0;
     int len = 0;
 
-    for (int i=0; i<text.length(); i++) {
+    vector<unsigned int> char_positions;
+    get_character_positions(text, char_positions, utf8);
+
+    for (int i=0; i<char_positions.size()-1; i++) {
 
         // Iterate all factors ending in this position
-        for (int j=max(0, (int)(i-maxlen)); j<=i; j++) {
+        end_pos = char_positions[i+1];
+        for (int j=max(0, (int)(char_positions[i]-maxlen)); j<=char_positions[i]; j++) {
 
-            start_pos = j;
-            end_pos = i+1;
+            start_pos = char_positions[j];
             len = end_pos-start_pos;
 
             if (vocab.find(text.substr(start_pos, len)) != vocab.end()) {
                 flt_type cost = vocab.at(text.substr(start_pos, len));
-                if (j-1 >= 0) {
-                    if (search[j-1].cost == MIN_FLOAT) break;
-                    cost += search[j-1].cost;
+                if (start_pos-1 >= 0) {
+                    if (search[start_pos-1].cost == MIN_FLOAT) break;
+                    cost += search[start_pos-1].cost;
                 }
-                if (cost > search[i].cost) {
-                    search[i].cost = cost;
-                    search[i].source = j-1;
+                if (cost > search[end_pos-1].cost) {
+                    search[end_pos-1].cost = cost;
+                    search[end_pos-1].source = start_pos-1;
                 }
             }
         }

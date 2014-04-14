@@ -62,7 +62,8 @@ class emtest : public CPPUNIT_NS :: TestFixture
                            int maxlen,
                            std::string &sentence,
                            std::vector<std::string> &correct_path,
-                           flt_type correct_lp);
+                           flt_type correct_lp,
+                           bool utf8=false);
         void viterbiTest1(void);
         void viterbiTest2(void);
         void viterbiTest3(void);
