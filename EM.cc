@@ -20,32 +20,21 @@ flt_type viterbi(const map<string, flt_type> &vocab,
     best_path.clear();
     if (text.length() == 0) return MIN_FLOAT;
     vector<Token> search(text.length());
-    int start_pos = 0;
-    int end_pos = 0;
-    int len = 0;
 
-    vector<unsigned int> char_positions;
-    get_character_positions(text, char_positions, utf8);
+    for (unsigned int i=0; i<text.length(); i++) {
 
-    for (int i=0; i<char_positions.size()-1; i++) {
+        // Iterate all factors starting from this position
+        for (unsigned int j=i; j<text.length() && (j-i < maxlen); j++) {
 
-        // Iterate all factors ending in this position
-        end_pos = char_positions[i+1];
-        for (int j=max(0, (int)(char_positions[i]-maxlen)); j<=char_positions[i]; j++) {
+            auto vit = vocab.find(text.substr(i, j-i+1));
+            if (vit == vocab.end()) continue;
 
-            start_pos = char_positions[j];
-            len = end_pos-start_pos;
+            flt_type cost = vit->second;
+            if (i>0) cost += search[i-1].cost;
 
-            if (vocab.find(text.substr(start_pos, len)) != vocab.end()) {
-                flt_type cost = vocab.at(text.substr(start_pos, len));
-                if (start_pos-1 >= 0) {
-                    if (search[start_pos-1].cost == MIN_FLOAT) break;
-                    cost += search[start_pos-1].cost;
-                }
-                if (cost > search[end_pos-1].cost) {
-                    search[end_pos-1].cost = cost;
-                    search[end_pos-1].source = start_pos-1;
-                }
+            if (cost > search[j].cost) {
+                search[j].cost = cost;
+                search[j].source = i-1;
             }
         }
     }
