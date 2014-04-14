@@ -21,20 +21,26 @@ flt_type viterbi(const map<string, flt_type> &vocab,
     if (text.length() == 0) return MIN_FLOAT;
     vector<Token> search(text.length());
 
-    for (unsigned int i=0; i<text.length(); i++) {
+    vector<unsigned int> char_positions;
+    get_character_positions(text, char_positions, utf8);
+
+    for (unsigned int i=0; i<char_positions.size(); i++) {
 
         // Iterate all factors starting from this position
-        for (unsigned int j=i; j<text.length() && (j-i < maxlen); j++) {
+        unsigned int start_pos = char_positions[i];
+        for (unsigned int j=i; j<char_positions.size() && (j-i < maxlen); j++) {
 
-            auto vit = vocab.find(text.substr(i, j-i+1));
+            unsigned int end_pos = text.size();
+            if (j < (char_positions.size()-1)) end_pos = char_positions[j+1];
+            auto vit = vocab.find(text.substr(start_pos, end_pos-start_pos));
             if (vit == vocab.end()) continue;
 
             flt_type cost = vit->second;
-            if (i>0) cost += search[i-1].cost;
+            if (start_pos > 0) cost += search[start_pos-1].cost;
 
-            if (cost > search[j].cost) {
-                search[j].cost = cost;
-                search[j].source = i-1;
+            if (cost > search[end_pos-1].cost) {
+                search[end_pos-1].cost = cost;
+                search[end_pos-1].source = start_pos-1;
             }
         }
     }
