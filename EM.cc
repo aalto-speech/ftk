@@ -72,11 +72,15 @@ flt_type viterbi(const StringSet &vocab,
     if (text.length() == 0) return MIN_FLOAT;
     vector<Token> search(text.length());
 
-    for (unsigned int i=0; i<text.length(); i++) {
+    vector<unsigned int> char_positions;
+    get_character_positions(text, char_positions, utf8);
+
+    for (unsigned int i=0; i<char_positions.size(); i++) {
 
         // Iterate all factors starting from this position
+        unsigned int start_pos = char_positions[i];
         const StringSet::Node *node = &vocab.root_node;
-        for (unsigned int j=i; j<text.length(); j++) {
+        for (unsigned int j=start_pos; j<text.length(); j++) {
 
             StringSet::Arc *arc = vocab.find_arc(text[j], node);
             if (arc == nullptr) break;
@@ -85,11 +89,11 @@ flt_type viterbi(const StringSet &vocab,
             // Factor associated with this node
             if (arc->factor.length() > 0) {
                 flt_type cost = arc->cost;
-                if (i>0) cost += search[i-1].cost;
+                if (start_pos>0) cost += search[start_pos-1].cost;
 
                 if (cost > search[j].cost) {
                     search[j].cost = cost;
-                    search[j].source = i-1;
+                    search[j].source = start_pos-1;
                 }
             }
         }
@@ -119,7 +123,7 @@ flt_type viterbi(const StringSet &vocab,
 {
     stats.clear();
     vector<string> best_path;
-    flt_type lp = viterbi(vocab, text, best_path, false);
+    flt_type lp = viterbi(vocab, text, best_path, false, utf8);
     for (auto it = best_path.begin(); it != best_path.end(); ++it)
         stats[*it] += 1.0;
     return lp;
