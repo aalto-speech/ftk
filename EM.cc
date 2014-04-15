@@ -194,11 +194,12 @@ void backward(const StringSet &vocab,
     for (int i=len-1; i>=0; i--) {
         for (auto tok = search[i].cbegin(); tok != search[i].cend(); ++tok) {
             flt_type normalized = tok->cost - fw[i] + bw[i];
-            if (bw[i] != SMALL_LP)
+            if (bw[i] != SMALL_LP && fw[i] != SMALL_LP) {
                 stats[text.substr(tok->source+1, i-tok->source)] += exp(normalized);
-            if (tok->source == -1) continue;
-            if (bw[tok->source] != 0.0) bw[tok->source] = add_log_domain_probs(bw[tok->source], normalized);
-            else bw[tok->source] = normalized;
+                if (tok->source == -1) continue;
+                if (bw[tok->source] != SMALL_LP) bw[tok->source] = add_log_domain_probs(bw[tok->source], normalized);
+                else bw[tok->source] = normalized;
+            }
         }
     }
 }
@@ -214,7 +215,7 @@ flt_type forward_backward(const StringSet &vocab,
 
     stats.clear();
     vector<vector<Token> > search(len);
-    vector<flt_type> fw(len, 0.0);
+    vector<flt_type> fw(len, SMALL_LP); fw[0] = 0.0;
     vector<flt_type> bw(len, SMALL_LP); bw.back() = 0.0;
 
     forward(vocab, text, search, fw, utf8);
@@ -236,7 +237,7 @@ flt_type forward_backward(const StringSet &vocab,
 
     stats.clear();
     vector<vector<Token> > search(len);
-    vector<flt_type> fw(len, 0.0);
+    vector<flt_type> fw(len, SMALL_LP); fw[0] = 0.0;
     bw.resize(len, SMALL_LP); bw.back() = 0.0;
 
     forward(vocab, text, search, fw, utf8);
