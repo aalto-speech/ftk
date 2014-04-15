@@ -332,6 +332,33 @@ void emtest :: ForwardBackwardTest8 (void)
 }
 
 
+// UTF-8
+void emtest :: ForwardBackwardTest9(void)
+{
+    map<string, flt_type> vocab;
+    vocab["i"] = log(0.25);
+    vocab["si"] = log(0.25);
+    vocab["s"] = log(0.25);
+    vocab["kö"] = log(0.50);
+    vocab["kös"] = log(0.50);
+    vocab["kössi"] = log(0.1953125);
+    vocab["k"] = log(0.00000000001);
+    vocab["�"] = log(0.00000000001);
+    vocab["�"] = log(0.00000000001);
+    string sentence("kössi");
+    map<string, flt_type> stats;
+    flt_type lp = forward_backward(vocab, sentence, stats);
+    CPPUNIT_ASSERT_EQUAL(6, (int)stats.size());
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5, stats["kössi"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.80/2.0, stats["kös"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.20/2.0, stats["kö"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.8/2.0, stats["si"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( (0.2+0.2)/2.0, stats["s"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.2/2.0, stats["i"], DBL_ACCURACY );
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( (flt_type)-0.940007258491, lp, DBL_ACCURACY);
+}
+
+
 void assert_node(const FactorGraph &fg,
                  int node,
                  const std::string &nstr,

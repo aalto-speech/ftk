@@ -133,7 +133,8 @@ flt_type viterbi(const StringSet &vocab,
 void forward(const StringSet &vocab,
              const string &text,
              vector<vector<Token> > &search,
-             vector<flt_type> &fw)
+             vector<flt_type> &fw,
+             bool utf8)
 {
     int len = text.length();
     for (int i=0; i<len; i++) {
@@ -210,7 +211,7 @@ flt_type forward_backward(const StringSet &vocab,
     vector<flt_type> fw(len);
     vector<flt_type> bw(len);
 
-    forward(vocab, text, search, fw);
+    forward(vocab, text, search, fw, utf8);
     backward(vocab, text, search, fw, bw, stats);
 
     if (search[len-1].size() == 0) return MIN_FLOAT;
@@ -241,10 +242,11 @@ flt_type forward_backward(const StringSet &vocab,
 
 flt_type forward_backward(const map<string, flt_type> &vocab,
                           const string &text,
-                          map<string, flt_type> &stats)
+                          map<string, flt_type> &stats,
+                          bool utf8)
 {
     StringSet stringset_vocab(vocab);
-    return forward_backward(stringset_vocab, text, stats);
+    return forward_backward(stringset_vocab, text, stats, utf8);
 }
 
 

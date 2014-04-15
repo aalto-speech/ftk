@@ -48,7 +48,8 @@ class Token {
 void forward(const StringSet &vocab,
              const std::string &text,
              std::vector<std::vector<Token> > &search,
-             std::vector<flt_type> &fw);
+             std::vector<flt_type> &fw,
+             bool utf8=false);
 
 void backward(const StringSet &vocab,
               const std::string &text,
@@ -69,7 +70,8 @@ flt_type forward_backward(const StringSet &vocab,
 
 flt_type forward_backward(const std::map<std::string, flt_type> &vocab,
                           const std::string &text,
-                          std::map<std::string, flt_type> &stats);
+                          std::map<std::string, flt_type> &stats,
+                          bool utf8=false);
 
 // 2-GRAM
 

@@ -25,6 +25,7 @@ class emtest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (ForwardBackwardTest6);
     CPPUNIT_TEST (ForwardBackwardTest7);
     CPPUNIT_TEST (ForwardBackwardTest8);
+    CPPUNIT_TEST (ForwardBackwardTest9);
     CPPUNIT_TEST (FactorGraphTest1);
     CPPUNIT_TEST (FactorGraphTest2);
     CPPUNIT_TEST (FactorGraphTest3);
@@ -80,6 +81,7 @@ class emtest : public CPPUNIT_NS :: TestFixture
         void ForwardBackwardTest6(void);
         void ForwardBackwardTest7(void);
         void ForwardBackwardTest8(void);
+        void ForwardBackwardTest9(void);
         void FactorGraphTest1(void);
         void FactorGraphTest2(void);
         void FactorGraphTest3(void);
