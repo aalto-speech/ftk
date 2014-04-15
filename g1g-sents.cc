@@ -17,29 +17,6 @@
 using namespace std;
 
 
-void find_short_factors(const map<string, flt_type> &vocab,
-                        set<string> &short_factors,
-                        unsigned int min_removal_length,
-                        bool utf8)
-{
-    for (auto it = vocab.cbegin(); it != vocab.end(); ++it) {
-        vector<unsigned int> char_positions;
-        get_character_positions(it->first, char_positions, utf8);
-        if (char_positions.size()-1 < min_removal_length)
-            short_factors.insert(it->first);
-    }
-}
-
-
-void assert_short_subwords(map<string, flt_type> &vocab,
-                          const set<string> &chars,
-                          flt_type val)
-{
-    for (auto it = chars.cbegin(); it != chars.cend(); ++it)
-        if (vocab.find(*it) == vocab.end())
-            vocab[*it] = val;
-}
-
 void parse_limits(string limitstr, map<unsigned int, unsigned int> &limits) {
     vector<string> fields;
     str::split_with_quotes(&limitstr, " ,", true, &fields);
@@ -153,7 +130,7 @@ int main(int argc, char* argv[]) {
         cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
-        assert_short_subwords(vocab, short_factors, short_factor_min_lp);
+        assert_short_factors(vocab, short_factors, short_factor_min_lp);
         cost = gg.resegment_sents(sents, vocab, freqs);
         cerr << "likelihood: " << cost << endl;
     }
@@ -203,7 +180,7 @@ int main(int argc, char* argv[]) {
         }
 
         cost = gg.iterate(sents, vocab, 1);
-        assert_short_subwords(vocab, short_factors, short_factor_min_lp);
+        assert_short_factors(vocab, short_factors, short_factor_min_lp);
 
         cerr << "factors removed in this iteration: " << n_removals << endl;
         cerr << "current vocabulary size: " << vocab.size() << endl;

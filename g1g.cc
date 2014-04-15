@@ -17,29 +17,6 @@
 using namespace std;
 
 
-void find_short_subwords(const map<string, flt_type> &vocab,
-                         set<string> &short_subwords,
-                         unsigned int min_removal_length,
-                         bool utf8)
-{
-    for (auto it = vocab.cbegin(); it != vocab.end(); ++it) {
-        vector<unsigned int> char_positions;
-        get_character_positions(it->first, char_positions, utf8);
-        if (char_positions.size()-1 < min_removal_length)
-            short_subwords.insert(it->first);
-    }
-}
-
-
-void assert_short_subwords(map<string, flt_type> &vocab,
-                           const set<string> &chars,
-                           flt_type val)
-{
-    for (auto it = chars.cbegin(); it != chars.cend(); ++it)
-        if (vocab.find(*it) == vocab.end())
-            vocab[*it] = val;
-}
-
 void parse_limits(string limitstr, map<unsigned int, unsigned int> &limits) {
     vector<string> fields;
     str::split_with_quotes(&limitstr, " ,", true, &fields);
@@ -125,7 +102,7 @@ int main(int argc, char* argv[]) {
     }
     cerr << "\t" << "size: " << vocab.size() << endl;
     cerr << "\t" << "maximum string length: " << maxlen << endl;
-    find_short_subwords(vocab, short_subwords, min_removal_length, utf8_encoding);
+    find_short_factors(vocab, short_subwords, min_removal_length, utf8_encoding);
 
     cerr << "Reading word list " << wordlist_fname << endl;
     retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen);
@@ -154,7 +131,7 @@ int main(int argc, char* argv[]) {
         cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
-        assert_short_subwords(vocab, short_subwords, short_subword_min_lp);
+        assert_short_factors(vocab, short_subwords, short_subword_min_lp);
         cost = gg.resegment_words(words, vocab, freqs);
         cerr << "likelihood: " << cost << endl;
     }
@@ -206,7 +183,7 @@ int main(int argc, char* argv[]) {
         }
 
         cost = gg.iterate(words, vocab, 1);
-        assert_short_subwords(vocab, short_subwords, short_subword_min_lp);
+        assert_short_factors(vocab, short_subwords, short_subword_min_lp);
 
         cerr << "subwords removed in this iteration: " << n_removals << endl;
         cerr << "current vocabulary size: " << vocab.size() << endl;

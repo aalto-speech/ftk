@@ -4,6 +4,7 @@
 #include <cmath>
 #include <limits>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -60,7 +61,7 @@ static void get_character_positions_onebyte(std::string word,
         positions.push_back(i);
 }
 
-static void get_character_positions_utf8(std::string word,
+static void get_character_positions_utf8(const std::string &word,
                                          std::vector<unsigned int> &positions)
 {
     positions.clear();
@@ -78,7 +79,7 @@ static void get_character_positions_utf8(std::string word,
     }
 }
 
-static void get_character_positions(std::string word,
+static void get_character_positions(const std::string &word,
                                     std::vector<unsigned int> &positions,
                                     bool utf8=false)
 {
@@ -86,6 +87,28 @@ static void get_character_positions(std::string word,
         get_character_positions_utf8(word, positions);
     else
         get_character_positions_onebyte(word, positions);
+}
+
+static void find_short_factors(const std::map<std::string, flt_type> &vocab,
+                               std::set<std::string> &short_factors,
+                               unsigned int min_removal_length,
+                               bool utf8)
+{
+    for (auto it = vocab.cbegin(); it != vocab.end(); ++it) {
+        std::vector<unsigned int> char_positions;
+        get_character_positions(it->first, char_positions, utf8);
+        if (char_positions.size()-1 < min_removal_length)
+            short_factors.insert(it->first);
+    }
+}
+
+static void assert_short_factors(std::map<std::string, flt_type> &vocab,
+                                 const std::set<std::string> &factors,
+                                 flt_type min_lp)
+{
+    for (auto it = factors.cbegin(); it != factors.cend(); ++it)
+        if (vocab.find(*it) == vocab.end())
+            vocab[*it] = min_lp;
 }
 
 #endif /* PROJECT_DEFS */
