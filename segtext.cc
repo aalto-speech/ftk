@@ -37,12 +37,14 @@ int main(int argc, char* argv[]) {
       ('v', "vocabulary=FILE", "arg", "", "Unigram model file")
       ('t', "transitions=FILE", "arg", "", "Bigram model file")
       ('p', "posterior-decode", "", "", "Posterior decoding instead of Viterbi")
-      ('s', "sentence-markers", "", "", "Print sentence begin and end symbols");
+      ('s', "sentence-markers", "", "", "Print sentence begin and end symbols")
+      ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 2) config.print_help(stderr, 1);
 
     bool print_sentence_markers = config["sentence-markers"].specified;
     bool enable_posterior_decoding = config["posterior-decode"].specified;
+    bool utf8_encoding = config["utf-8"].specified;
     string in_fname = config.arguments[0];
     string out_fname = config.arguments[1];
 
@@ -114,7 +116,7 @@ int main(int argc, char* argv[]) {
                 exit(0);
             }
             else
-                viterbi(*ss_vocab, line, best_path);
+                viterbi(*ss_vocab, line, best_path, true, utf8_encoding);
         else {
             FactorGraph fg(line, start_end_symbol, *ss_vocab);
             if (enable_posterior_decoding)

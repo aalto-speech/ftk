@@ -34,12 +34,14 @@ int main(int argc, char* argv[]) {
     config("usage: segposts [OPTION...] INPUT SEGPROBS_OUTPUT\n")
       ('h', "help", "", "", "display help")
       ('v', "vocabulary=FILE", "arg", "", "Unigram model file")
-      ('t', "transitions=FILE", "arg", "", "Bigram model file");
+      ('t', "transitions=FILE", "arg", "", "Bigram model file")
+      ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 2) config.print_help(stderr, 1);
 
     string in_fname = config.arguments[0];
     string out_fname = config.arguments[1];
+    bool utf8_encoding = config["utf-8"].specified;
 
     if (!config["vocabulary"].specified && !config["transitions"].specified) {
         cerr << "Please define vocabulary or transitions" << endl;
@@ -100,7 +102,7 @@ int main(int argc, char* argv[]) {
         vector<flt_type> post_scores;
 
         if (unigram)
-            forward_backward(*ss_vocab, line, ug_stats, post_scores);
+            forward_backward(*ss_vocab, line, ug_stats, post_scores, utf8_encoding);
         else {
             FactorGraph fg(line, start_end_symbol, *ss_vocab);
             forward_backward(transitions, fg, bg_stats, post_scores);

@@ -35,13 +35,15 @@ int main(int argc, char* argv[]) {
       ('h', "help", "", "", "display help")
       ('i', "iterations=INT", "arg", "5", "Number of iterations")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
-      ('t', "temp-vocabs", "", "", "Write out vocabulary after each iteration");
+      ('t', "temp-vocabs", "", "", "Write out vocabulary after each iteration")
+      ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
 
     int num_iterations = config["iterations"].get_int();
     bool enable_forward_backward = config["forward-backward"].specified;
-    bool write_temp_vocabs = config["temp-vocabs"].get_int();
+    bool write_temp_vocabs = config["temp-vocabs"].specified;
+    bool utf8_encoding = config["utf-8"].specified;
     string training_fname = config.arguments[0];
     string vocab_in_fname = config.arguments[1];
     string vocab_out_fname = config.arguments[2];
@@ -52,6 +54,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
     cerr << "parameters, number of iterations: " << num_iterations << endl;
     cerr << "parameters, write vocabulary after each iteration: " << write_temp_vocabs << endl;
+    cerr << "parameters, utf-8 encoding: " << utf8_encoding << endl;
 
     int maxlen;
     map<string, flt_type> all_chars;
@@ -76,6 +79,7 @@ int main(int argc, char* argv[]) {
         gg.set_segmentation_method(forward_backward);
     else
         gg.set_segmentation_method(viterbi);
+    gg.set_utf8(utf8_encoding);
 
     cerr << "Reading training corpus " << training_fname << endl;
     Unigrams::read_sents(training_fname, sents);

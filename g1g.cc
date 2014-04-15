@@ -17,6 +17,20 @@
 using namespace std;
 
 
+void find_short_subwords(const map<string, flt_type> &vocab,
+                         set<string> &short_subwords,
+                         unsigned int min_removal_length,
+                         bool utf8)
+{
+    for (auto it = vocab.cbegin(); it != vocab.end(); ++it) {
+        vector<unsigned int> char_positions;
+        get_character_positions(it->first, char_positions, utf8);
+        if (char_positions.size()-1 < min_removal_length)
+            short_subwords.insert(it->first);
+    }
+}
+
+
 void assert_short_subwords(map<string, flt_type> &vocab,
                            const set<string> &chars,
                            flt_type val)
@@ -48,7 +62,8 @@ int main(int argc, char* argv[]) {
       ('m', "min-length=INT", "arg", "2", "Minimum length of subwords to remove, DEFAULT: 2")
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
       ('t', "temp-vocabs=INT", "arg", "0", "Write out intermediate vocabularies for #V mod INT == 0")
-      ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi");
+      ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
+      ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
 
@@ -64,6 +79,7 @@ int main(int argc, char* argv[]) {
     unsigned int target_vocab_size = config["vocab-size"].get_int();
     unsigned int temp_vocab_interval = config["temp-vocabs"].get_int();
     bool enable_forward_backward = config["forward-backward"].specified;
+    bool utf8_encoding = config["utf-8"].specified;
 
     map<unsigned int, unsigned int> removal_limits;
     if (config["removal-limits"].specified)
@@ -93,6 +109,7 @@ int main(int argc, char* argv[]) {
     else
         cerr << "parameters, write temp vocabularies: NO" << endl;
     cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
+    cerr << "parameters, utf-8 encoding: " << utf8_encoding << endl;
 
     int maxlen, word_maxlen;
     set<string> short_subwords;
@@ -108,10 +125,7 @@ int main(int argc, char* argv[]) {
     }
     cerr << "\t" << "size: " << vocab.size() << endl;
     cerr << "\t" << "maximum string length: " << maxlen << endl;
-    for (auto it = vocab.cbegin(); it != vocab.end(); ++it) {
-        if (it->first.length() < min_removal_length)
-            short_subwords.insert(it->first);
-    }
+    find_short_subwords(vocab, short_subwords, min_removal_length, utf8_encoding);
 
     cerr << "Reading word list " << wordlist_fname << endl;
     retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen);
@@ -127,6 +141,7 @@ int main(int argc, char* argv[]) {
         gg.set_segmentation_method(forward_backward);
     else
         gg.set_segmentation_method(viterbi);
+    gg.set_utf8(utf8_encoding);
 
     cerr << endl << "Initial cutoff" << endl;
     flt_type cost = gg.resegment_words(words, vocab, freqs);
