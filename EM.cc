@@ -228,17 +228,18 @@ flt_type forward_backward(const StringSet &vocab,
 flt_type forward_backward(const StringSet &vocab,
                           const string &text,
                           map<string, flt_type> &stats,
-                          vector<flt_type> &bw)
+                          vector<flt_type> &bw,
+                          bool utf8)
 {
     int len = text.length();
     if (len == 0) return MIN_FLOAT;
 
     stats.clear();
     vector<vector<Token> > search(len);
-    vector<flt_type> fw(len);
-    bw.resize(len);
+    vector<flt_type> fw(len, 0.0);
+    bw.resize(len, SMALL_LP); bw.back() = 0.0;
 
-    forward(vocab, text, search, fw);
+    forward(vocab, text, search, fw, utf8);
     backward(vocab, text, search, fw, bw, stats);
 
     if (search[len-1].size() == 0) return MIN_FLOAT;

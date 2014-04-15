@@ -66,7 +66,8 @@ flt_type forward_backward(const StringSet &vocab,
 flt_type forward_backward(const StringSet &vocab,
                           const std::string &text,
                           std::map<std::string, flt_type> &stats,
-                          std::vector<flt_type> &post_scores);
+                          std::vector<flt_type> &post_scores,
+                          bool utf8=false);
 
 flt_type forward_backward(const std::map<std::string, flt_type> &vocab,
                           const std::string &text,
