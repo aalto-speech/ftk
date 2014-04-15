@@ -111,5 +111,32 @@ static void assert_short_factors(std::map<std::string, flt_type> &vocab,
             vocab[*it] = min_lp;
 }
 
+
+static unsigned int get_factor_length_utf8(const std::string &factor)
+{
+    unsigned int length = 0;
+
+    unsigned int charpos=0;
+    while (charpos<factor.length()) {
+        unsigned int utfseqlen=0;
+        if (!(factor[charpos] & 128)) utfseqlen = 1;
+        else if (factor[charpos] & 192) utfseqlen = 2;
+        else if (factor[charpos] & 224) utfseqlen = 3;
+        else utfseqlen = 4;
+        charpos += utfseqlen;
+        length++;
+    }
+
+    return length;
+}
+
+
+static unsigned int get_factor_length(const std::string &factor, bool utf8)
+{
+    if (utf8) return get_factor_length_utf8(factor);
+    else return factor.length();
+}
+
+
 #endif /* PROJECT_DEFS */
 

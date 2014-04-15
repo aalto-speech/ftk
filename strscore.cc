@@ -18,13 +18,15 @@ int main(int argc, char* argv[]) {
 
     conf::Config config;
     config("usage: strscore [OPTION...] ARPAFILE INPUT OUTPUT\n")
-    ('h', "help", "", "", "display help");
+    ('h', "help", "", "", "display help")
+    ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
 
     string arpafname = config.arguments[0];
     string infname = config.arguments[1];
     string outfname = config.arguments[2];
+    bool utf8_encoding = config["utf-8"].specified;
 
     LM lm;
     lm.read_arpa(io::Stream(arpafname, "r").file, true);
@@ -53,8 +55,13 @@ int main(int argc, char* argv[]) {
 
         float total_prob = 0.0;
         int node_id = lm.empty_node_id();
-        for (unsigned int i=0; i<lstr.length(); i++) {
-            int sym = lm.symbol_map().index(lstr.substr(i, 1));
+
+        vector<unsigned int> char_positions;
+        get_character_positions(lstr, char_positions, utf8_encoding);
+        for (unsigned int i=0; i<char_positions.size()-1; i++) {
+            unsigned int start_pos = char_positions[i];
+            unsigned int len = char_positions[i+1] - start_pos;
+            int sym = lm.symbol_map().index(lstr.substr(start_pos, len));
             float curr_prob = 0.0;
             node_id = lm.walk(node_id, sym, &curr_prob);
             total_prob += curr_prob;

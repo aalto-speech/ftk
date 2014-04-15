@@ -256,7 +256,7 @@ Unigrams::cutoff(map<string, flt_type> &vocab,
     int nremovals = 0;
     auto iter = vocab.begin();
     while (iter != vocab.end()) {
-        if (iter->second <= limit && iter->first.length() >= min_length) {
+        if (iter->second <= limit && get_factor_length(iter->first, this->utf8) >= min_length) {
             vocab.erase(iter++);
             nremovals++;
         }
@@ -281,7 +281,7 @@ Unigrams::init_candidates(const map<string, flt_type> &vocab,
     int selected_candidates = 0;
     for (auto it = sorted_vocab.cbegin(); it != sorted_vocab.cend(); ++it) {
         const string &subword = it->first;
-        if (subword.length() < min_length) continue;
+        if (get_factor_length(subword, this->utf8) < min_length) continue;
         if (candidates.find(subword) != candidates.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
@@ -308,7 +308,7 @@ Unigrams::init_candidates_by_random(const map<string, flt_type> &vocab,
     int selected_candidates = 0;
     for (auto it = shuffled_vocab.begin(); it != shuffled_vocab.end(); ++it) {
         const string &subword = *it;
-        if (subword.length() < min_length) continue;
+        if (get_factor_length(subword, this->utf8) < min_length) continue;
         if (candidates.find(subword) != candidates.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
@@ -343,7 +343,7 @@ Unigrams::init_candidates_by_usage(const map<string, flt_type> &words,
     for (auto it = sorted_occ.cbegin(); it != sorted_occ.cend(); ++it) {
         const string &subword = it->first;
         if (it->second > max_usage) break;
-        if (subword.length() < min_length) continue;
+        if (get_factor_length(subword, this->utf8) < min_length) continue;
         if (candidates.find(subword) != candidates.end()) continue;
         candidates.insert(subword);
         selected_candidates++;

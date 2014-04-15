@@ -67,9 +67,9 @@ public:
 
     static void freqs_to_logprobs(std::map<std::string, flt_type> &vocab);
 
-    static int cutoff(std::map<std::string, flt_type> &vocab,
-                      flt_type limit,
-                      unsigned int min_length=2);
+    int cutoff(std::map<std::string, flt_type> &vocab,
+               flt_type limit,
+               unsigned int min_length=2);
 
     int init_candidates(const std::map<std::string, flt_type> &vocab,
                         std::set<std::string> &candidates,
