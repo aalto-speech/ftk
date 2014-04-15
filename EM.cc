@@ -137,8 +137,13 @@ void forward(const StringSet &vocab,
              bool utf8)
 {
     int len = text.length();
-    for (int i=0; i<len; i++) {
 
+    vector<unsigned int> char_positions;
+    get_character_positions(text, char_positions, utf8);
+
+    for (unsigned int cpi=0; cpi<char_positions.size(); cpi++) {
+
+        int i = char_positions[cpi];
         if (i>0 && search[i-1].size() == 0) continue;
 
         if (i>0) {
@@ -189,7 +194,8 @@ void backward(const StringSet &vocab,
     for (int i=len-1; i>=0; i--) {
         for (auto tok = search[i].cbegin(); tok != search[i].cend(); ++tok) {
             flt_type normalized = tok->cost - fw[i] + bw[i];
-            stats[text.substr(tok->source+1, i-tok->source)] += exp(normalized);
+            if (bw[i] != SMALL_LP)
+                stats[text.substr(tok->source+1, i-tok->source)] += exp(normalized);
             if (tok->source == -1) continue;
             if (bw[tok->source] != 0.0) bw[tok->source] = add_log_domain_probs(bw[tok->source], normalized);
             else bw[tok->source] = normalized;
@@ -208,8 +214,8 @@ flt_type forward_backward(const StringSet &vocab,
 
     stats.clear();
     vector<vector<Token> > search(len);
-    vector<flt_type> fw(len);
-    vector<flt_type> bw(len);
+    vector<flt_type> fw(len, 0.0);
+    vector<flt_type> bw(len, SMALL_LP); bw.back() = 0.0;
 
     forward(vocab, text, search, fw, utf8);
     backward(vocab, text, search, fw, bw, stats);

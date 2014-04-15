@@ -318,6 +318,7 @@ void emtest :: ForwardBackwardTest8 (void)
     vocab["ki"] = log(0.50);
     vocab["kis"] = log(0.50);
     vocab["kissa"] = log(0.1953125);
+    vocab["k"] = log(0.00000001);
     string sentence("kissa");
     map<string, flt_type> stats;
     flt_type lp = forward_backward(vocab, sentence, stats);
@@ -347,7 +348,7 @@ void emtest :: ForwardBackwardTest9(void)
     vocab["�"] = log(0.00000000001);
     string sentence("kössi");
     map<string, flt_type> stats;
-    flt_type lp = forward_backward(vocab, sentence, stats);
+    flt_type lp = forward_backward(vocab, sentence, stats, true);
     CPPUNIT_ASSERT_EQUAL(6, (int)stats.size());
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.5, stats["kössi"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.80/2.0, stats["kös"], DBL_ACCURACY );
