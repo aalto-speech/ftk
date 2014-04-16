@@ -4,7 +4,7 @@ This toolkit contains programs for segmenting strings and training segmentation 
 It has been developed primarily for learning units for speech recognition,
 but can be used for other purposes as well. Subword vocabulary trained with unigram statistics
 has been evaluated with respect to entropy and LVCSR accuracy. Phrase models and bigram 
-statistics are more experimental at the moment. g1g-sents may be adapted for 
+models are more experimental at the moment. g1g-sents may be adapted for 
 general segmentation purposes.
 
 The segmentation model is a unigram or bigram model.
@@ -13,30 +13,34 @@ The model training starts from a large vocabulary which is pruned to a suitable 
 Vocabulary selection is greedy in the sense that in each iteration strings which have the
 least effect on total data likelihood, are removed.
 
-Licence: BSD-3
-There is a patent on bi-multigrams for class information which may or may not apply for commercial use in the bigram case.
-
-Citations for publications:
-Matti Varjokallio and Mikko Kurimo: "A Toolkit For Efficient Learning of Lexical Units for Speech Recognition", in the proceedings of The 9th edition of the Language Resources and Evaluation Conference (LREC 2014), 26-31 May, Reykjavik, Iceland. (to appear)
-
-results with unigram statistics
-Matti Varjokallio, Mikko Kurimo and Sami Virpioja: "Learning a Subword Vocabulary Based on Unigram Likelihood", In IEEE Workshop on Automatic Speech Recognition and Understanding, ASRU2013.
-
-Implementation: C++11, GCC 4.6 or newer recommended.
+Implementation: C++11, GCC 4.6 or newer recommended. Should work on GCC 4.4+ and MinGW.
         EM layer: EM, FactorGraph, MSFG
         Model selection layer: Unigrams, Bigrams
         Current executables roughly cover all the functionality
         but the idea is to write new ones as needed
 
+Installation: type 'make'
+
 Dependencies: CPPUnit needed for running unit tests, may be commented out in Makefile
               Unit tests mainly for Expectation-Maximization and related data structures
 
-Character encoding: at the moment only 1-byte encodings, support for other encodings under work.
+Character encodings: 1-byte encodings and Utf-8. Utf-8 has so far been tested mainly on a latin codable alphabet.
+
+Licence: BSD-3
+There is a patent on bi-multigrams for class information which may or may not apply for commercial use in the bigram case.
+
+Citations for academic purposes:
+Matti Varjokallio and Mikko Kurimo: "A Toolkit For Efficient Learning of Lexical Units for Speech Recognition", in the proceedings of The 9th edition of the Language Resources and Evaluation Conference (LREC 2014), 26-31 May, Reykjavik, Iceland. (to appear)
+or results with unigram statistics
+Matti Varjokallio, Mikko Kurimo and Sami Virpioja: "Learning a Subword Vocabulary Based on Unigram Likelihood", In IEEE Workshop on Automatic Speech Recognition and Understanding, ASRU2013.
+
+In case of any problems, you can contact matti.varjokallio@aalto.fi and I am happy to help.
+
 
 PROGRAMS:
 substrings: get all substrings from a set of strings
 strscore: score strings with a ARPA letter n-gram
-fe: segment text with a trained model
+segtext: segment text with a trained model
 segposts: compute segmentation boundary posterior probabilities using unigram or bigram model
 iterate: iterate unigram Expectation-Maximization without pruning over a word list
 iterate-sents: iterate unigram Expectation-Maximization without pruning over a text corpus
@@ -72,5 +76,18 @@ iterate -i 5 -f wordcounts.txt substrings.scored.txt initial.vocab
 4) Prune the vocabulary with cutoff + greedy likelihood pruning
 It may be a good idea to experiment with the parameters. The following should work reasonably:
 g1g -l 100000,250,50000,100 -v 20000 -t 5000 wordcounts.txt initial.vocab final.vocab
+
 Set target vocabulary size (-v) lower so you may try out different vocabulary sizes
+For utf-8 encoded data use the utf-8 switch with every executable.
+
+
+Unigram phrase model is trained similarly, just iterate-sents and g1g-sents executables are used.
+
+Training corpus could be formatted like this without counts (depending how you want to model the word boundaries):
+_this_is_a_sentence
+_this_is_a_second_sentence
+
+More care is needed in initializing the phrase model. You will need to filter the initial vocabulary properly.
+All substrings from most common words and most common word bigrams are a good starting point.
+Also it is possible to include substrings from the word bigrams depending on the language. 
 
