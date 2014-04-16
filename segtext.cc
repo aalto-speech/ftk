@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
     bool unigram = true;
 
     conf::Config config;
-    config("usage: fe [OPTION...] INPUT OUTPUT\n")
+    config("usage: segtext [OPTION...] INPUT OUTPUT\n")
       ('h', "help", "", "", "display help")
       ('v', "vocabulary=FILE", "arg", "", "Unigram model file")
       ('t', "transitions=FILE", "arg", "", "Bigram model file")

@@ -23,7 +23,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: segposts [OPTION...] INPUT COUNTS1 COUNTS2\n")
+    config("usage: counts [OPTION...] INPUT COUNTS1 COUNTS2\n")
       ('h', "help", "", "", "display help")
       ('v', "vocabulary=FILE", "arg", "", "Unigram model file")
       ('t', "transitions=FILE", "arg", "", "Bigram model file")

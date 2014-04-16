@@ -68,7 +68,7 @@ void write_substrings(const string &outfname,
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: fe [OPTION...] INPUT OUTPUT\n")
+    config("usage: substrings [OPTION...] INPUT OUTPUT\n")
       ('h', "help", "", "", "display help")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use")
       ('l', "max-length=INT", "arg must", "100", "Maximum length of the substrings");

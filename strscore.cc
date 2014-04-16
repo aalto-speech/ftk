@@ -16,7 +16,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: strscore2 [OPTION...] ARPAFILE INPUT OUTPUT\n")
+    config("usage: strscore [OPTION...] ARPAFILE INPUT OUTPUT\n")
     ('h', "help", "", "", "display help");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
