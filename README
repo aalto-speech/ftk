@@ -24,7 +24,9 @@ Installation: type 'make'
 Dependencies: CPPUnit needed for running unit tests, may be commented out in Makefile
               Unit tests mainly for Expectation-Maximization and related data structures
 
-Character encodings: 1-byte encodings and Utf-8. Utf-8 has so far been tested mainly on a latin codable alphabet.
+Character encodings: 1-byte encodings and Utf-8.
+        Utf-8 has so far been tested mainly on a latin codable alphabet.
+        All executables have a Utf-8 switch if needed.
 
 Licence: BSD-3
 There is a patent on bi-multigrams for class information which may or may not apply for commercial use in the bigram case.
