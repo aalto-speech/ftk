@@ -497,6 +497,42 @@ void emtest :: FactorGraphTest4 (void)
 }
 
 
+// Testing constructor
+// Utf-8 encoding
+void emtest :: FactorGraphTest5 (void)
+{
+    map<std::string, flt_type> vocab;
+    vocab.insert(make_pair("k", 0.0));
+    vocab.insert(make_pair("ö", 0.0));
+    vocab.insert(make_pair("kö", 0.0));
+    vocab.insert(make_pair("�", 0.0));
+    vocab.insert(make_pair("�", 0.0));
+    vocab.insert(make_pair("s", 0.0));
+    vocab.insert(make_pair("i", 0.0));
+    vocab.insert(make_pair("si", 0.0));
+    vocab.insert(make_pair("ssi", 0.0));
+
+    FactorGraph fg("kössi", start_end, vocab, 3); // <-- maxlen
+    CPPUNIT_ASSERT_EQUAL(10, (int)fg.nodes.size());
+
+    StringSet ssvocab(vocab);
+    FactorGraph ssfg("kössi", start_end, ssvocab);
+    CPPUNIT_ASSERT(fg.assert_equal(ssfg));
+
+    int node_idx = 0;
+    assert_node(fg, node_idx++, start_end, 0, 3);
+    assert_node(fg, node_idx++, std::string("k"), 1, 1);
+    assert_node(fg, node_idx++, std::string("kö"), 1, 2);
+    assert_node(fg, node_idx++, std::string("ö"), 1, 2);
+    assert_node(fg, node_idx++, std::string("s"), 1, 2);
+    assert_node(fg, node_idx++, std::string("ssi"), 1, 1);
+    assert_node(fg, node_idx++, std::string("s"), 1, 1);
+    assert_node(fg, node_idx++, std::string("si"), 1, 1);
+    assert_node(fg, node_idx++, std::string("i"), 1, 1);
+    assert_node(fg, node_idx++, start_end, 2, 0);
+}
+
+
 bool includes_path(vector<vector<string> > &all_paths, vector<string> &path) {
     for (unsigned int i=0; i<all_paths.size(); i++) {
         if (path.size() != all_paths[i].size()) continue;
