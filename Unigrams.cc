@@ -16,7 +16,8 @@ using namespace std;
 int
 Unigrams::read_vocab(string fname,
                      map<string, flt_type> &vocab,
-                     int &maxlen)
+                     int &maxlen,
+                     bool utf8)
 {
     ifstream vocabfile(fname);
     if (!vocabfile) return -1;
@@ -30,7 +31,8 @@ Unigrams::read_vocab(string fname,
         ss >> count;
         ss >> word;
         vocab[word] = count;
-        maxlen = max(maxlen, int(word.length()));
+
+        maxlen = max(maxlen, (int)get_factor_length(word, utf8));
     }
     vocabfile.close();
 

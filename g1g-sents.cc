@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
     vector<string> sents;
 
     cerr << "Reading vocabulary " << vocab_fname << endl;
-    int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen);
+    int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen, utf8_encoding);
     if (retval < 0) {
         cerr << "something went wrong reading vocabulary" << endl;
         exit(0);

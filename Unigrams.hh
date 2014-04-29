@@ -22,7 +22,8 @@ public:
 
     static int read_vocab(std::string fname,
                           std::map<std::string, flt_type> &vocab,
-                          int &maxlen);
+                          int &maxlen,
+                          bool utf8);
 
     static int write_vocab(std::string fname,
                            const std::map<std::string, flt_type> &vocab,

@@ -25,7 +25,8 @@ int main(int argc, char* argv[]) {
       ('h', "help", "", "", "display help")
       ('c', "candidates=INT", "arg", "5000", "Number of candidate subwords to try to remove per iteration")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
-      ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)");
+      ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
+      ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 4) config.print_help(stderr, 1);
 
@@ -36,6 +37,7 @@ int main(int argc, char* argv[]) {
     string initial_transitions_fname = config.arguments[1];
     string msfg_fname = config.arguments[2];
     string transition_fname = config.arguments[3];
+    bool utf8_encoding = config["utf-8"].specified;
 
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
     cerr << "parameters, initial transitions: " << initial_transitions_fname << endl;
@@ -63,7 +65,7 @@ int main(int argc, char* argv[]) {
     }
 
     cerr << "Reading word list " << wordlist_fname << endl;
-    retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen);
+    retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen, utf8_encoding);
     if (retval < 0) {
         cerr << "something went wrong reading word list" << endl;
         exit(0);

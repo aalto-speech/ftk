@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
     if (config["vocabulary"].specified) {
         vocab_fname = config["vocabulary"].get_str();
         cerr << "Reading vocabulary " << vocab_fname << endl;
-        int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen);
+        int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen, utf8_encoding);
         if (retval < 0) {
             cerr << "something went wrong reading vocabulary" << endl;
             exit(0);

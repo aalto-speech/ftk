@@ -28,7 +28,8 @@ int main(int argc, char* argv[]) {
       ('v', "vocabulary=FILE", "arg", "", "Unigram model file")
       ('t', "transitions=FILE", "arg", "", "Bigram model file")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
-      ('w', "weights", "", "", "Training examples are weighted");
+      ('w', "weights", "", "", "Training examples are weighted")
+      ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
 
@@ -55,11 +56,12 @@ int main(int argc, char* argv[]) {
     string out_fname_2 = config.arguments[2];
     bool enable_forward_backward = config["forward-backward"].specified;
     bool weights = config["weights"].specified;
+    bool utf8_encoding = config["utf-8"].specified;
 
     if (config["vocabulary"].specified) {
         vocab_fname = config["vocabulary"].get_str();
         cerr << "Reading vocabulary " << vocab_fname << endl;
-        int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen);
+        int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen, utf8_encoding);
         vocab[start_end_symbol] = 0.0;
         if (retval < 0) {
             cerr << "something went wrong reading vocabulary" << endl;
