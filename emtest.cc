@@ -505,6 +505,7 @@ void emtest :: FactorGraphTest5 (void)
     vocab.insert(make_pair("k", 0.0));
     vocab.insert(make_pair("ö", 0.0));
     vocab.insert(make_pair("kö", 0.0));
+    vocab.insert(make_pair("kös", 0.0));
     vocab.insert(make_pair("�", 0.0));
     vocab.insert(make_pair("�", 0.0));
     vocab.insert(make_pair("s", 0.0));
@@ -512,24 +513,25 @@ void emtest :: FactorGraphTest5 (void)
     vocab.insert(make_pair("si", 0.0));
     vocab.insert(make_pair("ssi", 0.0));
 
-    FactorGraph fg("kössi", start_end, vocab, 3); // <-- maxlen
-    CPPUNIT_ASSERT_EQUAL(10, (int)fg.nodes.size());
+    FactorGraph fg("kössi", start_end, vocab, 3, true);
+    CPPUNIT_ASSERT_EQUAL(11, (int)fg.nodes.size());
 
     StringSet ssvocab(vocab);
-    FactorGraph ssfg("kössi", start_end, ssvocab);
+    FactorGraph ssfg("kössi", start_end, ssvocab, true);
     CPPUNIT_ASSERT(fg.assert_equal(ssfg));
 
     int node_idx = 0;
     assert_node(fg, node_idx++, start_end, 0, 3);
     assert_node(fg, node_idx++, std::string("k"), 1, 1);
     assert_node(fg, node_idx++, std::string("kö"), 1, 2);
+    assert_node(fg, node_idx++, std::string("kös"), 1, 2);
     assert_node(fg, node_idx++, std::string("ö"), 1, 2);
-    assert_node(fg, node_idx++, std::string("s"), 1, 2);
-    assert_node(fg, node_idx++, std::string("ssi"), 1, 1);
-    assert_node(fg, node_idx++, std::string("s"), 1, 1);
-    assert_node(fg, node_idx++, std::string("si"), 1, 1);
+    assert_node(fg, node_idx++, std::string("s"), 2, 2);
+    assert_node(fg, node_idx++, std::string("ssi"), 2, 1);
+    assert_node(fg, node_idx++, std::string("s"), 2, 1);
+    assert_node(fg, node_idx++, std::string("si"), 2, 1);
     assert_node(fg, node_idx++, std::string("i"), 1, 1);
-    assert_node(fg, node_idx++, start_end, 2, 0);
+    assert_node(fg, node_idx++, start_end, 3, 0);
 }
 
 

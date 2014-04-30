@@ -13,14 +13,21 @@ FactorGraph::create_nodes(const string &text,
                           vector<unordered_set<fg_node_idx_t> > &incoming)
 {
     nodes.push_back(Node(0,0));
-    for (unsigned int i=0; i<text.length(); i++) {
-        if (incoming[i].size() == 0) continue;
-        for (unsigned int j=i+1; j<=text.size(); j++) {
-            unsigned int len = j-i;
-            if (len>maxlen) break;
-            if (vocab.find(text.substr(i, len)) != vocab.end()) {
-                nodes.push_back(Node(i, len));
-                incoming[j].insert(i);
+
+    vector<unsigned int> char_positions;
+    get_character_positions(text, char_positions, utf8);
+
+    for (unsigned int i=0; i<char_positions.size()-1; i++) {
+
+        unsigned int start_pos = char_positions[i];
+        if (incoming[start_pos].size() == 0) continue;
+
+        for (unsigned int j=i; j<char_positions.size()-1 && (j-i < maxlen); j++) {
+            unsigned int end_pos = text.size();
+            if (j < (char_positions.size()-1)) end_pos = char_positions[j+1];
+            if (vocab.find(text.substr(start_pos, end_pos-start_pos)) != vocab.end()) {
+                nodes.push_back(Node(start_pos, end_pos-start_pos));
+                incoming[end_pos].insert(start_pos);
             }
         }
     }
@@ -33,11 +40,17 @@ FactorGraph::create_nodes(const string &text,
                           vector<unordered_set<fg_node_idx_t> > &incoming)
 {
     nodes.push_back(Node(0,0));
-    for (unsigned int i=0; i<text.length(); i++) {
-        if (incoming[i].size() == 0) continue;
+
+    vector<unsigned int> char_positions;
+    get_character_positions(text, char_positions, utf8);
+
+    for (unsigned int i=0; i<char_positions.size()-1; i++) {
+
+        unsigned int start_pos = char_positions[i];
+        if (incoming[start_pos].size() == 0) continue;
 
         const StringSet::Node *node = &vocab.root_node;
-        for (unsigned int j=i; j<text.length(); j++) {
+        for (unsigned int j=start_pos; j<text.length(); j++) {
 
             StringSet::Arc *arc = vocab.find_arc(text[j], node);
 
@@ -46,8 +59,8 @@ FactorGraph::create_nodes(const string &text,
 
             // String associated with this node
             if (arc->factor.length() > 0) {
-                nodes.push_back(Node(i, j+1-i));
-                incoming[j+1].insert(i);
+                nodes.push_back(Node(start_pos, j+1-start_pos));
+                incoming[j+1].insert(start_pos);
             }
         }
     }
@@ -150,16 +163,20 @@ FactorGraph::set_text(const string &text,
 FactorGraph::FactorGraph(const string &text,
                          const string &start_end_symbol,
                          const map<string, flt_type> &vocab,
-                         int maxlen)
+                         int maxlen,
+                         bool utf8)
 {
+    this->utf8 = utf8;
     set_text(text, start_end_symbol, vocab, maxlen);
 }
 
 
 FactorGraph::FactorGraph(const string &text,
                          const string &start_end_symbol,
-                         const StringSet &vocab)
+                         const StringSet &vocab,
+                         bool utf8)
 {
+    this->utf8 = utf8;
     set_text(text, start_end_symbol, vocab);
 }
 

@@ -48,11 +48,11 @@ public:
         std::vector<Arc*> outgoing;
     };
 
-    FactorGraph() {};
+    FactorGraph() : utf8(false) { };
     FactorGraph(const std::string &text, const std::string &start_end_symbol,
-                const std::map<std::string, flt_type> &vocab, int maxlen);
+                const std::map<std::string, flt_type> &vocab, int maxlen, bool utf8=false);
     FactorGraph(const std::string &text, const std::string &start_end_symbol,
-                const StringSet &vocab);
+                const StringSet &vocab, bool utf8=false);
     ~FactorGraph();
 
     void set_text(const std::string &text, const std::string &start_end_symbol,
@@ -83,6 +83,7 @@ public:
     std::string start_end_symbol;
     std::vector<Node> nodes;
     std::vector<Arc*> arcs;
+    bool utf8;
 
 private:
     // Constructor helpers
