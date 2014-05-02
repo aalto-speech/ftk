@@ -38,6 +38,7 @@ int main(int argc, char* argv[]) {
       ('l', "removal-limits=STRING", "arg", "", "Extra limits for subword removal LIMIT1,REMOVALS1,LIMIT2,REMOVALS2,..")
       ('m', "min-length=INT", "arg", "2", "Minimum length of subwords to remove, DEFAULT: 2")
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
+      ('s', "stop-list=STRING", "arg", "", "Text file containing subwords that should not be removed")
       ('t', "temp-vocabs=INT", "arg", "0", "Write out intermediate vocabularies for #V mod INT == 0")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
@@ -62,6 +63,13 @@ int main(int argc, char* argv[]) {
     if (config["removal-limits"].specified)
         parse_limits(config["removal-limits"].get_str(), removal_limits);
 
+    set<string> stoplist;
+    if (config["stop-list"].specified) {
+        vector<string> stopstrings;
+        Unigrams::read_sents(config["stop-list"].get_str(), stopstrings);
+        stoplist.insert(stopstrings.begin(), stopstrings.end());
+    }
+
     cerr << setprecision(15) << std::boolalpha;
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
     cerr << "parameters, initial vocabulary: " << vocab_fname << endl;
@@ -79,7 +87,8 @@ int main(int argc, char* argv[]) {
             limitc++;
         }
     }
-
+    if (stoplist.size() > 0)
+        cerr << "parameters, stoplist with " << stoplist.size() << " subwords" << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
     if (temp_vocab_interval > 0)
         cerr << "parameters, write temporary vocabularies whenever #V modulo " << temp_vocab_interval << " == 0" << endl;
@@ -127,7 +136,7 @@ int main(int argc, char* argv[]) {
     flt_type cutoff_value = 0.0;
     while (vocab.size() > cutoff_target) {
         cutoff_value += cutoff_increment;
-        gg.cutoff(freqs, cutoff_value, min_removal_length);
+        gg.cutoff(freqs, cutoff_value, stoplist, min_removal_length);
         cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
@@ -147,9 +156,9 @@ int main(int argc, char* argv[]) {
 
         cerr << "collecting candidate subwords" << endl;
         set<string> candidates;
-        gg.init_candidates_by_usage(words, vocab, candidates, n_candidates_per_iter/3, min_removal_length);
-        gg.init_candidates_by_random(vocab, candidates, (n_candidates_per_iter-candidates.size())/4, min_removal_length);
-        gg.init_candidates(vocab, candidates, n_candidates_per_iter, min_removal_length);
+        gg.init_candidates_by_usage(words, vocab, candidates, n_candidates_per_iter/3, stoplist, min_removal_length);
+        gg.init_candidates_by_random(vocab, candidates, (n_candidates_per_iter-candidates.size())/4, stoplist, min_removal_length);
+        gg.init_candidates(vocab, candidates, n_candidates_per_iter, stoplist, min_removal_length);
 
         cerr << "ranking candidate subwords (" << candidates.size() << ")" << endl;
         vector<pair<string, flt_type> > removal_scores;

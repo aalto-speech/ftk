@@ -253,18 +253,31 @@ Unigrams::freqs_to_logprobs(map<string, flt_type> &vocab)
 int
 Unigrams::cutoff(map<string, flt_type> &vocab,
                  flt_type limit,
+                 const set<string> &stoplist,
                  unsigned int min_length)
 {
     int nremovals = 0;
     auto iter = vocab.begin();
     while (iter != vocab.end()) {
-        if (iter->second <= limit && get_factor_length(iter->first, this->utf8) >= min_length) {
-            vocab.erase(iter++);
-            nremovals++;
+        if (iter->second <= limit
+            && get_factor_length(iter->first, this->utf8) >= min_length
+            && stoplist.find(iter->first) == stoplist.end()) {
+                vocab.erase(iter++);
+                nremovals++;
         }
         else ++iter;
     }
     return nremovals;
+}
+
+
+int
+Unigrams::cutoff(map<string, flt_type> &vocab,
+                 flt_type limit,
+                 unsigned int min_length)
+{
+    set<string> stoplist;
+    return cutoff(vocab, limit, min_length);
 }
 
 
@@ -274,6 +287,7 @@ int
 Unigrams::init_candidates(const map<string, flt_type> &vocab,
                           set<string> &candidates,
                           unsigned int n_candidates,
+                          const set<string> &stoplist,
                           unsigned int min_length)
 {
 
@@ -285,6 +299,7 @@ Unigrams::init_candidates(const map<string, flt_type> &vocab,
         const string &subword = it->first;
         if (get_factor_length(subword, this->utf8) < min_length) continue;
         if (candidates.find(subword) != candidates.end()) continue;
+        if (stoplist.find(subword) != stoplist.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
         if (candidates.size() >= n_candidates) break;
@@ -294,12 +309,24 @@ Unigrams::init_candidates(const map<string, flt_type> &vocab,
 }
 
 
+int
+Unigrams::init_candidates(const map<string, flt_type> &vocab,
+                          set<string> &candidates,
+                          unsigned int n_candidates,
+                          unsigned int min_length)
+{
+    set<string> stoplist;
+    return init_candidates(vocab, candidates, n_candidates, stoplist, min_length);
+}
+
+
 // Select n_candidates number of subwords in the vocabulary as removal candidates
 // by random
 int
 Unigrams::init_candidates_by_random(const map<string, flt_type> &vocab,
                                     set<string> &candidates,
                                     unsigned int n_candidates,
+                                    const set<string> &stoplist,
                                     unsigned int min_length)
 {
     vector<string> shuffled_vocab;
@@ -312,12 +339,24 @@ Unigrams::init_candidates_by_random(const map<string, flt_type> &vocab,
         const string &subword = *it;
         if (get_factor_length(subword, this->utf8) < min_length) continue;
         if (candidates.find(subword) != candidates.end()) continue;
+        if (stoplist.find(subword) != stoplist.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
         if (candidates.size() >= n_candidates) break;
     }
 
     return selected_candidates;
+}
+
+
+int
+Unigrams::init_candidates_by_random(const map<string, flt_type> &vocab,
+                                    set<string> &candidates,
+                                    unsigned int n_candidates,
+                                    unsigned int min_length)
+{
+    set<string> stoplist;
+    return init_candidates_by_random(vocab, candidates, n_candidates, stoplist, min_length);
 }
 
 
@@ -328,6 +367,7 @@ Unigrams::init_candidates_by_usage(const map<string, flt_type> &words,
                                    const map<string, flt_type> &vocab,
                                    set<string> &candidates,
                                    unsigned int n_candidates,
+                                   const set<string> &stoplist,
                                    unsigned int min_length,
                                    flt_type max_usage)
 {
@@ -347,12 +387,27 @@ Unigrams::init_candidates_by_usage(const map<string, flt_type> &words,
         if (it->second > max_usage) break;
         if (get_factor_length(subword, this->utf8) < min_length) continue;
         if (candidates.find(subword) != candidates.end()) continue;
+        if (stoplist.find(subword) != stoplist.end()) continue;
         candidates.insert(subword);
         selected_candidates++;
         if (candidates.size() >= n_candidates) break;
     }
 
     return selected_candidates;
+}
+
+
+int
+Unigrams::init_candidates_by_usage(const map<string, flt_type> &words,
+                                   const map<string, flt_type> &vocab,
+                                   set<string> &candidates,
+                                   unsigned int n_candidates,
+                                   unsigned int min_length,
+                                   flt_type max_usage)
+{
+    set<string> stoplist;
+    return init_candidates_by_usage(words, vocab, candidates, n_candidates,
+                                    stoplist, min_length, max_usage);
 }
 
 
