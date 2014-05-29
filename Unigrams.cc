@@ -162,12 +162,14 @@ Unigrams::resegment_words(const map<string, flt_type> &words,
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
 
         map<string, flt_type> stats;
-        ll += worditer->second * segf(vocab, worditer->first, stats, this->utf8);
+        flt_type curr_ll = worditer->second * segf(vocab, worditer->first, stats, this->utf8);
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
             continue;
         }
+
+        ll += curr_ll;
 
         // Update statistics
         for (auto it = stats.begin(); it != stats.end(); ++it)
@@ -199,12 +201,14 @@ Unigrams::resegment_sents(const vector<string> &sents,
     for (auto sent = sents.begin(); sent != sents.end(); ++sent) {
 
         map<string, flt_type> stats;
-        ll += segf(vocab, *sent, stats, this->utf8);
+        flt_type curr_ll = segf(vocab, *sent, stats, this->utf8);
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for sentence: " << *sent << endl;
-            exit(0);
+            continue;
         }
+
+        ll += curr_ll;
 
         // Update statistics
         for (auto it = stats.begin(); it != stats.end(); ++it)
@@ -436,13 +440,14 @@ Unigrams::rank_candidates(const map<string, flt_type> &words,
 
         map<string, flt_type> stats;
         flt_type orig_score = segf(ss_vocab, worditer->first, stats, this->utf8);
-        curr_ll += worditer->second * orig_score;
-        token_count += worditer->second * stats.size();
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for word: " << worditer->first << endl;
-            exit(0);
+            continue;
         }
+
+        curr_ll += worditer->second * orig_score;
+        token_count += worditer->second * stats.size();
 
         // Update statistics
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
@@ -509,13 +514,14 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
 
         map<string, flt_type> stats;
         flt_type orig_score = segf(ss_vocab, *sentiter, stats, this->utf8);
-        curr_ll += orig_score;
-        token_count += stats.size();
 
         if (stats.size() == 0) {
             cerr << "warning, no segmentation for sentence: " << *sentiter << endl;
-            exit(0);
+            continue;
         }
+
+        curr_ll += orig_score;
+        token_count += stats.size();
 
         // Update statistics
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
