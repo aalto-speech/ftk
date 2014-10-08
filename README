@@ -65,7 +65,7 @@ COUNT	WORD
 substrings -l 17 wordcounts.txt substrings.txt
 
 2a) Initialize substrings with a letter n-gram model
-cat substrings.txt | wlist2srilm.py > srilm.txt
+cat wordcounts.txt | wlist2srilm.py > srilm.txt
 ngram-count -text srilm.txt -text-has-weights -order 8 -lm srilm_gt_8g.arpa
 strscore srilm_gt_8g.arpa substrings.txt substrings.scored.txt
 
