@@ -204,5 +204,5 @@ int main(int argc, char* argv[]) {
     }
 
     Unigrams::write_vocab(out_vocab_fname, vocab);
-    exit(1);
+    exit(0);
 }

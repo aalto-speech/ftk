@@ -69,6 +69,6 @@ int main(int argc, char* argv[]) {
     infile.close();
     outfile.close();
 
-    exit(1);
+    exit(0);
 }
 

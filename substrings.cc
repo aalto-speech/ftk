@@ -91,6 +91,6 @@ int main(int argc, char* argv[]) {
     cerr << substr_count << " substrings in total up to length of " << maxlen << endl;
     write_substrings(outfname, sorted_substrs);
 
-    exit(1);
+    exit(0);
 }
 

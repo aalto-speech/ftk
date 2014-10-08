@@ -90,6 +90,6 @@ int main(int argc, char* argv[]) {
 
     Unigrams::write_vocab(vocab_out_fname, vocab);
 
-    exit(1);
+    exit(0);
 }
 

@@ -154,6 +154,6 @@ int main(int argc, char* argv[]) {
     Unigrams::write_vocab(out_fname_1, unigram_stats, true, 10);
     Bigrams::write_transitions(trans_stats, out_fname_2, true, 10);
 
-    exit(1);
+    exit(0);
 }
 

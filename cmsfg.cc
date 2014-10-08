@@ -98,5 +98,5 @@ int main(int argc, char* argv[]) {
     cerr << "nodes for separate fgs: " << num_separate_nodes << endl;
     cerr << "arcs for separate fgs: " << num_separate_arcs << endl;
 
-    exit(1);
+    exit(0);
 }

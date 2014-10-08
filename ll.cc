@@ -69,5 +69,5 @@ int main(int argc, char* argv[]) {
     flt_type ll = gg.resegment_words(words, vocab, freqs);
     cerr << "cost: " << ll << endl;
 
-    exit(1);
+    exit(0);
 }

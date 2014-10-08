@@ -139,5 +139,5 @@ int main(int argc, char* argv[]) {
     // Write transitions
     Bigrams::write_transitions(transitions, transition_fname);
 
-    exit(1);
+    exit(0);
 }
