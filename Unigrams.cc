@@ -9,6 +9,7 @@
 #include "EM.hh"
 #include "Unigrams.hh"
 #include "io.hh"
+#include "str.hh"
 
 using namespace std;
 
@@ -35,6 +36,32 @@ Unigrams::read_vocab(string fname,
         maxlen = max(maxlen, (int)get_factor_length(word, utf8));
     }
     vocabfile.close();
+
+    return vocab.size();
+}
+
+
+int
+Unigrams::read_corpus(string fname,
+                      map<string, flt_type> &vocab,
+                      int &maxlen,
+                      bool utf8)
+{
+    ifstream vocabfile(fname);
+    if (!vocabfile) return -1;
+
+    string line;
+    maxlen = -1;
+    while (getline(vocabfile, line)) {
+        line = str::cleaned(line);
+        vector<string> words = str::split(line, " \t", true);
+        for (auto wit = words.begin(); wit != words.end(); ++wit)
+            vocab[*wit] += 1.0;
+    }
+    vocabfile.close();
+
+    for (auto wit = vocab.begin(); wit != vocab.end(); ++wit)
+        maxlen = max(maxlen, (int)get_factor_length(wit->first, utf8));
 
     return vocab.size();
 }
@@ -144,22 +171,30 @@ Unigrams::iterate(const vector<string> &sents,
 flt_type
 Unigrams::resegment_words(const map<string, flt_type> &words,
                           const map<string, flt_type> &vocab,
-                          map<string, flt_type> &new_freqs)
+                          map<string, flt_type> &new_freqs,
+                          set<string> special_words)
 {
     StringSet stringset_vocab(vocab);
-    return resegment_words(words, stringset_vocab, new_freqs);
+    return resegment_words(words, stringset_vocab, new_freqs, special_words);
 }
 
 
 flt_type
 Unigrams::resegment_words(const map<string, flt_type> &words,
                           const StringSet &vocab,
-                          map<string, flt_type> &new_freqs)
+                          map<string, flt_type> &new_freqs,
+                          set<string> special_words)
 {
     new_freqs.clear();
     flt_type ll = 0.0;
 
     for (auto worditer = words.cbegin(); worditer != words.cend(); ++worditer) {
+
+        // Special symbols like <s> </s> etc. which should not be segmented
+        if (special_words.size() > 0 && special_words.find(worditer->first) != special_words.end()) {
+            new_freqs[worditer->first] += worditer->second;
+            continue;
+        }
 
         map<string, flt_type> stats;
         flt_type curr_ll = worditer->second * segf(vocab, worditer->first, stats, this->utf8);

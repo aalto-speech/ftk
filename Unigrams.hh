@@ -12,7 +12,8 @@ class Unigrams {
 public:
 
     Unigrams() { this->segf = viterbi; utf8=false; }
-    Unigrams(flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats, bool utf8)) : segf(segf) {}
+    Unigrams(flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats, bool utf8))
+        : segf(segf) { this->utf8 = utf8; }
 
     void set_segmentation_method(flt_type (*segf)(const StringSet &vocab, const std::string &sentence, std::map<std::string, flt_type> &stats, bool utf8)) {
         this->segf = segf;
@@ -24,6 +25,11 @@ public:
                           std::map<std::string, flt_type> &vocab,
                           int &maxlen,
                           bool utf8);
+
+    static int read_corpus(std::string fname,
+                           std::map<std::string, flt_type> &vocab,
+                           int &maxlen,
+                           bool utf8);
 
     static int write_vocab(std::string fname,
                            const std::map<std::string, flt_type> &vocab,
@@ -47,11 +53,13 @@ public:
 
     flt_type resegment_words(const std::map<std::string, flt_type> &words,
                              const std::map<std::string, flt_type> &vocab,
-                             std::map<std::string, flt_type> &new_freqs);
+                             std::map<std::string, flt_type> &new_freqs,
+                             std::set<std::string> special_words=std::set<std::string>());
 
     flt_type resegment_words(const std::map<std::string, flt_type> &words,
                              const StringSet &vocab,
-                             std::map<std::string, flt_type> &new_freqs);
+                             std::map<std::string, flt_type> &new_freqs,
+                             std::set<std::string> special_words=std::set<std::string>());
 
     flt_type resegment_sents(const std::vector<std::string> &sents,
                              const std::map<std::string, flt_type> &vocab,
