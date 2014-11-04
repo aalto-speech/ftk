@@ -11,21 +11,21 @@
 using namespace std;
 
 
-bool desc_sort(pair<string, int> i, pair<string, int> j) { return (i.second > j.second); }
+bool desc_sort(pair<string, float> i, pair<string, float> j) { return (i.second > j.second); }
 
 
 int get_substrings(const string &infname,
                    unsigned int maxlen,
-                   map<string,int> &substrs,
+                   map<string,float> &substrs,
                    bool utf8) {
 
     ifstream infile(infname);
     if (!infile) {
         cerr << "Something went wrong opening the input file." << endl;
-        exit(0);
+        exit(1);
     }
 
-    int count;
+    float count;
     string line, word;
 
     while (getline(infile, line)) {
@@ -50,12 +50,12 @@ int get_substrings(const string &infname,
 
 
 void write_substrings(const string &outfname,
-                      vector<pair<string, int> > &sorted_substrs)
+                      vector<pair<string, float> > &sorted_substrs)
 {
     ofstream outfile(outfname);
     if (!outfile) {
         cerr << "Something went wrong opening the output file." << endl;
-        exit(0);
+        exit(1);
     }
 
     for (auto it = sorted_substrs.cbegin(); it != sorted_substrs.cend(); ++it)
@@ -80,10 +80,10 @@ int main(int argc, char* argv[]) {
     unsigned int maxlen = config["max-length"].get_int();
     bool utf8_encoding = config["utf-8"].specified;
 
-    map<string, int> substrs;
+    map<string, float> substrs;
     int substr_count = get_substrings(infname, maxlen, substrs, utf8_encoding);
 
-    vector<pair<string, int> > sorted_substrs;
+    vector<pair<string, float> > sorted_substrs;
     for (auto it = substrs.cbegin(); it != substrs.cend(); ++it)
         sorted_substrs.push_back(make_pair(it->first, it->second));
     sort(sorted_substrs.begin(), sorted_substrs.end(), desc_sort);

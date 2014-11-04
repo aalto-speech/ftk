@@ -31,16 +31,16 @@ int main(int argc, char* argv[]) {
     ifstream infile(infname);
     if (!infile) {
         cerr << "Something went wrong opening the input file." << endl;
-        exit(0);
+        exit(1);
     }
 
     ofstream outfile(outfname);
     if (!outfile) {
         cerr << "Something went wrong opening the output file." << endl;
-        exit(0);
+        exit(1);
     }
 
-    int count;
+    float count;
     string line, lstr;
     vector<pair<string, float> > scores;
     float normalizer = SMALL_LP;
