@@ -77,9 +77,11 @@ int main(int argc, char* argv[]) {
             cerr << "something went wrong reading text corpus" << endl;
             exit(1);
         }
-        special_words.insert("<s>");
-        special_words.insert("</s>");
-        special_words.insert("<w>");
+        // Check for possible <s>, </s>, <w> etc.
+        for (auto wit=words.begin(); wit != words.end(); ++wit)
+            if (wit->first.find("<") != string::npos
+                && wit->first.find(">") != string::npos)
+                special_words.insert(wit->first);
     }
 
     cerr << "\t" << "wordlist size: " << words.size() << endl;
