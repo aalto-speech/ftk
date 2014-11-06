@@ -1,17 +1,7 @@
-#include <cmath>
-#include <cstdlib>
-#include <fstream>
 #include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
 
-#include "defs.hh"
 #include "conf.hh"
 #include "str.hh"
-#include "StringSet.hh"
-#include "EM.hh"
 #include "Unigrams.hh"
 
 using namespace std;

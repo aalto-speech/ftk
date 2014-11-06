@@ -1,13 +1,6 @@
-#include <map>
-#include <string>
-#include <vector>
-#include <cmath>
 
-#include "defs.hh"
 #include "emtest.hh"
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
 
 using namespace std;
 

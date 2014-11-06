@@ -1,19 +1,8 @@
-#include <algorithm>
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <map>
 #include <sstream>
 #include <cstring>
-#include <string>
-#include <vector>
 
-#include "defs.hh"
 #include "conf.hh"
 #include "io.hh"
-#include "StringSet.hh"
-#include "FactorGraph.hh"
-#include "EM.hh"
 #include "Unigrams.hh"
 #include "Bigrams.hh"
 

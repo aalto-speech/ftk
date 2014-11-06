@@ -1,10 +1,6 @@
-#include <string>
 
-#include "defs.hh"
 #include "sstest.hh"
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
 
 using namespace std;
 

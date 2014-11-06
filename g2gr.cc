@@ -1,17 +1,7 @@
-#include <algorithm>
-#include <cmath>
-#include <fstream>
 #include <iomanip>
-#include <iostream>
-#include <map>
 #include <sstream>
-#include <string>
-#include <vector>
 
-#include "defs.hh"
 #include "conf.hh"
-#include "StringSet.hh"
-#include "EM.hh"
 #include "Unigrams.hh"
 #include "Bigrams.hh"
 

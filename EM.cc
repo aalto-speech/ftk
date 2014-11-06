@@ -1,9 +1,5 @@
 #include <algorithm>
-#include <cstdlib>
-#include <set>
 #include <stdexcept>
-#include <queue>
-#include <iostream>
 
 #include "EM.hh"
 

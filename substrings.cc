@@ -1,9 +1,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <map>
 #include <sstream>
-#include <vector>
 
 #include "conf.hh"
 #include "defs.hh"

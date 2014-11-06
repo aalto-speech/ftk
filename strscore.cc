@@ -1,12 +1,8 @@
-#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <vector>
-#include <utility>
 
 #include "defs.hh"
-#include "io.hh"
 #include "conf.hh"
 #include "Ngram.hh"
 

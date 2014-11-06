@@ -1,12 +1,6 @@
 #include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <fstream>
 #include <iomanip>
-#include <iostream>
-#include <sstream>
 
-#include "EM.hh"
 #include "Unigrams.hh"
 #include "io.hh"
 #include "str.hh"

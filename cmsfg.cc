@@ -1,18 +1,6 @@
-#include <algorithm>
-#include <cmath>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <map>
 #include <sstream>
-#include <string>
-#include <vector>
 
-#include "defs.hh"
 #include "conf.hh"
-#include "StringSet.hh"
-#include "FactorGraph.hh"
-#include "MSFG.hh"
 #include "Unigrams.hh"
 
 using namespace std;
