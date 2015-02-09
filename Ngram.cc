@@ -26,6 +26,8 @@ Ngram::score(int node_idx, int word, double &score)
             node_idx = nodes[node_idx].backoff_node;
         }
     }
+
+    throw string("Problem in assigning an n-gram score.");
 }
 
 
@@ -47,18 +49,14 @@ Ngram::score(int node_idx, int word, float &score)
             node_idx = nodes[node_idx].backoff_node;
         }
     }
+
+    throw string("Problem in assigning an n-gram score.");
 }
 
 
 int
 Ngram::find_node(int node_idx, int word)
 {
-    if (node_idx == root_node) {
-        auto wit = root_node_next.find(word);
-        if (wit != root_node_next.end())
-            return wit->second;
-    }
-
     int first_arc = nodes[node_idx].first_arc;
     if (first_arc == -1) return -1;
     int last_arc = nodes[node_idx].last_arc+1;
@@ -220,9 +218,6 @@ Ngram::read_arpa_insert_order_to_tree(std::vector<NgramInfo> &order_ngrams,
         arc_target_nodes[curr_arc_idx] = curr_node_idx;
         nodes[curr_node_idx].prob = order_ngrams[ni].prob;
         nodes[curr_node_idx].backoff_prob = order_ngrams[ni].backoff_prob;
-
-        if (curr_order == 1)
-            root_node_next[order_ngrams[ni].ngram.back()] = curr_node_idx;
 
         int ctxt_start = 1;
         while (true) {
