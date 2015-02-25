@@ -52,11 +52,15 @@ public:
     FactorGraph(const std::string &text, const std::string &start_end_symbol,
                 const std::map<std::string, flt_type> &vocab, int maxlen, bool utf8=false);
     FactorGraph(const std::string &text, const std::string &start_end_symbol,
+                const std::set<std::string> &vocab, int maxlen, bool utf8=false);
+    FactorGraph(const std::string &text, const std::string &start_end_symbol,
                 const StringSet &vocab, bool utf8=false);
     ~FactorGraph();
 
     void set_text(const std::string &text, const std::string &start_end_symbol,
                   const std::map<std::string, flt_type> &vocab, int maxlen);
+    void set_text(const std::string &text, const std::string &start_end_symbol,
+                  const std::set<std::string> &vocab, int maxlen);
     void set_text(const std::string &text, const std::string &start_end_symbol,
                   const StringSet &vocab);
     void get_factor(const Node &node, std::string &nstr) const
@@ -89,6 +93,10 @@ private:
     // Constructor helpers
     void create_nodes(const std::string &text,
                       const std::map<std::string, flt_type> &vocab,
+                      unsigned int maxlen,
+                      std::vector<std::unordered_set<fg_node_idx_t> > &incoming);
+    void create_nodes(const std::string &text,
+                      const std::set<std::string> &vocab,
                       unsigned int maxlen,
                       std::vector<std::unordered_set<fg_node_idx_t> > &incoming);
     void create_nodes(const std::string &text,

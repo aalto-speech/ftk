@@ -5,9 +5,69 @@
 using namespace std;
 
 
+FactorGraph::FactorGraph(const string &text,
+                         const string &start_end_symbol,
+                         const map<string, flt_type> &vocab,
+                         int maxlen,
+                         bool utf8)
+{
+    this->utf8 = utf8;
+    set_text(text, start_end_symbol, vocab, maxlen);
+}
+
+
+FactorGraph::FactorGraph(const string &text,
+                         const string &start_end_symbol,
+                         const set<string> &vocab,
+                         int maxlen,
+                         bool utf8)
+{
+    this->utf8 = utf8;
+    set_text(text, start_end_symbol, vocab, maxlen);
+}
+
+
+FactorGraph::FactorGraph(const string &text,
+                         const string &start_end_symbol,
+                         const StringSet &vocab,
+                         bool utf8)
+{
+    this->utf8 = utf8;
+    set_text(text, start_end_symbol, vocab);
+}
+
+
 void
 FactorGraph::create_nodes(const string &text,
                           const map<string, flt_type> &vocab,
+                          unsigned int maxlen,
+                          vector<unordered_set<fg_node_idx_t> > &incoming)
+{
+    nodes.push_back(Node(0,0));
+
+    vector<unsigned int> char_positions;
+    get_character_positions(text, char_positions, utf8);
+
+    for (unsigned int i=0; i<char_positions.size()-1; i++) {
+
+        unsigned int start_pos = char_positions[i];
+        if (incoming[start_pos].size() == 0) continue;
+
+        for (unsigned int j=i; j<char_positions.size()-1 && (j-i < maxlen); j++) {
+            unsigned int end_pos = text.size();
+            if (j < (char_positions.size()-1)) end_pos = char_positions[j+1];
+            if (vocab.find(text.substr(start_pos, end_pos-start_pos)) != vocab.end()) {
+                nodes.push_back(Node(start_pos, end_pos-start_pos));
+                incoming[end_pos].insert(start_pos);
+            }
+        }
+    }
+}
+
+
+void
+FactorGraph::create_nodes(const string &text,
+                          const set<string> &vocab,
                           unsigned int maxlen,
                           vector<unordered_set<fg_node_idx_t> > &incoming)
 {
@@ -137,6 +197,32 @@ FactorGraph::set_text(const string &text,
 void
 FactorGraph::set_text(const string &text,
                       const string &start_end_symbol,
+                      const set<string> &vocab,
+                      int maxlen)
+{
+    this->text.assign(text);
+    this->start_end_symbol.assign(start_end_symbol);
+    if (text.length() == 0) return;
+
+    vector<unordered_set<fg_node_idx_t> > incoming(text.size()+1); // (pos in text, source pos)
+
+    // Create all nodes
+    incoming[0].insert(0);
+    create_nodes(text, vocab, maxlen, incoming);
+
+    // No possible segmentations
+    if (incoming[text.size()].size() == 0) {
+        nodes.clear();
+        return;
+    }
+
+    prune_and_create_arcs(incoming);
+}
+
+
+void
+FactorGraph::set_text(const string &text,
+                      const string &start_end_symbol,
                       const StringSet &vocab)
 {
     this->text.assign(text);
@@ -156,27 +242,6 @@ FactorGraph::set_text(const string &text,
     }
 
     prune_and_create_arcs(incoming);
-}
-
-
-FactorGraph::FactorGraph(const string &text,
-                         const string &start_end_symbol,
-                         const map<string, flt_type> &vocab,
-                         int maxlen,
-                         bool utf8)
-{
-    this->utf8 = utf8;
-    set_text(text, start_end_symbol, vocab, maxlen);
-}
-
-
-FactorGraph::FactorGraph(const string &text,
-                         const string &start_end_symbol,
-                         const StringSet &vocab,
-                         bool utf8)
-{
-    this->utf8 = utf8;
-    set_text(text, start_end_symbol, vocab);
 }
 
 

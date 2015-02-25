@@ -542,16 +542,7 @@ bool includes_path(vector<vector<string> > &all_paths, vector<string> &path) {
 // Test number of paths
 void emtest :: FactorGraphTestNumPaths (void)
 {
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     CPPUNIT_ASSERT_EQUAL( 7, fg.num_paths() );
@@ -562,16 +553,7 @@ void emtest :: FactorGraphTestNumPaths (void)
 // Enumerating paths
 void emtest :: FactorGraphTestGetList (void)
 {
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     vector<vector<string> > paths;
@@ -596,16 +578,7 @@ void emtest :: FactorGraphTestGetList (void)
 // Enumerating paths after removing some arcs
 void emtest :: FactorGraphTestRemoveArcs (void)
 {
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     vector<vector<string> > paths;
@@ -625,16 +598,7 @@ void emtest :: FactorGraphTestRemoveArcs (void)
 // Enumerating paths after removing some arcs
 void emtest :: FactorGraphTestRemoveArcs2 (void)
 {
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     vector<vector<string> > paths;
@@ -662,12 +626,10 @@ int transition_count(const transitions_t &transitions) {
 
 void emtest :: TransitionViterbiTest1 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a"); string str2("bc");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
+    set<string> vocab = {start_end,str1,str2};
+
+    transitions_t transitions;
     transitions[str1][str2] = -1.0;
     transitions[start_end][str1] = -1.0;
     transitions[str2][start_end] = -1.0;
@@ -685,15 +647,11 @@ void emtest :: TransitionViterbiTest1 (void)
 
 void emtest :: TransitionViterbiTest2 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a"); string str2("bc");
     string str3("ab"); string str4("c");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
-    vocab[str3] = -1.0;
-    vocab[str4] = -1.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4};
+
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[start_end][str3] = -1.0;
     transitions[str2][start_end] = -1.0;
@@ -715,11 +673,9 @@ void emtest :: TransitionViterbiTest2 (void)
 // No possible segmentation
 void emtest :: TransitionViterbiTest3 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("abc");
@@ -733,11 +689,9 @@ void emtest :: TransitionViterbiTest3 (void)
 // Empty string
 void emtest :: TransitionViterbiTest4 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("");
@@ -751,11 +705,10 @@ void emtest :: TransitionViterbiTest4 (void)
 // One character sentence
 void emtest :: TransitionViterbiTest5 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
+
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("a");
@@ -772,15 +725,11 @@ void emtest :: TransitionViterbiTest5 (void)
 // No segmentation
 void emtest :: TransitionViterbiTest6 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a"); string str2("b");
     string str3("c"); string str4("d");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
-    vocab[str3] = -1.0;
-    vocab[str4] = -1.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4};
+
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[str4][start_end] = -1.0;
     transitions[str1][str2] = -1.0;
@@ -797,21 +746,13 @@ void emtest :: TransitionViterbiTest6 (void)
 // Normal scenario with few variations
 void emtest :: TransitionViterbiTest7 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("k"); string str2("i");
     string str3("s"); string str4("a");
     string str5("l"); string str6("kissa");
     string str7("lla"); string str8("kissalla");
-    vocab[start_end] = 0.0;
-    vocab[str1] = 0.0;
-    vocab[str2] = 0.0;
-    vocab[str3] = 0.0;
-    vocab[str4] = 0.0;
-    vocab[str5] = 0.0;
-    vocab[str6] = 0.0;
-    vocab[str7] = 0.0;
-    vocab[str8] = 0.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4,str5,str6,str7,str8};
+
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[start_end][str6] = -1.0;
     transitions[start_end][str8] = -6.0;
@@ -856,21 +797,13 @@ void emtest :: TransitionViterbiTest7 (void)
 // Check that non-existing transitions are ok
 void emtest :: TransitionViterbiTest8 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("k"); string str2("i");
     string str3("s"); string str4("a");
     string str5("l"); string str6("kissa");
     string str7("lla"); string str8("kissalla");
-    vocab[start_end] = 0.0;
-    vocab[str1] = 0.0;
-    vocab[str2] = 0.0;
-    vocab[str3] = 0.0;
-    vocab[str4] = 0.0;
-    vocab[str5] = 0.0;
-    vocab[str6] = 0.0;
-    vocab[str7] = 0.0;
-    vocab[str8] = 0.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4,str5,str6,str7,str8};
+
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[start_end][str6] = -1.0;
     transitions[start_end][str8] = -6.0;
@@ -906,12 +839,9 @@ void emtest :: TransitionViterbiTest8 (void)
 
 void emtest :: TransitionForwardBackwardTest1 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a"); string str2("bc");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
+    set<string> vocab = {start_end,str1,str2};
+    transitions_t transitions;
     transitions[str1][str2] = -1.0;
     transitions[start_end][str1] = -1.0;
     transitions[str2][start_end] = -1.0;
@@ -928,15 +858,10 @@ void emtest :: TransitionForwardBackwardTest1 (void)
 
 void emtest :: TransitionForwardBackwardTest2 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a"); string str2("bc");
     string str3("ab"); string str4("c");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
-    vocab[str3] = -1.0;
-    vocab[str4] = -1.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4};
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[start_end][str3] = -1.0;
     transitions[str2][start_end] = -1.0;
@@ -963,11 +888,9 @@ void emtest :: TransitionForwardBackwardTest2 (void)
 // No possible segmentation
 void emtest :: TransitionForwardBackwardTest3 (void)
 {
-    map<string, flt_type> vocab;
     transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("abc");
@@ -981,11 +904,9 @@ void emtest :: TransitionForwardBackwardTest3 (void)
 // Empty string
 void emtest :: TransitionForwardBackwardTest4 (void)
 {
-    map<string, flt_type> vocab;
     transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("");
@@ -999,11 +920,9 @@ void emtest :: TransitionForwardBackwardTest4 (void)
 // One character sentence
 void emtest :: TransitionForwardBackwardTest5 (void)
 {
-    map<string, flt_type> vocab;
     transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("a");
@@ -1019,15 +938,10 @@ void emtest :: TransitionForwardBackwardTest5 (void)
 // No segmentation
 void emtest :: TransitionForwardBackwardTest6 (void)
 {
-    map<string, flt_type> vocab;
     transitions_t transitions;
     string str1("a"); string str2("b");
     string str3("c"); string str4("d");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
-    vocab[str3] = -1.0;
-    vocab[str4] = -1.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4};
     transitions[start_end][str1] = -1.0;
     transitions[str4][start_end] = -1.0;
     transitions[str1][str2] = -1.0;
@@ -1044,16 +958,9 @@ void emtest :: TransitionForwardBackwardTest6 (void)
 // Multiple paths
 void emtest :: TransitionForwardBackwardTest7 (void)
 {
-    map<string, flt_type> vocab;
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
     transitions_t transitions;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
     transitions[start_end]["k"] = log(0.5);
     transitions[start_end]["ki"] = log(0.25);
     transitions[start_end]["kis"] = log(0.4);
@@ -1096,16 +1003,9 @@ void emtest :: TransitionForwardBackwardTest7 (void)
 // Multiple paths, some non-scored arcs
 void emtest :: TransitionForwardBackwardTest8 (void)
 {
-    map<string, flt_type> vocab;
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
     transitions_t transitions;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
     transitions[start_end]["k"] = log(0.5);
     transitions[start_end]["ki"] = log(0.25);
     transitions[start_end]["kis"] = log(0.4);
@@ -1149,16 +1049,9 @@ void emtest :: TransitionForwardBackwardTest8 (void)
 // Multiple paths, remove some arcs
 void emtest :: TransitionForwardBackwardRemoveArcs (void)
 {
-    map<string, flt_type> vocab;
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
     transitions_t transitions;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
     transitions[start_end]["k"] = log(0.5);
     transitions[start_end]["ki"] = log(0.25);
     transitions[start_end]["kis"] = log(0.4);
@@ -1197,16 +1090,9 @@ void emtest :: TransitionForwardBackwardRemoveArcs (void)
 // Multiple paths, block a factor
 void emtest :: TransitionForwardBackwardBlockFactor (void)
 {
-    map<string, flt_type> vocab;
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
     transitions_t transitions;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
     transitions[start_end]["k"] = log(0.5);
     transitions[start_end]["ki"] = log(0.25);
     transitions[start_end]["kis"] = log(0.4);
@@ -1241,4 +1127,208 @@ void emtest :: TransitionForwardBackwardBlockFactor (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.15123313168915775, stats["ki"]["s"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.15123313168915775, stats[start_end]["ki"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( -2.00758610458, lp, DBL_ACCURACY );
+}
+
+
+// Normal scenario for one word, same data as in TransitionForwardBackwardTest7
+void emtest :: MSFGForwardBackwardTest1 (void)
+{
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
+    transitions_t transitions;
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    transitions_t stats;
+    flt_type lp = forward_backward(transitions, fg, stats);
+
+    MultiStringFactorGraph msfg(start_end);
+    msfg.add(fg);
+    msfg.update_factor_node_map();
+    assign_scores(transitions, msfg);
+    transitions_t msfg_stats;
+    flt_type msfg_lp = forward_backward(msfg, sentence, msfg_stats);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( lp, msfg_lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT( stats == msfg_stats );
+}
+
+
+// Normal scenario for one word, same data as in TransitionForwardBackwardTest7
+// Multiple words in the MSFG
+void emtest :: MSFGForwardBackwardTest2 (void)
+{
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
+    transitions_t transitions;
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
+
+    transitions["i"]["sa"] = log(0.8);
+    transitions["a"]["a"] = log(0.8);
+    transitions["ki"]["sa"] = log(0.8);
+    transitions["kis"]["a"] = log(0.8);
+    transitions["kissa"]["a"] = log(0.8);
+    transitions["sa"]["a"] = log(0.8);
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    transitions_t stats;
+    flt_type lp = forward_backward(transitions, fg, stats);
+
+    FactorGraph fg2("kisa", start_end, vocab, 5);
+    FactorGraph fg3("kissaa", start_end, vocab, 5);
+
+    MultiStringFactorGraph msfg(start_end);
+    msfg.add(fg);
+    msfg.add(fg2);
+    msfg.add(fg3);
+    msfg.update_factor_node_map();
+    assign_scores(transitions, msfg);
+    transitions_t msfg_stats;
+    flt_type msfg_lp = forward_backward(msfg, sentence, msfg_stats);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( lp, msfg_lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT( stats == msfg_stats );
+}
+
+
+// Normal scenario for one word, same data as in TransitionForwardBackwardTest7
+// Multiple words in the MSFG
+void emtest :: MSFGViterbiTest1(void)
+{
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
+    transitions_t transitions;
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
+
+    transitions["i"]["sa"] = log(0.8);
+    transitions["a"]["a"] = log(0.8);
+    transitions["ki"]["sa"] = log(0.8);
+    transitions["kis"]["a"] = log(0.8);
+    transitions["kissa"]["a"] = log(0.8);
+    transitions["sa"]["a"] = log(0.8);
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+
+    MultiStringFactorGraph msfg(start_end);
+    msfg.add(fg);
+    FactorGraph fg2("kisa", start_end, vocab, 5);
+    msfg.add(fg2);
+    FactorGraph fg3("kissaa", start_end, vocab, 5);
+    msfg.add(fg3);
+    msfg.update_factor_node_map();
+    assign_scores(transitions, msfg);
+
+    transitions_t stats;
+    vector<string> viterbi_path;
+    flt_type lp = viterbi(transitions, fg, viterbi_path);
+    lp = viterbi(transitions, fg, stats);
+
+    transitions_t msfg_stats;
+    vector<string> msfg_viterbi_path;
+    flt_type msfg_lp = viterbi(msfg, sentence, msfg_viterbi_path);
+    msfg_lp = viterbi(msfg, sentence, msfg_stats);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( lp, msfg_lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT( viterbi_path == msfg_viterbi_path );
+    CPPUNIT_ASSERT( stats == msfg_stats );
+}
+
+
+// Viterbi stats for all words in the MSFG
+void emtest :: MSFGViterbiTest2(void)
+{
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
+    transitions_t transitions;
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
+
+    transitions["i"]["sa"] = log(0.8);
+    transitions["a"]["a"] = log(0.8);
+    transitions["ki"]["sa"] = log(0.8);
+    transitions["kis"]["a"] = log(0.8);
+    transitions["kissa"]["a"] = log(0.8);
+    transitions["sa"]["a"] = log(0.8);
+
+    map<string, flt_type> word_freqs = {{"kissa", 1.0}, {"kisa", 2.0}, {"kissaa", 3.0}};
+
+    MultiStringFactorGraph msfg(start_end);
+    FactorGraph fg("kissa", start_end, vocab, 5);
+    msfg.add(fg);
+    FactorGraph fg2("kisa", start_end, vocab, 5);
+    msfg.add(fg2);
+    FactorGraph fg3("kissaa", start_end, vocab, 5);
+    msfg.add(fg3);
+    msfg.update_factor_node_map();
+    assign_scores(transitions, msfg);
+
+    transitions_t stats;
+    flt_type lp = viterbi(transitions, fg, stats, word_freqs["kissa"]);
+    flt_type lp2 = viterbi(transitions, fg2, stats, word_freqs["kisa"]);
+    flt_type lp3 = viterbi(transitions, fg3, stats, word_freqs["kissaa"]);
+    flt_type total_lp = word_freqs["kissa"]*lp + word_freqs["kisa"]*lp2 + word_freqs["kissaa"]*lp3;
+
+    transitions_t msfg_stats;
+    flt_type msfg_lp = viterbi(msfg, word_freqs, msfg_stats);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( total_lp, msfg_lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT( stats == msfg_stats );
 }
