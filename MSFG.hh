@@ -72,6 +72,7 @@ public:
     void prune_unreachable();
     void write(const std::string &filename) const;
     void read(const std::string &filename);
+    void update_factor_node_map();
     void print_dot_digraph(std::ostream &fstr = std::cout);
 
     std::string start_end_symbol;

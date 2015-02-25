@@ -320,6 +320,17 @@ MultiStringFactorGraph::read(const std::string &filename)
 
 
 void
+MultiStringFactorGraph::update_factor_node_map()
+{
+    factor_node_map.clear();
+    for (msfg_node_idx_t idx=0; idx < nodes.size(); idx++) {
+        Node &nd = nodes[idx];
+        factor_node_map[nd.factor].push_back(idx);
+    }
+}
+
+
+void
 MultiStringFactorGraph::collect_arcs(vector<Arc*> &arcs) const
 {
     for (auto ndit = nodes.begin(); ndit != nodes.end(); ++ndit)
