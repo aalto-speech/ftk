@@ -1128,3 +1128,42 @@ void emtest :: TransitionForwardBackwardBlockFactor (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( 0.15123313168915775, stats[start_end]["ki"], DBL_ACCURACY );
     CPPUNIT_ASSERT_DOUBLES_EQUAL( -2.00758610458, lp, DBL_ACCURACY );
 }
+
+
+// Normal scenario for one word, same data as in TransitionForwardBackwardTest7
+void emtest :: MSFGForwardBackwardTest1 (void)
+{
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
+    transitions_t transitions;
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    transitions_t stats;
+    flt_type lp = forward_backward(transitions, fg, stats);
+
+    MultiStringFactorGraph msfg(start_end);
+    msfg.add(fg);
+    msfg.update_factor_node_map();
+    assign_scores(transitions, msfg);
+    transitions_t msfg_stats;
+    flt_type msfg_lp = forward_backward(msfg, sentence, msfg_stats);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( lp, msfg_lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT( stats == msfg_stats );
+}
