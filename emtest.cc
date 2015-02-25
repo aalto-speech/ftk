@@ -1279,8 +1279,7 @@ void emtest :: MSFGViterbiTest1(void)
 }
 
 
-// Normal scenario for one word, same data as in TransitionForwardBackwardTest7
-// Multiple words in the MSFG
+// Viterbi stats for all words in the MSFG
 void emtest :: MSFGViterbiTest2(void)
 {
     set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
