@@ -19,20 +19,8 @@ void msfgtest :: tearDown (void)
 void msfgtest :: MultiStringFactorGraphTest1 (void)
 {
     MultiStringFactorGraph msfg(start_end);
-
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-    vocab["lle"] = 0.0;
-    vocab["kin"] = 0.0;
-    vocab["kala"] = 0.0;
-
+    set<string> vocab = {"k", "i", "s", "a", "sa", "ki", "kis", "kissa",
+                         "lle", "kin", "kala"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     string sentence2("kissallekin");
@@ -53,20 +41,8 @@ void msfgtest :: MultiStringFactorGraphTest1 (void)
 void msfgtest :: MultiStringFactorGraphTest2 (void)
 {
     MultiStringFactorGraph msfg(start_end);
-
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-    vocab["lle"] = 0.0;
-    vocab["kin"] = 0.0;
-    vocab["kala"] = 0.0;
-
+    set<string> vocab = {"k", "i", "s", "a", "sa", "ki", "kis", "kissa",
+                         "lle", "kin", "kala"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     string sentence2("kissallekin");
@@ -87,21 +63,8 @@ void msfgtest :: MultiStringFactorGraphTest2 (void)
 void msfgtest :: MultiStringFactorGraphTest3 (void)
 {
     MultiStringFactorGraph msfg(start_end);
-
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["la"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-    vocab["lle"] = 0.0;
-    vocab["kin"] = 0.0;
-    vocab["kala"] = 0.0;
-
+    set<string> vocab = {"k", "i", "s", "a", "sa", "ki", "la", "kis", "kissa",
+                         "lle", "kin", "kala"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     string sentence2("kala");
@@ -116,19 +79,7 @@ void msfgtest :: MultiStringFactorGraphTest3 (void)
 void msfgtest :: MultiStringFactorGraphTest4 (void)
 {
     MultiStringFactorGraph msfg(start_end);
-
-    map<string, flt_type> vocab;
-    vocab["aarian"] = 0.0;
-    vocab["aari"] = 0.0;
-    vocab["an"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["ari"] = 0.0;
-    vocab["ri"] = 0.0;
-    vocab["ar"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["n"] = 0.0;
-    vocab["r"] = 0.0;
-
+    set<string> vocab = {"aarian", "aari", "an", "a", "ari", "ri", "ar", "i", "n", "r"};
     string word("aarian");
     FactorGraph fg(word, start_end, vocab, 6);
     msfg.add(fg);
