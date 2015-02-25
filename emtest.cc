@@ -542,16 +542,7 @@ bool includes_path(vector<vector<string> > &all_paths, vector<string> &path) {
 // Test number of paths
 void emtest :: FactorGraphTestNumPaths (void)
 {
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     CPPUNIT_ASSERT_EQUAL( 7, fg.num_paths() );
@@ -562,16 +553,7 @@ void emtest :: FactorGraphTestNumPaths (void)
 // Enumerating paths
 void emtest :: FactorGraphTestGetList (void)
 {
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     vector<vector<string> > paths;
@@ -596,16 +578,7 @@ void emtest :: FactorGraphTestGetList (void)
 // Enumerating paths after removing some arcs
 void emtest :: FactorGraphTestRemoveArcs (void)
 {
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     vector<vector<string> > paths;
@@ -625,16 +598,7 @@ void emtest :: FactorGraphTestRemoveArcs (void)
 // Enumerating paths after removing some arcs
 void emtest :: FactorGraphTestRemoveArcs2 (void)
 {
-    map<string, flt_type> vocab;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
-
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
     vector<vector<string> > paths;
@@ -662,12 +626,10 @@ int transition_count(const transitions_t &transitions) {
 
 void emtest :: TransitionViterbiTest1 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a"); string str2("bc");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
+    set<string> vocab = {start_end,str1,str2};
+
+    transitions_t transitions;
     transitions[str1][str2] = -1.0;
     transitions[start_end][str1] = -1.0;
     transitions[str2][start_end] = -1.0;
@@ -685,15 +647,11 @@ void emtest :: TransitionViterbiTest1 (void)
 
 void emtest :: TransitionViterbiTest2 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a"); string str2("bc");
     string str3("ab"); string str4("c");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
-    vocab[str3] = -1.0;
-    vocab[str4] = -1.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4};
+
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[start_end][str3] = -1.0;
     transitions[str2][start_end] = -1.0;
@@ -715,11 +673,9 @@ void emtest :: TransitionViterbiTest2 (void)
 // No possible segmentation
 void emtest :: TransitionViterbiTest3 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("abc");
@@ -733,11 +689,9 @@ void emtest :: TransitionViterbiTest3 (void)
 // Empty string
 void emtest :: TransitionViterbiTest4 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("");
@@ -751,11 +705,10 @@ void emtest :: TransitionViterbiTest4 (void)
 // One character sentence
 void emtest :: TransitionViterbiTest5 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
+
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("a");
@@ -772,15 +725,11 @@ void emtest :: TransitionViterbiTest5 (void)
 // No segmentation
 void emtest :: TransitionViterbiTest6 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a"); string str2("b");
     string str3("c"); string str4("d");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
-    vocab[str3] = -1.0;
-    vocab[str4] = -1.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4};
+
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[str4][start_end] = -1.0;
     transitions[str1][str2] = -1.0;
@@ -797,21 +746,13 @@ void emtest :: TransitionViterbiTest6 (void)
 // Normal scenario with few variations
 void emtest :: TransitionViterbiTest7 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("k"); string str2("i");
     string str3("s"); string str4("a");
     string str5("l"); string str6("kissa");
     string str7("lla"); string str8("kissalla");
-    vocab[start_end] = 0.0;
-    vocab[str1] = 0.0;
-    vocab[str2] = 0.0;
-    vocab[str3] = 0.0;
-    vocab[str4] = 0.0;
-    vocab[str5] = 0.0;
-    vocab[str6] = 0.0;
-    vocab[str7] = 0.0;
-    vocab[str8] = 0.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4,str5,str6,str7,str8};
+
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[start_end][str6] = -1.0;
     transitions[start_end][str8] = -6.0;
@@ -856,21 +797,13 @@ void emtest :: TransitionViterbiTest7 (void)
 // Check that non-existing transitions are ok
 void emtest :: TransitionViterbiTest8 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("k"); string str2("i");
     string str3("s"); string str4("a");
     string str5("l"); string str6("kissa");
     string str7("lla"); string str8("kissalla");
-    vocab[start_end] = 0.0;
-    vocab[str1] = 0.0;
-    vocab[str2] = 0.0;
-    vocab[str3] = 0.0;
-    vocab[str4] = 0.0;
-    vocab[str5] = 0.0;
-    vocab[str6] = 0.0;
-    vocab[str7] = 0.0;
-    vocab[str8] = 0.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4,str5,str6,str7,str8};
+
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[start_end][str6] = -1.0;
     transitions[start_end][str8] = -6.0;
@@ -906,12 +839,9 @@ void emtest :: TransitionViterbiTest8 (void)
 
 void emtest :: TransitionForwardBackwardTest1 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a"); string str2("bc");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
+    set<string> vocab = {start_end,str1,str2};
+    transitions_t transitions;
     transitions[str1][str2] = -1.0;
     transitions[start_end][str1] = -1.0;
     transitions[str2][start_end] = -1.0;
@@ -928,15 +858,10 @@ void emtest :: TransitionForwardBackwardTest1 (void)
 
 void emtest :: TransitionForwardBackwardTest2 (void)
 {
-    map<string, flt_type> vocab;
-    transitions_t transitions;
     string str1("a"); string str2("bc");
     string str3("ab"); string str4("c");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
-    vocab[str3] = -1.0;
-    vocab[str4] = -1.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4};
+    transitions_t transitions;
     transitions[start_end][str1] = -1.0;
     transitions[start_end][str3] = -1.0;
     transitions[str2][start_end] = -1.0;
@@ -963,11 +888,9 @@ void emtest :: TransitionForwardBackwardTest2 (void)
 // No possible segmentation
 void emtest :: TransitionForwardBackwardTest3 (void)
 {
-    map<string, flt_type> vocab;
     transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("abc");
@@ -981,11 +904,9 @@ void emtest :: TransitionForwardBackwardTest3 (void)
 // Empty string
 void emtest :: TransitionForwardBackwardTest4 (void)
 {
-    map<string, flt_type> vocab;
     transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("");
@@ -999,11 +920,9 @@ void emtest :: TransitionForwardBackwardTest4 (void)
 // One character sentence
 void emtest :: TransitionForwardBackwardTest5 (void)
 {
-    map<string, flt_type> vocab;
     transitions_t transitions;
     string str1("a");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
+    set<string> vocab = {start_end,str1};
     transitions[start_end][str1] = -1.0;
     transitions[str1][start_end] = -1.0;
     string sentence("a");
@@ -1019,15 +938,10 @@ void emtest :: TransitionForwardBackwardTest5 (void)
 // No segmentation
 void emtest :: TransitionForwardBackwardTest6 (void)
 {
-    map<string, flt_type> vocab;
     transitions_t transitions;
     string str1("a"); string str2("b");
     string str3("c"); string str4("d");
-    vocab[start_end] = -1.0;
-    vocab[str1] = -1.0;
-    vocab[str2] = -1.0;
-    vocab[str3] = -1.0;
-    vocab[str4] = -1.0;
+    set<string> vocab = {start_end,str1,str2,str3,str4};
     transitions[start_end][str1] = -1.0;
     transitions[str4][start_end] = -1.0;
     transitions[str1][str2] = -1.0;
@@ -1044,16 +958,9 @@ void emtest :: TransitionForwardBackwardTest6 (void)
 // Multiple paths
 void emtest :: TransitionForwardBackwardTest7 (void)
 {
-    map<string, flt_type> vocab;
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
     transitions_t transitions;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
     transitions[start_end]["k"] = log(0.5);
     transitions[start_end]["ki"] = log(0.25);
     transitions[start_end]["kis"] = log(0.4);
@@ -1096,16 +1003,9 @@ void emtest :: TransitionForwardBackwardTest7 (void)
 // Multiple paths, some non-scored arcs
 void emtest :: TransitionForwardBackwardTest8 (void)
 {
-    map<string, flt_type> vocab;
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
     transitions_t transitions;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
     transitions[start_end]["k"] = log(0.5);
     transitions[start_end]["ki"] = log(0.25);
     transitions[start_end]["kis"] = log(0.4);
@@ -1149,16 +1049,9 @@ void emtest :: TransitionForwardBackwardTest8 (void)
 // Multiple paths, remove some arcs
 void emtest :: TransitionForwardBackwardRemoveArcs (void)
 {
-    map<string, flt_type> vocab;
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
     transitions_t transitions;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
     transitions[start_end]["k"] = log(0.5);
     transitions[start_end]["ki"] = log(0.25);
     transitions[start_end]["kis"] = log(0.4);
@@ -1197,16 +1090,9 @@ void emtest :: TransitionForwardBackwardRemoveArcs (void)
 // Multiple paths, block a factor
 void emtest :: TransitionForwardBackwardBlockFactor (void)
 {
-    map<string, flt_type> vocab;
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
     transitions_t transitions;
-    vocab["k"] = 0.0;
-    vocab["i"] = 0.0;
-    vocab["a"] = 0.0;
-    vocab["sa"] = 0.0;
-    vocab["s"] = 0.0;
-    vocab["ki"] = 0.0;
-    vocab["kis"] = 0.0;
-    vocab["kissa"] = 0.0;
     transitions[start_end]["k"] = log(0.5);
     transitions[start_end]["ki"] = log(0.25);
     transitions[start_end]["kis"] = log(0.4);
