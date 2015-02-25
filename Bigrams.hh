@@ -84,7 +84,8 @@ static void restore_string(transitions_t &transitions,
                            const transitions_t &changes);
 
 static flt_type disable_transition(const std::map<std::string, flt_type> &unigram_stats,
-                                   const transitions_t &to_remove,
+                                   std::string src,
+                                   std::string tgt,
                                    transitions_t &transitions,
                                    transitions_t &changes);
 
@@ -101,11 +102,11 @@ static void get_backpointers(const MultiStringFactorGraph &msfg,
 static void remove_transitions(std::vector<std::string> &to_remove,
                                transitions_t &transitions);
 
-static int init_removal_candidates(unsigned int n_candidates,
+static int init_candidate_subwords(unsigned int n_candidates,
                                    const std::map<std::string, flt_type> &unigram_stats,
                                    std::map<std::string, flt_type> &candidates);
 
-static void rank_removal_candidates(const std::map<std::string, flt_type> &words,
+static void rank_candidate_subwords(const std::map<std::string, flt_type> &words,
                                     const MultiStringFactorGraph &msfg,
                                     const std::map<std::string, flt_type> &unigram_stats,
                                     transitions_t &transitions,

@@ -101,11 +101,11 @@ int main(int argc, char* argv[]) {
         // Get removal candidates based on unigram stats
         cerr << "\tinitializing removals .." << endl;
         map<string, flt_type> candidates;
-        Bigrams::init_removal_candidates(n_candidates_per_iter, unigram_stats, candidates);
+        Bigrams::init_candidate_subwords(n_candidates_per_iter, unigram_stats, candidates);
 
         // Score all candidates
         cerr << "\tranking removals .." << endl;
-        Bigrams::rank_removal_candidates(words, msfg, unigram_stats, transitions, candidates);
+        Bigrams::rank_candidate_subwords(words, msfg, unigram_stats, transitions, candidates);
 
         // Remove least significant subwords
         vector<pair<string, flt_type> > sorted_scores;

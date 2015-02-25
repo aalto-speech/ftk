@@ -99,10 +99,10 @@ int main(int argc, char* argv[]) {
         map<string, flt_type> removals;
         if (iteration == 1 && transitions.size() % 1000 != 0) {
             int first_iter_removals = transitions.size() % 1000;
-            Bigrams::init_removal_candidates(first_iter_removals, unigram_stats, removals);
+            Bigrams::init_candidate_subwords(first_iter_removals, unigram_stats, removals);
         }
         else
-            Bigrams::init_removal_candidates(removals_per_iter, unigram_stats, removals);
+            Bigrams::init_candidate_subwords(removals_per_iter, unigram_stats, removals);
 
         vector<string> to_remove;
         for (auto it = removals.begin(); it != removals.end(); ++it) {

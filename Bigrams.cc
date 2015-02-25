@@ -396,26 +396,20 @@ Bigrams::disable_string(const transitions_t &reverse_transitions,
 
 flt_type
 Bigrams::disable_transition(const map<string, flt_type> &unigram_stats,
-                            const transitions_t &to_remove,
+                            string src,
+                            string tgt,
                             transitions_t &transitions,
                             transitions_t &changes)
 {
-    /*
     changes.clear();
 
-    auto srcit = to_remove.cbegin();
-    string src(srcit->first());
-    auto tgtit = srcit->second->begin();
-    string tgt = *(tgtit->first());
-
-
-    changes[src][tgt] = transitions[src][tgt];
-    flt_type renormalizer = sub_log_domain_probs(0, transitions[src[tgt]]);
+    flt_type renormalizer = sub_log_domain_probs(0, transitions[src][tgt]);
     flt_type ll_diff = 0.0;
+    changes[src][tgt] = transitions[src][tgt];
     transitions[src][tgt] = SMALL_LP;
 
     for (auto it = transitions[src].begin(); it != transitions[src].end(); ++it) {
-        if (it->first != text) {
+        if (it->first != tgt) {
             flt_type count = unigram_stats.at(src) * exp(it->second);
             changes[src][it->first] = it->second;
             ll_diff -= count * it->second;
@@ -425,8 +419,6 @@ Bigrams::disable_transition(const map<string, flt_type> &unigram_stats,
     }
 
     return ll_diff;
-    */
-    return 0.0;
 }
 
 
@@ -458,7 +450,7 @@ Bigrams::get_backpointers(const MultiStringFactorGraph &msfg,
 
 
 int
-Bigrams::init_removal_candidates(unsigned int n_candidates,
+Bigrams::init_candidate_subwords(unsigned int n_candidates,
                                  const map<string, flt_type> &unigram_stats,
                                  map<string, flt_type> &candidates)
 {
@@ -476,7 +468,7 @@ Bigrams::init_removal_candidates(unsigned int n_candidates,
 
 
 void
-Bigrams::rank_removal_candidates(const map<string, flt_type> &words,
+Bigrams::rank_candidate_subwords(const map<string, flt_type> &words,
                                  const MultiStringFactorGraph &msfg,
                                  const map<string, flt_type> &unigram_stats,
                                  transitions_t &transitions,
