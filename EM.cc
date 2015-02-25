@@ -325,14 +325,14 @@ flt_type viterbi(const transitions_t &transitions,
 
 flt_type viterbi(const transitions_t &transitions,
                  FactorGraph &text,
-                 transitions_t &stats)
+                 transitions_t &stats,
+                 flt_type multiplier)
 {
-    stats.clear();
     vector<string> best_path;
     flt_type lp = viterbi(transitions, text, best_path, true);
     if (best_path.size() < 2) return MIN_FLOAT;
     for (unsigned int i=1; i<best_path.size(); i++)
-        stats[best_path[i-1]][best_path[i]] += 1.0;
+        stats[best_path[i-1]][best_path[i]] += multiplier;
     return lp;
 }
 
@@ -795,8 +795,8 @@ backward(const MultiStringFactorGraph &msfg,
 
 flt_type
 forward_backward(const MultiStringFactorGraph &msfg,
-                 transitions_t &stats,
-                 map<string, flt_type> &word_freqs)
+                 const map<string, flt_type> &word_freqs,
+                 transitions_t &stats)
 {
     if (msfg.nodes.size() == 0) return MIN_FLOAT;
 
@@ -807,7 +807,7 @@ forward_backward(const MultiStringFactorGraph &msfg,
     flt_type total_lp = 0.0;
     for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
         flt_type lp = backward(msfg, it->first, fw, stats);
-        total_lp += word_freqs[it->first] * lp;
+        total_lp += word_freqs.at(it->first) * lp;
     }
 
     return total_lp;
@@ -877,12 +877,28 @@ viterbi(const MultiStringFactorGraph &msfg,
 flt_type
 viterbi(const MultiStringFactorGraph &msfg,
         const string &text,
-        transitions_t &stats)
+        transitions_t &stats,
+        flt_type multiplier)
 {
-    stats.clear();
     vector<string> best_path;
     flt_type lp = viterbi(msfg, text, best_path);
     for (int i=1; i<best_path.size(); i++)
-        stats[best_path[i-1]][best_path[i]] += 1.0;
+        stats[best_path[i-1]][best_path[i]] += multiplier;
     return lp;
+}
+
+
+flt_type viterbi(const MultiStringFactorGraph &msfg,
+                 const map<string, flt_type> &word_freqs,
+                 transitions_t &stats)
+{
+    if (msfg.nodes.size() == 0) return MIN_FLOAT;
+
+    flt_type total_lp = 0.0;
+    for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
+        flt_type lp = viterbi(msfg, it->first, stats, word_freqs.at(it->first));
+        total_lp += word_freqs.at(it->first) * lp;
+    }
+
+    return total_lp;
 }

@@ -83,7 +83,8 @@ flt_type viterbi(const transitions_t &transitions,
 
 flt_type viterbi(const transitions_t &transitions,
                  FactorGraph &text,
-                 transitions_t &stats);
+                 transitions_t &stats,
+                 flt_type multiplier=1.0);
 
 void forward(const transitions_t &transitions,
              FactorGraph &text,
@@ -180,8 +181,8 @@ flt_type backward(const MultiStringFactorGraph &msfg,
 
 // Forward-backward for all strings
 flt_type forward_backward(const MultiStringFactorGraph &msfg,
-                          transitions_t &stats,
-                          std::map<std::string, flt_type> &word_freqs);
+                          const std::map<std::string, flt_type> &word_freqs,
+                          transitions_t &stats);
 
 // Forward-backward for one string
 flt_type forward_backward(const MultiStringFactorGraph &msfg,
@@ -196,6 +197,12 @@ flt_type viterbi(const MultiStringFactorGraph &msfg,
 // Viterbi stats for one string
 flt_type viterbi(const MultiStringFactorGraph &msfg,
                  const std::string &text,
+                 transitions_t &stats,
+                 flt_type multiplier=1.0);
+
+// Viterbi for all strings
+flt_type viterbi(const MultiStringFactorGraph &msfg,
+                 const std::map<std::string, flt_type> &word_freqs,
                  transitions_t &stats);
 
 #endif /* EM */
