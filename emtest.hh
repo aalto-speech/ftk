@@ -54,6 +54,7 @@ class emtest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (TransitionForwardBackwardRemoveArcs);
     CPPUNIT_TEST (TransitionForwardBackwardBlockFactor);
     CPPUNIT_TEST (MSFGForwardBackwardTest1);
+    CPPUNIT_TEST (MSFGForwardBackwardTest2);
     CPPUNIT_TEST_SUITE_END ();
 
     public:
@@ -112,6 +113,7 @@ class emtest : public CPPUNIT_NS :: TestFixture
         void TransitionForwardBackwardRemoveArcs(void);
         void TransitionForwardBackwardBlockFactor(void);
         void MSFGForwardBackwardTest1(void);
+        void MSFGForwardBackwardTest2(void);
 };
 
 #endif

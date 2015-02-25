@@ -1167,3 +1167,66 @@ void emtest :: MSFGForwardBackwardTest1 (void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( lp, msfg_lp, DBL_ACCURACY );
     CPPUNIT_ASSERT( stats == msfg_stats );
 }
+
+
+// Normal scenario for one word, same data as in TransitionForwardBackwardTest7
+// Multiple words in the MSFG
+void emtest :: MSFGForwardBackwardTest2 (void)
+{
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
+    transitions_t transitions;
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
+
+    transitions["a"]["k"] = log(0.8);
+    transitions["a"]["ki"] = log(0.8);
+    transitions["a"]["kis"] = log(0.8);
+    transitions["a"]["kissa"] = log(0.8);
+    transitions["i"]["n"] = log(0.8);
+    transitions["i"]["sa"] = log(0.8);
+    transitions["ki"]["n"] = log(0.8);
+    transitions["ki"]["sa"] = log(0.8);
+    transitions["kis"]["a"] = log(0.8);
+    transitions["kis"]["s"] = log(0.8);
+    transitions["sa"]["k"] = log(0.8);
+    transitions["sa"]["ki"] = log(0.8);
+    transitions["sa"]["kis"] = log(0.8);
+    transitions["sa"]["kissa"] = log(0.8);
+    transitions["kissa"]["k"] = log(0.8);
+    transitions["kissa"]["ki"] = log(0.8);
+
+    string sentence("kissa");
+    FactorGraph fg(sentence, start_end, vocab, 5);
+    transitions_t stats;
+    flt_type lp = forward_backward(transitions, fg, stats);
+
+    FactorGraph fg2("kisa", start_end, vocab, 5);
+    FactorGraph fg3("sakissakin", start_end, vocab, 5);
+
+    MultiStringFactorGraph msfg(start_end);
+    msfg.add(fg);
+    msfg.add(fg2);
+    msfg.add(fg3);
+    msfg.update_factor_node_map();
+    assign_scores(transitions, msfg);
+    transitions_t msfg_stats;
+    flt_type msfg_lp = forward_backward(msfg, sentence, msfg_stats);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( lp, msfg_lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT( stats == msfg_stats );
+}
+
