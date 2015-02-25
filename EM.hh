@@ -193,5 +193,9 @@ flt_type viterbi(const MultiStringFactorGraph &msfg,
                  const std::string &text,
                  std::vector<std::string> &best_path);
 
+// Viterbi stats for one string
+flt_type viterbi(const MultiStringFactorGraph &msfg,
+                 const std::string &text,
+                 transitions_t &stats);
 
 #endif /* EM */

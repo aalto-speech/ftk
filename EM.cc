@@ -872,3 +872,17 @@ viterbi(const MultiStringFactorGraph &msfg,
 
     return scores.at(0);
 }
+
+
+flt_type
+viterbi(const MultiStringFactorGraph &msfg,
+        const string &text,
+        transitions_t &stats)
+{
+    stats.clear();
+    vector<string> best_path;
+    flt_type lp = viterbi(msfg, text, best_path);
+    for (int i=1; i<best_path.size(); i++)
+        stats[best_path[i-1]][best_path[i]] += 1.0;
+    return lp;
+}

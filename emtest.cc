@@ -1253,25 +1253,28 @@ void emtest :: MSFGViterbiTest1(void)
 
     string sentence("kissa");
     FactorGraph fg(sentence, start_end, vocab, 5);
-    transitions_t stats;
-    vector<string> viterbi_path;
-    flt_type lp = viterbi(transitions, fg, viterbi_path);
-
-    FactorGraph fg2("kisa", start_end, vocab, 5);
-    FactorGraph fg3("kissaa", start_end, vocab, 5);
 
     MultiStringFactorGraph msfg(start_end);
     msfg.add(fg);
+    FactorGraph fg2("kisa", start_end, vocab, 5);
     msfg.add(fg2);
+    FactorGraph fg3("kissaa", start_end, vocab, 5);
     msfg.add(fg3);
     msfg.update_factor_node_map();
     assign_scores(transitions, msfg);
-    transitions_t msfg_stats;
 
+    transitions_t stats;
+    vector<string> viterbi_path;
+    flt_type lp = viterbi(transitions, fg, viterbi_path);
+    lp = viterbi(transitions, fg, stats);
+
+    transitions_t msfg_stats;
     vector<string> msfg_viterbi_path;
     flt_type msfg_lp = viterbi(msfg, sentence, msfg_viterbi_path);
+    msfg_lp = viterbi(msfg, sentence, msfg_stats);
 
     CPPUNIT_ASSERT_DOUBLES_EQUAL( lp, msfg_lp, DBL_ACCURACY );
     CPPUNIT_ASSERT( viterbi_path == msfg_viterbi_path );
+    CPPUNIT_ASSERT( stats == msfg_stats );
 }
 
