@@ -32,7 +32,6 @@ void prune_msfg(const map<string, flt_type> &vocab,
 }
 
 
-
 int main(int argc, char* argv[]) {
 
     conf::Config config;
@@ -100,7 +99,7 @@ int main(int argc, char* argv[]) {
     for (int i=0; i<3; i++) {
         cerr << "Unigram iteration " << i << endl;
         assign_scores(vocab, msfg);
-        flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_forward_backward);
+        flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, true);
         vocab.swap(unigram_stats);
         Unigrams::freqs_to_logprobs(vocab);
         prune_msfg(vocab, msfg);

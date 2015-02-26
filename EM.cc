@@ -566,16 +566,32 @@ void
 assign_scores(transitions_t &transitions,
               MultiStringFactorGraph &msfg)
 {
-    for (auto it = msfg.factor_node_map.begin(); it != msfg.factor_node_map.end(); ++it) {
+    for (auto ndit = msfg.nodes.begin(); ndit != msfg.nodes.end(); ++ndit)
+        for (auto arc = ndit->outgoing.begin(); arc != ndit->outgoing.end(); ++arc)
+            (**arc).cost = nullptr;
 
-        map<string, flt_type> &curr_transitions = transitions.at(it->first);
-
-        for (auto ndit = it->second.begin(); ndit != it->second.end(); ++ndit) {
+    for (auto it = transitions.begin(); it != transitions.end(); ++it) {
+        vector<msfg_node_idx_t> &nodes = msfg.factor_node_map.at(it->first);
+        for (auto ndit = nodes.begin(); ndit != nodes.end(); ++ndit) {
             MultiStringFactorGraph::Node &node = msfg.nodes[*ndit];
-            for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc)
-                (**arc).cost = &curr_transitions.at(msfg.nodes[(**arc).target_node].factor);
+            for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+                string &tgt_str = msfg.nodes[(**arc).target_node].factor;
+                if (it->second.find(tgt_str) != it->second.end())
+                    (**arc).cost = &(it->second.at(tgt_str));
+            }
         }
     }
+
+    set<MultiStringFactorGraph::Arc*> to_remove;
+    for (auto ndit = msfg.nodes.begin(); ndit != msfg.nodes.end(); ++ndit)
+        for (auto arc = ndit->outgoing.begin(); arc != ndit->outgoing.end(); ++arc)
+            if ((**arc).cost == nullptr) to_remove.insert(*arc);
+    for (auto trit = to_remove.begin(); trit != to_remove.end(); ++trit)
+        msfg.remove_arc(*trit);
+
+    for (auto fnit=msfg.factor_node_map.begin(); fnit != msfg.factor_node_map.end(); ++fnit)
+        if (transitions.find(fnit->first) == transitions.end())
+            msfg.remove_arcs(fnit->first);
 }
 
 
