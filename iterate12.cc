@@ -16,6 +16,23 @@ void floor_values(map<string, flt_type> &vocab,
 }
 
 
+void prune_msfg(const map<string, flt_type> &vocab,
+                MultiStringFactorGraph &msfg)
+{
+    if (vocab.size() < msfg.factor_node_map.size()) {
+        vector<string> to_remove;
+        cerr << "Pruning " << msfg.factor_node_map.size()-vocab.size() << " unused transitions from msfg." << endl;
+        for (auto it = msfg.factor_node_map.begin(); it != msfg.factor_node_map.end(); ++it)
+            if (vocab.find(it->first) == vocab.end())
+                to_remove.push_back(it->first);
+        for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
+            msfg.remove_arcs(*it);
+        cerr << "Removed " << to_remove.size() << " subwords" << endl;
+    }
+}
+
+
+
 int main(int argc, char* argv[]) {
 
     conf::Config config;
@@ -48,10 +65,6 @@ int main(int argc, char* argv[]) {
     set<string> all_chars;
     map<string, flt_type> vocab;
     map<string, flt_type> words;
-    MultiStringFactorGraph msfg(start_end_symbol);
-    transitions_t transitions;
-    transitions_t trans_stats;
-    map<string, flt_type> unigram_stats;
 
     cerr << "Reading initial vocabulary " << vocab_in_fname << endl;
     int retval = Unigrams::read_vocab(vocab_in_fname, vocab, subword_maxlen, utf8_encoding);
@@ -73,41 +86,40 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "maximum word length: " << word_maxlen << endl;
 
     cerr << "Reading msfg " << msfg_fname << endl;
+    MultiStringFactorGraph msfg(start_end_symbol);
     msfg.read(msfg_fname);
 
-    if (vocab.size() < msfg.factor_node_map.size()) {
-        vector<string> to_remove;
-        cerr << "Pruning " << msfg.factor_node_map.size()-transitions.size() << " unused transitions from msfg." << endl;
-        for (auto it = msfg.factor_node_map.begin(); it != msfg.factor_node_map.end(); ++it)
-            if (transitions.find(it->first) == transitions.end())
-                to_remove.push_back(it->first);
-        for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
-            msfg.remove_arcs(*it);
-    }
-
-    assign_scores(transitions, msfg);
+    if (vocab.find(start_end_symbol) == vocab.end()) vocab[start_end_symbol] = log(0.5);
+    prune_msfg(vocab, msfg);
 
     std::cerr << std::setprecision(15);
-    int iteration = 1;
-    while (true) {
+    transitions_t transitions;
+    transitions_t trans_stats;
+    map<string, flt_type> unigram_stats;
 
-        cerr << "Iteration " << iteration << endl;
+    for (int i=0; i<3; i++) {
+        cerr << "Unigram iteration " << i+1 << endl;
+        assign_scores(vocab, msfg);
+        flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_forward_backward);
+        vocab.swap(unigram_stats);
+        Unigrams::freqs_to_logprobs(vocab);
+        prune_msfg(vocab, msfg);
+        cerr << "\tlikelihood: " << lp << endl;
+        cerr << "\tvocabulary size: " << vocab.size() << endl;
+    }
 
-        flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats);
+    Bigrams::copy_transitions(trans_stats, transitions);
+    Bigrams::normalize(transitions);
+    assign_scores(transitions, msfg);
+    for (int i=0; i<num_iterations; i++) {
+        cerr << "Bigram iteration " << i+1 << endl;
+        flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_forward_backward);
         Bigrams::copy_transitions(trans_stats, transitions);
         Bigrams::normalize(transitions);
 
-        cerr << "\tbigram cost: " << lp << endl;
-        cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
-        cerr << "\tvocab size: " << transitions.size() << endl;
-
-        // Write temp transitions
-        ostringstream transitions_temp;
-        transitions_temp << "transitions.iter" << iteration << ".bz2";
-        cerr << "\twriting to: " << transitions_temp.str() << endl;
-        Bigrams::write_transitions(transitions, transitions_temp.str());
-
-
+        cerr << "\tlikelihood: " << lp << endl;
+        cerr << "\tnumber of transitions: " << Bigrams::transition_count(transitions) << endl;
+        cerr << "\tvocabulary size: " << transitions.size() << endl;
     }
 
     // Write transitions
