@@ -19,6 +19,10 @@ static void update_trans_stats(const transitions_t &collected_stats,
                                transitions_t &trans_stats,
                                std::map<std::string, flt_type> &unigram_stats);
 
+static void update_trans_stats(const transitions_t &collected_stats,
+                               flt_type weight,
+                               transitions_t &trans_stats);
+
 static void collect_trans_stats(transitions_t &transitions,
                                 const std::map<std::string, flt_type> &words,
                                 std::map<std::string, FactorGraph*> &fg_words,

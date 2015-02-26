@@ -24,6 +24,17 @@ Bigrams::update_trans_stats(const transitions_t &collected_stats,
 
 
 void
+Bigrams::update_trans_stats(const transitions_t &collected_stats,
+                            flt_type weight,
+                            transitions_t &trans_stats)
+{
+    for (auto srcit = collected_stats.cbegin(); srcit != collected_stats.cend(); ++srcit)
+        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
+            trans_stats[srcit->first][tgtit->first] += weight * tgtit->second;
+}
+
+
+void
 Bigrams::collect_trans_stats(transitions_t &transitions,
                              const map<string, flt_type> &words,
                              map<string, FactorGraph*> &fg_words,
@@ -55,17 +66,22 @@ Bigrams::collect_trans_stats(const map<string, flt_type> &words,
     trans_stats.clear();
     unigram_stats.clear();
 
-    vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
-    fw[0] = 0.0;
-
-    forward(msfg, fw);
     flt_type total_lp = 0.0;
-
-    transitions_t word_stats;
-    for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
-        total_lp += words.at(it->first) * backward(msfg, it->first, fw, word_stats, words.at(it->first));
+    if (fb) {
+        vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
+        fw[0] = 0.0;
+        forward(msfg, fw);
+        transitions_t word_stats;
+        for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it)
+            total_lp += words.at(it->first) * backward(msfg, it->first, fw, word_stats, words.at(it->first));
+        update_trans_stats(word_stats, 1.0, trans_stats, unigram_stats);
     }
-    update_trans_stats(word_stats, 1.0, trans_stats, unigram_stats);
+    else {
+        transitions_t word_stats;
+        for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it)
+            total_lp += words.at(it->first) * viterbi(msfg, it->first, word_stats, words.at(it->first));
+        update_trans_stats(word_stats, 1.0, trans_stats, unigram_stats);
+    }
 
     return total_lp;
 }
