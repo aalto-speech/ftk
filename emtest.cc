@@ -1385,3 +1385,55 @@ void emtest :: MSFGViterbiTest2(void)
     CPPUNIT_ASSERT_DOUBLES_EQUAL( total_lp, msfg_lp, DBL_ACCURACY );
     CPPUNIT_ASSERT( stats == msfg_stats );
 }
+
+
+// Normal scenario for multiple words
+void emtest :: MSFGViterbiTest3 (void)
+{
+    set<string> vocab = {"k","i","s","a","sa","ki","kis","kissa"};
+
+    transitions_t transitions;
+    transitions[start_end]["k"] = log(0.5);
+    transitions[start_end]["ki"] = log(0.25);
+    transitions[start_end]["kis"] = log(0.4);
+    transitions[start_end]["kissa"] = log(0.1);
+    transitions["a"][start_end] = log(0.5);
+    transitions["kissa"][start_end] = log(0.10);
+    transitions["sa"][start_end] = log(0.4);
+    transitions["ki"]["s"] = log(0.25);
+    transitions["k"]["i"] = log(0.5);
+    transitions["i"]["s"] = log(0.5);
+    transitions["s"]["s"] = log(0.5);
+    transitions["s"]["sa"] = log(0.5);
+    transitions["s"]["a"] = log(0.5);
+    transitions["kis"]["sa"] = log(0.4);
+    transitions["kis"]["s"] = log(0.4);
+
+    transitions["i"]["sa"] = log(0.8);
+    transitions["a"]["a"] = log(0.8);
+    transitions["ki"]["sa"] = log(0.8);
+    transitions["kis"]["a"] = log(0.8);
+    transitions["kissa"]["a"] = log(0.8);
+    transitions["sa"]["a"] = log(0.8);
+
+    map<string, flt_type> word_freqs = {{"kissa", 1.0}, {"kisa", 2.0}, {"kissaa", 3.0}};
+    transitions_t stats;
+    MultiStringFactorGraph msfg(start_end);
+    flt_type lp = 0.0;
+    for (auto wit = word_freqs.begin(); wit != word_freqs.end(); ++wit) {
+        FactorGraph fg(wit->first, start_end, vocab, 5);
+        transitions_t curr_stats;
+        flt_type curr_lp = viterbi(transitions, fg, curr_stats);
+        lp += wit->second * curr_lp;
+        Bigrams::update_trans_stats(curr_stats, wit->second, stats);
+        msfg.add(fg);
+    }
+    msfg.update_factor_node_map();
+    assign_scores(transitions, msfg);
+
+    transitions_t msfg_stats;
+    flt_type msfg_lp = viterbi(msfg, word_freqs, msfg_stats);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL( lp, msfg_lp, DBL_ACCURACY );
+    CPPUNIT_ASSERT( stats == msfg_stats );
+}
