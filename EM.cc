@@ -599,16 +599,29 @@ void
 assign_scores(map<string, flt_type> &vocab,
               MultiStringFactorGraph &msfg)
 {
+    for (auto ndit = msfg.nodes.begin(); ndit != msfg.nodes.end(); ++ndit)
+        for (auto arc = ndit->outgoing.begin(); arc != ndit->outgoing.end(); ++arc)
+            (**arc).cost = nullptr;
+
     for (auto it = msfg.factor_node_map.begin(); it != msfg.factor_node_map.end(); ++it) {
-
         flt_type *curr_score = &(vocab.at(it->first));
-
         for (auto ndit = it->second.begin(); ndit != it->second.end(); ++ndit) {
             MultiStringFactorGraph::Node &node = msfg.nodes[*ndit];
             for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc)
                 (**arc).cost = curr_score;
         }
     }
+
+    set<MultiStringFactorGraph::Arc*> to_remove;
+    for (auto ndit = msfg.nodes.begin(); ndit != msfg.nodes.end(); ++ndit)
+        for (auto arc = ndit->outgoing.begin(); arc != ndit->outgoing.end(); ++arc)
+            if ((**arc).cost == nullptr) to_remove.insert(*arc);
+    for (auto trit = to_remove.begin(); trit != to_remove.end(); ++trit)
+        msfg.remove_arc(*trit);
+
+    for (auto fnit=msfg.factor_node_map.begin(); fnit != msfg.factor_node_map.end(); ++fnit)
+        if (vocab.find(fnit->first) == vocab.end())
+            msfg.remove_arcs(fnit->first);
 }
 
 
