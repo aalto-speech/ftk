@@ -24,6 +24,17 @@ Bigrams::update_trans_stats(const transitions_t &collected_stats,
 
 
 void
+Bigrams::update_trans_stats(const transitions_t &collected_stats,
+                            flt_type weight,
+                            transitions_t &trans_stats)
+{
+    for (auto srcit = collected_stats.cbegin(); srcit != collected_stats.cend(); ++srcit)
+        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
+            trans_stats[srcit->first][tgtit->first] += weight * tgtit->second;
+}
+
+
+void
 Bigrams::collect_trans_stats(transitions_t &transitions,
                              const map<string, flt_type> &words,
                              map<string, FactorGraph*> &fg_words,

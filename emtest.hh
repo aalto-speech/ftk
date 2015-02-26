@@ -55,6 +55,7 @@ class emtest : public CPPUNIT_NS :: TestFixture
     CPPUNIT_TEST (TransitionForwardBackwardBlockFactor);
     CPPUNIT_TEST (MSFGForwardBackwardTest1);
     CPPUNIT_TEST (MSFGForwardBackwardTest2);
+    CPPUNIT_TEST (MSFGForwardBackwardTest3);
     CPPUNIT_TEST (MSFGViterbiTest1);
     CPPUNIT_TEST (MSFGViterbiTest2);
     CPPUNIT_TEST_SUITE_END ();
@@ -116,6 +117,7 @@ class emtest : public CPPUNIT_NS :: TestFixture
         void TransitionForwardBackwardBlockFactor(void);
         void MSFGForwardBackwardTest1(void);
         void MSFGForwardBackwardTest2(void);
+        void MSFGForwardBackwardTest3(void);
         void MSFGViterbiTest1(void);
         void MSFGViterbiTest2(void);
 };

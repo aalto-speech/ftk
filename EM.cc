@@ -835,7 +835,7 @@ forward_backward(const MultiStringFactorGraph &msfg,
     forward(msfg, fw);
     flt_type total_lp = 0.0;
     for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
-        flt_type lp = backward(msfg, it->first, fw, stats);
+        flt_type lp = backward(msfg, it->first, fw, stats, word_freqs.at(it->first));
         total_lp += word_freqs.at(it->first) * lp;
     }
 
