@@ -98,17 +98,19 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> unigram_stats;
 
     for (int i=0; i<3; i++) {
-        cerr << "Unigram iteration " << i+1 << endl;
+        cerr << "Unigram iteration " << i << endl;
         assign_scores(vocab, msfg);
         flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_forward_backward);
         vocab.swap(unigram_stats);
         Unigrams::freqs_to_logprobs(vocab);
         prune_msfg(vocab, msfg);
-        cerr << "\tlikelihood: " << lp << endl;
-        cerr << "\tvocabulary size: " << vocab.size() << endl;
+        if (i>0) {
+            cerr << "\tlikelihood: " << lp << endl;
+            cerr << "\tvocabulary size: " << vocab.size() << endl;
+        }
     }
 
-    Bigrams::copy_transitions(trans_stats, transitions);
+    transitions = trans_stats;
     Bigrams::normalize(transitions);
     assign_scores(transitions, msfg);
     for (int i=0; i<num_iterations; i++) {
@@ -116,7 +118,6 @@ int main(int argc, char* argv[]) {
         flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_forward_backward);
         Bigrams::copy_transitions(trans_stats, transitions);
         Bigrams::normalize(transitions);
-
         cerr << "\tlikelihood: " << lp << endl;
         cerr << "\tnumber of transitions: " << Bigrams::transition_count(transitions) << endl;
         cerr << "\tvocabulary size: " << transitions.size() << endl;
