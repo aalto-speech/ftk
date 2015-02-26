@@ -644,6 +644,28 @@ forward(const MultiStringFactorGraph &msfg,
 }
 
 
+void
+viterbi_forward(const MultiStringFactorGraph &msfg,
+                vector<flt_type> &fw,
+                vector<int> &source_nodes)
+{
+    for (unsigned int i=0; i<msfg.nodes.size(); i++) {
+
+        if (fw[i] == MIN_FLOAT) continue;
+
+        const MultiStringFactorGraph::Node &node = msfg.nodes[i];
+        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+            int tgt_node = (**arc).target_node;
+            flt_type cost = fw[i] + *(**arc).cost;
+            if (fw[tgt_node] == MIN_FLOAT || cost > fw[tgt_node]) {
+                fw[tgt_node] = cost;
+                source_nodes[tgt_node] = i;
+            }
+        }
+    }
+}
+
+
 flt_type
 forward(const string &text,
         const MultiStringFactorGraph &msfg,
@@ -917,16 +939,43 @@ viterbi(const MultiStringFactorGraph &msfg,
 }
 
 
+flt_type
+viterbi(const MultiStringFactorGraph &msfg,
+        const string &text,
+        const vector<flt_type> &fw,
+        const vector<int> &source_nodes,
+        transitions_t &stats,
+        flt_type text_weight)
+{
+    int text_end_node = msfg.string_end_nodes.at(text);
+    msfg_node_idx_t curr_node = text_end_node;
+
+    while (curr_node != 0) {
+        if (source_nodes[curr_node] < 0) throw string("Problem in backtracking Viterbi path.");
+        msfg_node_idx_t src_node = source_nodes[curr_node];
+        stats[msfg.nodes.at(src_node).factor][msfg.nodes.at(curr_node).factor] += text_weight;
+        curr_node = src_node;
+    }
+
+    return text_weight * fw.at(text_end_node);
+}
+
+
 flt_type viterbi(const MultiStringFactorGraph &msfg,
                  const map<string, flt_type> &word_freqs,
                  transitions_t &stats)
 {
     if (msfg.nodes.size() == 0) return MIN_FLOAT;
 
+    vector<flt_type> fw(msfg.nodes.size(), MIN_FLOAT);
+    vector<int> source_nodes(msfg.nodes.size(), -1);
+    fw[0] = 0.0;
+
+    viterbi_forward(msfg, fw, source_nodes);
     flt_type total_lp = 0.0;
     for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
-        flt_type lp = viterbi(msfg, it->first, stats, word_freqs.at(it->first));
-        total_lp += word_freqs.at(it->first) * lp;
+        flt_type lp = viterbi(msfg, it->first, fw, source_nodes, stats, word_freqs.at(it->first));
+        total_lp += lp;
     }
 
     return total_lp;
