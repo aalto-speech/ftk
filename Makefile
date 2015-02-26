@@ -4,7 +4,7 @@ cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-unused-function
 
 ##################################################
 
-progs = segtext substrings strscore g1g g2g g2gr segposts iterate cmsfg ll counts iterate-sents g1g-sents
+progs = segtext substrings strscore g1g g2g g2gr segposts iterate cmsfg ll counts iterate-sents g1g-sents iterate12
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
 srcs = io.cc conf.cc Ngram.cc StringSet.cc FactorGraph.cc MSFG.cc EM.cc Unigrams.cc Bigrams.cc
