@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 
     if (config["transitions"].specified) {
         unigram = false;
-        trans_fname = config["vocabulary"].get_str();
+        trans_fname = config["transitions"].get_str();
         cerr << "Reading transitions " << trans_fname << endl;
         int retval = Bigrams::read_transitions(transitions, trans_fname);
         Bigrams::trans_to_vocab(transitions, vocab);
