@@ -24,10 +24,12 @@ int main(int argc, char* argv[]) {
       ('h', "help", "", "", "display help")
       ('v', "vocabulary=FILE", "arg", "", "Unigram model file")
       ('t', "transitions=FILE", "arg", "", "Bigram model file")
+      ('s', "sentence-mode", "", "", "Prints <s>, </s>, <w> symbols")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 2) config.print_help(stderr, 1);
 
+    bool sentence_mode = config["sentence-mode"].specified;
     bool utf8_encoding = config["utf-8"].specified;
     string in_fname = config.arguments[0];
     string out_fname = config.arguments[1];
@@ -109,14 +111,27 @@ int main(int argc, char* argv[]) {
         }
 
         // Print out the best path
-        fprintf(outfile.file, "<s> <w>");
-        for (unsigned int i=0; i<best_path.size(); i++) {
-            if (best_path[i] == " ")
-                fprintf(outfile.file, " <w>");
-            else
-                fprintf(outfile.file, " %s", best_path[i].c_str());
+        if (sentence_mode) {
+            fprintf(outfile.file, "<s> <w>");
+            for (unsigned int i=0; i<best_path.size(); i++) {
+                if (best_path[i] == " ")
+                    fprintf(outfile.file, " <w>");
+                else
+                    fprintf(outfile.file, " %s", best_path[i].c_str());
+            }
+            fprintf(outfile.file, " <w> </s>\n");
         }
-        fprintf(outfile.file, " <w> </s>\n");
+        else {
+            for (unsigned int i=0; i<best_path.size(); i++) {
+                if (best_path[i] == " ")
+                    fprintf(outfile.file, "\t");
+                else {
+                    if (i>0) fprintf(outfile.file, " ");
+                    fprintf(outfile.file, "%s", best_path[i].c_str());
+                }
+            }
+            fprintf(outfile.file, "\n");
+        }
     }
 
     if (ss_vocab != NULL) delete ss_vocab;
