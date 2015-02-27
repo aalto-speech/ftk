@@ -644,28 +644,6 @@ forward(const MultiStringFactorGraph &msfg,
 }
 
 
-void
-viterbi_forward(const MultiStringFactorGraph &msfg,
-                vector<flt_type> &fw,
-                vector<int> &source_nodes)
-{
-    for (unsigned int i=0; i<msfg.nodes.size(); i++) {
-
-        if (fw[i] == MIN_FLOAT) continue;
-
-        const MultiStringFactorGraph::Node &node = msfg.nodes[i];
-        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
-            int tgt_node = (**arc).target_node;
-            flt_type cost = fw[i] + *(**arc).cost;
-            if (fw[tgt_node] == MIN_FLOAT || cost > fw[tgt_node]) {
-                fw[tgt_node] = cost;
-                source_nodes[tgt_node] = i;
-            }
-        }
-    }
-}
-
-
 flt_type
 forward(const string &text,
         const MultiStringFactorGraph &msfg,
@@ -933,31 +911,9 @@ viterbi(const MultiStringFactorGraph &msfg,
 {
     vector<string> best_path;
     flt_type lp = viterbi(msfg, text, best_path);
-    for (int i=1; i<best_path.size(); i++)
+    for (unsigned int i=1; i<best_path.size(); i++)
         stats[best_path[i-1]][best_path[i]] += multiplier;
     return lp;
-}
-
-
-flt_type
-viterbi(const MultiStringFactorGraph &msfg,
-        const string &text,
-        const vector<flt_type> &fw,
-        const vector<int> &source_nodes,
-        transitions_t &stats,
-        flt_type text_weight)
-{
-    int text_end_node = msfg.string_end_nodes.at(text);
-    msfg_node_idx_t curr_node = text_end_node;
-
-    while (curr_node != 0) {
-        if (source_nodes[curr_node] < 0) throw string("Problem in backtracking Viterbi path.");
-        msfg_node_idx_t src_node = source_nodes[curr_node];
-        stats[msfg.nodes.at(src_node).factor][msfg.nodes.at(curr_node).factor] += text_weight;
-        curr_node = src_node;
-    }
-
-    return text_weight * fw.at(text_end_node);
 }
 
 
@@ -971,11 +927,30 @@ flt_type viterbi(const MultiStringFactorGraph &msfg,
     vector<int> source_nodes(msfg.nodes.size(), -1);
     fw[0] = 0.0;
 
-    viterbi_forward(msfg, fw, source_nodes);
+    for (unsigned int i=0; i<msfg.nodes.size(); i++) {
+        if (fw[i] == MIN_FLOAT) continue;
+        const MultiStringFactorGraph::Node &node = msfg.nodes[i];
+        for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
+            int tgt_node = (**arc).target_node;
+            flt_type cost = fw[i] + *(**arc).cost;
+            if (cost > fw[tgt_node]) {
+                fw[tgt_node] = cost;
+                source_nodes[tgt_node] = i;
+            }
+        }
+    }
+
     flt_type total_lp = 0.0;
     for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it) {
-        flt_type lp = viterbi(msfg, it->first, fw, source_nodes, stats, word_freqs.at(it->first));
-        total_lp += lp;
+        msfg_node_idx_t text_end_node = it->second;
+        int curr_node = text_end_node;
+        while (curr_node != 0) {
+            if (source_nodes[curr_node] < 0) throw string("Problem in backtracking Viterbi path.");
+            msfg_node_idx_t src_node = source_nodes[curr_node];
+            stats[msfg.nodes.at(src_node).factor][msfg.nodes.at(curr_node).factor] += word_freqs.at(it->first);
+            curr_node = src_node;
+        }
+        total_lp += word_freqs.at(it->first) * fw.at(text_end_node);
     }
 
     return total_lp;
