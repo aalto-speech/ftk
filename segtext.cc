@@ -24,14 +24,10 @@ int main(int argc, char* argv[]) {
       ('h', "help", "", "", "display help")
       ('v', "vocabulary=FILE", "arg", "", "Unigram model file")
       ('t', "transitions=FILE", "arg", "", "Bigram model file")
-      ('p', "posterior-decode", "", "", "Posterior decoding instead of Viterbi")
-      ('s', "sentence-markers", "", "", "Print sentence begin and end symbols")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 2) config.print_help(stderr, 1);
 
-    bool print_sentence_markers = config["sentence-markers"].specified;
-    bool enable_posterior_decoding = config["posterior-decode"].specified;
     bool utf8_encoding = config["utf-8"].specified;
     string in_fname = config.arguments[0];
     string out_fname = config.arguments[1];
@@ -99,18 +95,10 @@ int main(int argc, char* argv[]) {
 
         vector<string> best_path;
         if (unigram)
-            if (enable_posterior_decoding) {
-                cerr << "Posterior decoding not implemented yet for unigrams." << endl;
-                exit(0);
-            }
-            else
-                viterbi(*ss_vocab, line, best_path, true, utf8_encoding);
+            viterbi(*ss_vocab, line, best_path, true, utf8_encoding);
         else {
             FactorGraph fg(line, start_end_symbol, *ss_vocab);
-            if (enable_posterior_decoding)
-                posterior_decode(transitions, fg, best_path);
-            else
-                viterbi(transitions, fg, best_path);
+            viterbi(transitions, fg, best_path);
             best_path.erase(best_path.begin());
             best_path.erase(best_path.end());
         }
@@ -121,14 +109,14 @@ int main(int argc, char* argv[]) {
         }
 
         // Print out the best path
-        if (print_sentence_markers) fprintf(outfile.file, "<s> ");
-        for (unsigned int i=0; i<best_path.size()-1; i++) {
-            fprintf(outfile.file, "%s", best_path[i].c_str());
-            fprintf(outfile.file, " ");
+        fprintf(outfile.file, "<s> <w>");
+        for (unsigned int i=0; i<best_path.size(); i++) {
+            if (best_path[i] == " ")
+                fprintf(outfile.file, " <w>");
+            else
+                fprintf(outfile.file, " %s", best_path[i].c_str());
         }
-        fprintf(outfile.file, "%s", best_path[best_path.size()-1].c_str());
-        if (print_sentence_markers) fprintf(outfile.file, " </s>");
-        fprintf(outfile.file, "\n");
+        fprintf(outfile.file, " <w> </s>\n");
     }
 
     if (ss_vocab != NULL) delete ss_vocab;
