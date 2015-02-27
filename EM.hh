@@ -137,11 +137,6 @@ void assign_scores(std::map<std::string, flt_type> &vocab,
 void forward(const MultiStringFactorGraph &msfg,
              std::vector<flt_type> &fw);
 
-// Propagate best path scores for all strings
-void viterbi_forward(const MultiStringFactorGraph &msfg,
-                     std::vector<flt_type> &fw,
-                     std::vector<int> &source_nodes);
-
 // Forward pass for only one string
 flt_type forward(const std::string &text,
                  const MultiStringFactorGraph &msfg,
@@ -204,14 +199,6 @@ flt_type viterbi(const MultiStringFactorGraph &msfg,
                  const std::string &text,
                  transitions_t &stats,
                  flt_type multiplier=1.0);
-
-// Viterbi for one string, viterbi_forward called for whole MSFG
-flt_type viterbi(const MultiStringFactorGraph &msfg,
-                 const std::string &text,
-                 const std::vector<flt_type> &fw,
-                 const std::vector<int> &source_nodes,
-                 transitions_t &stats,
-                 flt_type text_weight = 1.0);
 
 // Viterbi for all strings
 flt_type viterbi(const MultiStringFactorGraph &msfg,
