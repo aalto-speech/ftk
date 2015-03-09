@@ -14,6 +14,7 @@ public:
 
 Bigrams() {}
 
+
 static void update_trans_stats(const transitions_t &collected_stats,
                                flt_type weight,
                                transitions_t &trans_stats,
@@ -35,6 +36,12 @@ static flt_type collect_trans_stats(const std::map<std::string, flt_type> &words
                                     transitions_t &trans_stats,
                                     std::map<std::string, flt_type> &unigram_stats,
                                     bool fb=true);
+
+static void get_unigram_stats(const transitions_t &trans_stats,
+                              std::map<std::string, flt_type> &unigram_stats);
+
+static void finalize_viterbi_stats(const MultiStringFactorGraph &msfg,
+                                   transitions_t &trans_stats);
 
 static void normalize(transitions_t &trans_stats,
                       flt_type min_cost = FLOOR_LP);

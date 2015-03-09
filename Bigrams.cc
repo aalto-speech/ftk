@@ -77,13 +77,48 @@ Bigrams::collect_trans_stats(const map<string, flt_type> &words,
         update_trans_stats(word_stats, 1.0, trans_stats, unigram_stats);
     }
     else {
-        transitions_t word_stats;
-        for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it)
-            total_lp += words.at(it->first) * viterbi(msfg, it->first, word_stats, words.at(it->first));
-        update_trans_stats(word_stats, 1.0, trans_stats, unigram_stats);
+        //transitions_t word_stats;
+        //for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it)
+        //    total_lp += words.at(it->first) * viterbi(msfg, it->first, word_stats, words.at(it->first));
+        //update_trans_stats(word_stats, 1.0, trans_stats, unigram_stats);
+        //finalize_viterbi_stats(msfg, trans_stats);
+
+        total_lp = viterbi(msfg, words, trans_stats);
+        get_unigram_stats(trans_stats, unigram_stats);
+        finalize_viterbi_stats(msfg, trans_stats);
     }
 
     return total_lp;
+}
+
+
+void
+Bigrams::get_unigram_stats(const transitions_t &trans_stats,
+                           map<string, flt_type> &unigram_stats)
+{
+    for (auto srcit = trans_stats.begin(); srcit != trans_stats.end(); ++srcit)
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+            unigram_stats[tgtit->first] += tgtit->second;
+}
+
+
+void
+Bigrams::finalize_viterbi_stats(const MultiStringFactorGraph &msfg,
+                                transitions_t &stats)
+{
+    for (auto sit = stats.begin(); sit != stats.end(); ++sit) {
+        const string &srcstr = sit->first;
+        const vector<msfg_node_idx_t> &nodes = msfg.factor_node_map.at(srcstr);
+        for (auto nit = nodes.begin(); nit != nodes.end(); ++nit) {
+            const MultiStringFactorGraph::Node &src_nd = msfg.nodes[*nit];
+            for (auto ait=src_nd.outgoing.begin(); ait != src_nd.outgoing.end(); ++ait) {
+                string tgtstr = msfg.nodes[(*ait)->target_node].factor;
+                if (stats.find(tgtstr) != stats.end()
+                    && sit->second.find(tgtstr) == sit->second.end())
+                    sit->second[tgtstr] = exp(FLOOR_LP);
+            }
+        }
+    }
 }
 
 
