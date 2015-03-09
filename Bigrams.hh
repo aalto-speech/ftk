@@ -121,7 +121,8 @@ static void rank_candidate_subwords(const std::map<std::string, flt_type> &words
                                     const MultiStringFactorGraph &msfg,
                                     const std::map<std::string, flt_type> &unigram_stats,
                                     transitions_t &transitions,
-                                    std::map<std::string, flt_type> &candidates);
+                                    std::map<std::string, flt_type> &candidates,
+                                    bool forward_backward=true);
 
 private:
 

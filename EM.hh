@@ -148,21 +148,22 @@ flt_type forward(const std::map<std::string, flt_type> &words,
                  const std::set<std::string> &selected_words,
                  bool full_forward_pass = false);
 
-// Compute likelihood of one string
+// Compute likelihood of one string using Forward-backward segmentation
 // Same result as for forward pass, but done backwards for efficiency
-flt_type likelihood(const std::string &text,
-                    const MultiStringFactorGraph &msfg);
+flt_type likelihood_fb(const std::string &text,
+                       const MultiStringFactorGraph &msfg);
+
+// Compute likelihood of one string using Viterbi segmentation
+// Same result as for forward pass, but done backwards for efficiency
+flt_type likelihood_viterbi(const std::string &text,
+                            const MultiStringFactorGraph &msfg);
 
 // Compute likelihood for given strings
 // Same results as for forward pass, but done backwards for efficiency
 flt_type likelihood(const std::map<std::string, flt_type> &words,
                     const std::set<std::string> &selected_words,
-                    const MultiStringFactorGraph &msfg);
-
-// Compute likelihood for all strings
-// Same results as for forward pass, but done backwards for efficiency
-flt_type likelihood(const std::map<std::string, flt_type> &words,
-                    const MultiStringFactorGraph &msfg);
+                    const MultiStringFactorGraph &msfg,
+                    bool forward_backward=true);
 
 // Backward pass for one string given forward scores
 flt_type backward(const MultiStringFactorGraph &msfg,

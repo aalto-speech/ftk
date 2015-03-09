@@ -523,7 +523,8 @@ Bigrams::rank_candidate_subwords(const map<string, flt_type> &words,
                                  const MultiStringFactorGraph &msfg,
                                  const map<string, flt_type> &unigram_stats,
                                  transitions_t &transitions,
-                                 map<string, flt_type> &candidates)
+                                 map<string, flt_type> &candidates,
+                                 bool forward_backward)
 {
     map<string, set<string> > backpointers;
     Bigrams::get_backpointers(msfg, backpointers, 1);
@@ -533,10 +534,10 @@ Bigrams::rank_candidate_subwords(const map<string, flt_type> &words,
     for (auto it = candidates.begin(); it != candidates.end(); ++it) {
         transitions_t changes;
         set<string> words_to_resegment = backpointers.at(it->first);
-        flt_type orig_score = likelihood(words, words_to_resegment, msfg);
+        flt_type orig_score = likelihood(words, words_to_resegment, msfg, forward_backward);
         flt_type context_score = Bigrams::disable_string(reverse, it->first,
                                                          unigram_stats, transitions, changes);
-        flt_type hypo_score = likelihood(words, words_to_resegment, msfg);
+        flt_type hypo_score = likelihood(words, words_to_resegment, msfg, forward_backward);
         it->second = hypo_score-orig_score + context_score;
         Bigrams::restore_string(transitions, changes);
     }

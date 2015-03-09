@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
       ('c', "candidates=INT", "arg", "5000", "Number of candidate subwords to try to remove per iteration")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
+      ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 4) config.print_help(stderr, 1);
@@ -27,6 +28,7 @@ int main(int argc, char* argv[]) {
     string initial_transitions_fname = config.arguments[1];
     string msfg_fname = config.arguments[2];
     string transition_fname = config.arguments[3];
+    bool enable_fb = config["forward-backward"].specified;
     bool utf8_encoding = config["utf-8"].specified;
 
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
@@ -37,6 +39,8 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, removals per iteration: " << removals_per_iter << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
     cerr << "parameters, floor lp: " << FLOOR_LP << endl;
+    cerr << "parameters, use forward-backward: " << enable_fb << endl;
+    cerr << "parameters, utf-8 encoding: " << utf8_encoding << endl;
 
     int word_maxlen;
     map<string, flt_type> all_chars;
@@ -76,17 +80,17 @@ int main(int argc, char* argv[]) {
             msfg.remove_arcs(*it);
     }
 
-    assign_scores(transitions, msfg);
-
     std::cerr << std::setprecision(15);
     int iteration = 1;
     while (true) {
 
         cerr << "Iteration " << iteration << endl;
 
-        flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats);
-        Bigrams::copy_transitions(trans_stats, transitions);
+        assign_scores(transitions, msfg);
+        flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_fb);
+        transitions.swap(trans_stats);
         Bigrams::normalize(transitions);
+        trans_stats.clear();
 
         cerr << "\tbigram cost: " << lp << endl;
         cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
@@ -105,7 +109,7 @@ int main(int argc, char* argv[]) {
 
         // Score all candidates
         cerr << "\tranking removals .." << endl;
-        Bigrams::rank_candidate_subwords(words, msfg, unigram_stats, transitions, candidates);
+        Bigrams::rank_candidate_subwords(words, msfg, unigram_stats, transitions, candidates, enable_fb);
 
         // Remove least significant subwords
         vector<pair<string, flt_type> > sorted_scores;

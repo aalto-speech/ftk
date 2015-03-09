@@ -693,8 +693,8 @@ forward(const map<string, flt_type> &words,
 
 
 flt_type
-likelihood(const string &text,
-           const MultiStringFactorGraph &msfg)
+likelihood_fb(const string &text,
+              const MultiStringFactorGraph &msfg)
 {
     map<msfg_node_idx_t, flt_type> fw;
     int text_end_node = msfg.string_end_nodes.at(text);
@@ -723,27 +723,48 @@ likelihood(const string &text,
 
 
 flt_type
-likelihood(const map<string, flt_type> &words,
-           const set<string> &selected_words,
-           const MultiStringFactorGraph &msfg)
+likelihood_viterbi(const string &text,
+                   const MultiStringFactorGraph &msfg)
 {
-    flt_type total_lp = 0.0;
+    map<msfg_node_idx_t, flt_type> fw;
+    int text_end_node = msfg.string_end_nodes.at(text);
+    set<int> nodes_to_process; nodes_to_process.insert(text_end_node);
+    fw[text_end_node] = 0.0;
 
-    for (auto it = selected_words.cbegin(); it != selected_words.cend(); ++it)
-        total_lp += words.at(*it) * likelihood(*it, msfg);
+    while(nodes_to_process.size() > 0) {
 
-    return total_lp;
+        int i = *(nodes_to_process.rbegin());
+
+        const MultiStringFactorGraph::Node &node = msfg.nodes[i];
+
+        for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
+            int src_node = (**arc).source_node;
+            flt_type cost = fw[i] + *(**arc).cost;
+            if (fw.find(src_node) == fw.end()) fw[src_node] = cost;
+            else fw[src_node] = max(fw[src_node], cost);
+            nodes_to_process.insert(src_node);
+        }
+
+        nodes_to_process.erase(i);
+    }
+
+    return fw.at(0);
 }
 
 
 flt_type
 likelihood(const map<string, flt_type> &words,
-           const MultiStringFactorGraph &msfg)
+           const set<string> &selected_words,
+           const MultiStringFactorGraph &msfg,
+           bool forward_backward)
 {
     flt_type total_lp = 0.0;
 
-    for (auto it = words.cbegin(); it != words.cend(); ++it)
-        total_lp += it->second * likelihood(it->first, msfg);
+    for (auto it = selected_words.cbegin(); it != selected_words.cend(); ++it)
+        if (forward_backward)
+            total_lp += words.at(*it) * likelihood_fb(*it, msfg);
+        else
+            total_lp += words.at(*it) * likelihood_viterbi(*it, msfg);
 
     return total_lp;
 }
