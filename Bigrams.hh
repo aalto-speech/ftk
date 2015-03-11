@@ -124,6 +124,11 @@ static void rank_candidate_subwords(const std::map<std::string, flt_type> &words
                                     std::map<std::string, flt_type> &candidates,
                                     bool forward_backward=true);
 
+static void kn_smooth(const transitions_t &counts,
+                      transitions_t &kn,
+                      double D=0.1);
+
+
 private:
 
 };

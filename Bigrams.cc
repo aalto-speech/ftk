@@ -542,3 +542,46 @@ Bigrams::rank_candidate_subwords(const map<string, flt_type> &words,
         Bigrams::restore_string(transitions, changes);
     }
 }
+
+
+void
+Bigrams::kn_smooth(const transitions_t &counts,
+                   transitions_t &kn,
+                   double D)
+{
+    kn.clear();
+
+    map<string, double> ctxt_totals;
+    map<string, double> ctxt_count;
+    map<string, double> unigram_count;
+    double u_total = 0;
+    for (auto srcit = counts.begin(); srcit != counts.end(); ++srcit) {
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
+            if (tgtit->second > D) {
+                ctxt_totals[srcit->first] += tgtit->second;
+                ctxt_count[srcit->first] += D * 1.0;
+                unigram_count[tgtit->first] += D * 1.0;
+                u_total += D * 1.0;
+            }
+            else {
+                ctxt_totals[srcit->first] += tgtit->second;
+                ctxt_count[srcit->first] += tgtit->second;
+                unigram_count[tgtit->first] += tgtit->second;
+                u_total += tgtit->second;
+            }
+        }
+    }
+
+    for (auto srcit = counts.begin(); srcit != counts.end(); ++srcit) {
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
+            double term1 = max(tgtit->second-D, 0.0);
+            term1 /= ctxt_totals[srcit->first];
+            double term2 = ctxt_count[srcit->first] / ctxt_totals[srcit->first];
+            term2 *= unigram_count[tgtit->first] / u_total;
+            double kn_prob = log(term1+term2);
+            if (std::isnan(kn_prob)) kn_prob = -100;
+            kn[srcit->first][tgtit->first] = kn_prob;
+        }
+    }
+}
+
