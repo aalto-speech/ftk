@@ -8,6 +8,17 @@
 using namespace std;
 
 
+bool descending_sort(pair<string, flt_type> i,pair<string, flt_type> j)
+{
+    return (i.second > j.second);
+}
+
+bool ascending_sort(pair<string, flt_type> i,pair<string, flt_type> j)
+{
+    return (i.second < j.second);
+}
+
+
 int
 Unigrams::read_vocab(string fname,
                      map<string, flt_type> &vocab,
@@ -105,9 +116,6 @@ Unigrams::read_sents(string fname,
     return lc;
 }
 
-
-bool descending_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return (i.second > j.second); }
-bool ascending_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return (i.second < j.second); }
 
 void
 Unigrams::sort_vocab(const map<string, flt_type> &vocab,
@@ -444,8 +452,6 @@ Unigrams::init_candidates_by_usage(const map<string, flt_type> &words,
 }
 
 
-bool rank_desc_sort(pair<string, flt_type> i,pair<string, flt_type> j) { return (i.second > j.second); }
-
 // Perform each of the removals (independent of others in the list) to get
 // initial order for the removals
 flt_type
@@ -514,7 +520,7 @@ Unigrams::rank_candidates(const map<string, flt_type> &words,
         removal_scores.push_back(removal_score);
     }
 
-    sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
+    sort(removal_scores.begin(), removal_scores.end(), descending_sort);
 
     return curr_ll;
 }
@@ -588,7 +594,7 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
         removal_scores.push_back(removal_score);
     }
 
-    sort(removal_scores.begin(), removal_scores.end(), rank_desc_sort);
+    sort(removal_scores.begin(), removal_scores.end(), descending_sort);
 
     return curr_ll;
 }

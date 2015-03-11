@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <sstream>
 #include <stdexcept>
 
@@ -481,12 +482,42 @@ Bigrams::get_backpointers(const MultiStringFactorGraph &msfg,
 
 
 int
-Bigrams::init_candidate_subwords(unsigned int n_candidates,
-                                 const map<string, flt_type> &unigram_stats,
-                                 map<string, flt_type> &candidates)
+Bigrams::init_candidates_freq(unsigned int n_candidates,
+                              const map<string, flt_type> &unigram_stats,
+                              map<string, flt_type> &candidates)
 {
     vector<pair<string, flt_type> > sorted_stats;
     Unigrams::sort_vocab(unigram_stats, sorted_stats, false);
+
+    for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
+        if (it->first.length() < 2) continue;
+        candidates[it->first] = 0.0;
+        if (candidates.size() >= n_candidates) break;
+    }
+
+    return candidates.size();
+}
+
+
+int
+Bigrams::init_candidates_num_contexts(unsigned int n_candidates,
+                                      const transitions_t &transitions,
+                                      const map<string, flt_type> &unigram_stats,
+                                      map<string, flt_type> &candidates)
+{
+    vector<pair<string, flt_type> > sorted_stats;
+    Unigrams::sort_vocab(unigram_stats, sorted_stats, false);
+
+    map<string, flt_type> ctxt_estimate;
+    for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit) {
+        ctxt_estimate[srcit->first] += srcit->second.size();
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+            ctxt_estimate[tgtit->first] += 1;
+    }
+
+    for (auto ssit = sorted_stats.begin(); ssit != sorted_stats.end(); ++ssit)
+        ssit->second = ctxt_estimate[ssit->first];
+    stable_sort(sorted_stats.begin(), sorted_stats.end(), ascending_sort);
 
     for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
         if (it->first.length() < 2) continue;

@@ -92,8 +92,8 @@ int main(int argc, char* argv[]) {
         Bigrams::normalize(transitions);
         trans_stats.clear();
 
-        cerr << "\tbigram cost: " << lp << endl;
-        cerr << "\tamount of transitions: " << Bigrams::transition_count(transitions) << endl;
+        cerr << "\tbigram likelihood: " << lp << endl;
+        cerr << "\tnumber of transitions: " << Bigrams::transition_count(transitions) << endl;
         cerr << "\tvocab size: " << transitions.size() << endl;
 
         // Write temp transitions
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
         // Get removal candidates based on unigram stats
         cerr << "\tinitializing removals .." << endl;
         map<string, flt_type> candidates;
-        Bigrams::init_candidate_subwords(n_candidates_per_iter, unigram_stats, candidates);
+        Bigrams::init_candidates_freq(n_candidates_per_iter, unigram_stats, candidates);
 
         // Score all candidates
         cerr << "\tranking removals .." << endl;

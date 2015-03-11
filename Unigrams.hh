@@ -139,4 +139,8 @@ private:
     bool utf8;
 };
 
+bool descending_sort(std::pair<std::string, flt_type> i,std::pair<std::string, flt_type> j);
+bool ascending_sort(std::pair<std::string, flt_type> i,std::pair<std::string, flt_type> j);
+
+
 #endif /* UNIGRAMS */

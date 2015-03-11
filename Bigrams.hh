@@ -116,9 +116,14 @@ static void get_backpointers(const MultiStringFactorGraph &msfg,
 static void remove_transitions(std::vector<std::string> &to_remove,
                                transitions_t &transitions);
 
-static int init_candidate_subwords(unsigned int n_candidates,
-                                   const std::map<std::string, flt_type> &unigram_stats,
-                                   std::map<std::string, flt_type> &candidates);
+static int init_candidates_freq(unsigned int n_candidates,
+                                const std::map<std::string, flt_type> &unigram_stats,
+                                std::map<std::string, flt_type> &candidates);
+
+static int init_candidates_num_contexts(unsigned int n_candidates,
+                                        const transitions_t &transitions,
+                                        const std::map<std::string, flt_type> &unigram_stats,
+                                        std::map<std::string, flt_type> &candidates);
 
 static void rank_candidate_subwords(const std::map<std::string, flt_type> &words,
                                     const MultiStringFactorGraph &msfg,

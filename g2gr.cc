@@ -91,9 +91,9 @@ int main(int argc, char* argv[]) {
         assign_scores(transitions, msfg);
         trans_stats.clear();
 
-        cerr << "\tbigram cost: " << lp << endl;
-        cerr << "\tbigram count: " << Bigrams::transition_count(transitions) << endl;
-        cerr << "\tvocab size: " << transitions.size() << endl;
+        cerr << "\tbigram likelihood: " << lp << endl;
+        cerr << "\tnumber of transitions: " << Bigrams::transition_count(transitions) << endl;
+        cerr << "\tvocabulary size: " << transitions.size() << endl;
 
         // Write temp transitions
         ostringstream transitions_temp;
@@ -105,10 +105,10 @@ int main(int argc, char* argv[]) {
         map<string, flt_type> removals;
         if (iteration == 1 && transitions.size() % 1000 != 0) {
             int first_iter_removals = transitions.size() % 1000;
-            Bigrams::init_candidate_subwords(first_iter_removals, unigram_stats, removals);
+            Bigrams::init_candidates_freq(first_iter_removals, unigram_stats, removals);
         }
         else
-            Bigrams::init_candidate_subwords(removals_per_iter, unigram_stats, removals);
+            Bigrams::init_candidates_freq(removals_per_iter, unigram_stats, removals);
 
         vector<string> to_remove;
         for (auto it = removals.begin(); it != removals.end(); ++it) {
