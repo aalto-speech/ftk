@@ -9,6 +9,42 @@ using namespace std;
 
 
 void
+Bigrams::iterate(const map<string, flt_type> &words,
+                 MultiStringFactorGraph &msfg,
+                 transitions_t &transitions,
+                 bool forward_backward,
+                 unsigned int iterations)
+{
+    for (unsigned int i=0; i<iterations; i++) {
+        map<string, flt_type> unigram_stats;
+        transitions_t trans_stats;
+        assign_scores(transitions, msfg);
+        collect_trans_stats(words, msfg, trans_stats, unigram_stats, forward_backward);
+        transitions.swap(trans_stats);
+        Bigrams::normalize(transitions);
+    }
+}
+
+
+void
+Bigrams::iterate_kn(const map<string, flt_type> &words,
+                    MultiStringFactorGraph &msfg,
+                    transitions_t &transitions,
+                    bool forward_backward,
+                    flt_type D,
+                    unsigned int iterations)
+{
+    for (unsigned int i=0; i<iterations; i++) {
+        map<string, flt_type> unigram_stats;
+        transitions_t trans_stats;
+        assign_scores(transitions, msfg);
+        collect_trans_stats(words, msfg, trans_stats, unigram_stats, forward_backward);
+        kn_smooth(trans_stats, transitions, D);
+    }
+}
+
+
+void
 Bigrams::update_trans_stats(const transitions_t &collected_stats,
                             flt_type weight,
                             transitions_t &trans_stats,
@@ -77,12 +113,6 @@ Bigrams::collect_trans_stats(const map<string, flt_type> &words,
         update_trans_stats(word_stats, 1.0, trans_stats, unigram_stats);
     }
     else {
-        //transitions_t word_stats;
-        //for (auto it = msfg.string_end_nodes.begin(); it != msfg.string_end_nodes.end(); ++it)
-        //    total_lp += words.at(it->first) * viterbi(msfg, it->first, word_stats, words.at(it->first));
-        //update_trans_stats(word_stats, 1.0, trans_stats, unigram_stats);
-        //finalize_viterbi_stats(msfg, trans_stats);
-
         total_lp = viterbi(msfg, words, trans_stats);
         get_unigram_stats(trans_stats, unigram_stats);
         finalize_viterbi_stats(msfg, trans_stats);

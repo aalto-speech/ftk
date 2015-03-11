@@ -14,6 +14,18 @@ public:
 
 Bigrams() {}
 
+static void iterate(const std::map<std::string, flt_type> &words,
+                    MultiStringFactorGraph &msfg,
+                    transitions_t &transitions,
+                    bool forward_backward=false,
+                    unsigned int iterations=1);
+
+static void iterate_kn(const std::map<std::string, flt_type> &words,
+                       MultiStringFactorGraph &msfg,
+                       transitions_t &transitions,
+                       bool forward_backward=false,
+                       flt_type D=0.1,
+                       unsigned int iterations=1);
 
 static void update_trans_stats(const transitions_t &collected_stats,
                                flt_type weight,

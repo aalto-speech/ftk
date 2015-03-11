@@ -91,7 +91,6 @@ int main(int argc, char* argv[]) {
 
         assign_scores(transitions, msfg);
         flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_fb);
-
         Bigrams::kn_smooth(trans_stats, transitions, discount);
         trans_stats.clear();
 
