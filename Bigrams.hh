@@ -58,9 +58,6 @@ static void finalize_viterbi_stats(const MultiStringFactorGraph &msfg,
 static void normalize(transitions_t &trans_stats,
                       flt_type min_cost = FLOOR_LP);
 
-static void copy_transitions(transitions_t &src,
-                             transitions_t &tgt);
-
 static void write_transitions(const transitions_t &transitions,
                               const std::string &filename,
                               bool count_style=false,
@@ -68,9 +65,6 @@ static void write_transitions(const transitions_t &transitions,
 
 static int read_transitions(transitions_t &transitions,
                             const std::string &filename);
-
-static flt_type bigram_cost(const transitions_t &transitions,
-                            const transitions_t &trans_stats);
 
 static int cutoff(const std::map<std::string, flt_type> &unigram_stats,
                   flt_type cutoff,

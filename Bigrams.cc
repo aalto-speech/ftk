@@ -184,17 +184,6 @@ Bigrams::normalize(transitions_t &trans_stats,
 }
 
 
-// NOTE: assumes that tgt has the same elements as in src
-void
-Bigrams::copy_transitions(transitions_t &src,
-                          transitions_t &tgt)
-{
-    for (auto trsrcit = tgt.begin(); trsrcit != tgt.end(); ++trsrcit)
-        for (auto trtgtit = trsrcit->second.begin(); trtgtit != trsrcit->second.end(); ++trtgtit)
-            trtgtit->second = src[trsrcit->first][trtgtit->first];
-}
-
-
 void
 Bigrams::write_transitions(const transitions_t &transitions,
                            const string &filename,
@@ -240,26 +229,6 @@ Bigrams::read_transitions(transitions_t &transitions,
     transfile.close();
 
     return num_trans;
-}
-
-
-flt_type
-Bigrams::bigram_cost(const transitions_t &transitions,
-                     const transitions_t &trans_stats)
-{
-    flt_type total = 0.0;
-    flt_type tmp = 0.0;
-
-    for (auto srcit = trans_stats.cbegin(); srcit != trans_stats.cend(); ++srcit)
-        for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit) {
-            if (std::isfinite(tgtit->second))
-                tmp = tgtit->second * transitions.at(srcit->first).at(tgtit->first);
-            if (std::isfinite(tmp)) total += tmp;
-            if (!std::isfinite(tmp)) cout << srcit->first << " " << tgtit->first << ": "
-                    << tgtit->second << " " << transitions.at(srcit->first).at(tgtit->first) << endl;
-        }
-
-    return total;
 }
 
 
