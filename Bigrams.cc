@@ -373,25 +373,6 @@ Bigrams::trans_to_vocab(const transitions_t &transitions,
 }
 
 
-flt_type
-Bigrams::score(const transitions_t &transitions,
-               vector<string> &path)
-{
-    flt_type ll = 0.0;
-
-    for (unsigned int i=0; i<path.size()-1; i++) {
-        try {
-            ll += transitions.at(path[i]).at(path[i+1]);
-        }
-        catch (std::out_of_range &oor) {
-            ll += SMALL_LP;
-        }
-    }
-
-    return ll;
-}
-
-
 void
 Bigrams::reverse_transitions(const transitions_t &transitions,
                              transitions_t &reverse_transitions)
