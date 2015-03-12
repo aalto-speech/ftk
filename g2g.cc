@@ -102,10 +102,11 @@ int main(int argc, char* argv[]) {
         cerr << "\twriting to: " << transitions_temp.str() << endl;
         Bigrams::write_transitions(transitions, transitions_temp.str());
 
-        // Get removal candidates based on unigram stats
+        // Get candidate subwords
         cerr << "\tinitializing removals .." << endl;
         map<string, flt_type> candidates;
-        Bigrams::init_candidates_freq(n_candidates_per_iter, unigram_stats, candidates);
+        Bigrams::init_candidates_freq(n_candidates_per_iter/2, unigram_stats, candidates);
+        Bigrams::init_candidates_num_contexts(n_candidates_per_iter, transitions, unigram_stats, candidates);
 
         // Score all candidates
         cerr << "\tranking removals .." << endl;
@@ -125,6 +126,8 @@ int main(int argc, char* argv[]) {
         Bigrams::remove_transitions(to_remove, transitions);
         for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
             msfg.remove_arcs(*it);
+
+        Bigrams::iterate(words, msfg, transitions, enable_fb, 1);
 
         if  (transitions.size() <= target_vocab_size) break;
         iteration++;
