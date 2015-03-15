@@ -58,6 +58,8 @@ static void finalize_viterbi_stats(const MultiStringFactorGraph &msfg,
 static void freqs_to_logprobs(transitions_t &trans_stats,
                               flt_type min_cost = FLOOR_LP);
 
+static void normalize(transitions_t &trans_stats);
+
 static void write_transitions(const transitions_t &transitions,
                               const std::string &filename,
                               bool count_style=false,

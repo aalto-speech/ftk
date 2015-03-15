@@ -186,6 +186,20 @@ Bigrams::freqs_to_logprobs(transitions_t &trans_stats,
 
 
 void
+Bigrams::normalize(transitions_t &trans_stats)
+{
+    for (auto srcit = trans_stats.begin(); srcit != trans_stats.end(); ++srcit) {
+        flt_type normalizer = MIN_FLOAT;
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+            if (normalizer == MIN_FLOAT) normalizer = tgtit->second;
+            else normalizer = add_log_domain_probs(normalizer, tgtit->second);
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+            tgtit->second -= normalizer;
+     }
+}
+
+
+void
 Bigrams::write_transitions(const transitions_t &transitions,
                            const string &filename,
                            bool count_style,
@@ -570,9 +584,9 @@ Bigrams::kn_smooth(const transitions_t &counts,
         for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
             if (tgtit->second > D) {
                 ctxt_totals[srcit->first] += tgtit->second;
-                ctxt_count[srcit->first] += D * 1.0;
-                unigram_count[tgtit->first] += D * 1.0;
-                u_total += D * 1.0;
+                ctxt_count[srcit->first] += D;
+                unigram_count[tgtit->first] += D;
+                u_total += D;
             }
             else {
                 ctxt_totals[srcit->first] += tgtit->second;

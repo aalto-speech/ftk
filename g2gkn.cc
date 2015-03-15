@@ -92,6 +92,7 @@ int main(int argc, char* argv[]) {
         assign_scores(transitions, msfg);
         flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_fb);
         Bigrams::kn_smooth(trans_stats, transitions, discount);
+        Bigrams::normalize(transitions);
         trans_stats.clear();
 
         cerr << "\tbigram likelihood: " << lp << endl;
@@ -128,6 +129,9 @@ int main(int argc, char* argv[]) {
         Bigrams::remove_transitions(to_remove, transitions);
         for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
             msfg.remove_arcs(*it);
+
+        Bigrams::iterate_kn(words, msfg, transitions, enable_fb, discount, 1);
+        Bigrams::normalize(transitions);
 
         if  (transitions.size() <= target_vocab_size) break;
         iteration++;
