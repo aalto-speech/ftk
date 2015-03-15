@@ -110,13 +110,13 @@ int main(int argc, char* argv[]) {
     }
 
     transitions = trans_stats;
-    Bigrams::normalize(transitions);
+    Bigrams::freqs_to_logprobs(transitions);
     assign_scores(transitions, msfg);
     for (int i=0; i<num_iterations; i++) {
         cerr << "Bigram iteration " << i+1 << endl;
         flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_forward_backward);
         transitions.swap(trans_stats);
-        Bigrams::normalize(transitions);
+        Bigrams::freqs_to_logprobs(transitions);
         assign_scores(transitions, msfg);
         cerr << "\tlikelihood: " << lp << endl;
         cerr << "\tnumber of transitions: " << Bigrams::transition_count(transitions) << endl;

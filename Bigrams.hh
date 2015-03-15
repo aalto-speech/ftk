@@ -55,8 +55,8 @@ static void get_unigram_stats(const transitions_t &trans_stats,
 static void finalize_viterbi_stats(const MultiStringFactorGraph &msfg,
                                    transitions_t &trans_stats);
 
-static void normalize(transitions_t &trans_stats,
-                      flt_type min_cost = FLOOR_LP);
+static void freqs_to_logprobs(transitions_t &trans_stats,
+                              flt_type min_cost = FLOOR_LP);
 
 static void write_transitions(const transitions_t &transitions,
                               const std::string &filename,

@@ -22,7 +22,7 @@ Bigrams::iterate(const map<string, flt_type> &words,
         assign_scores(transitions, msfg);
         collect_trans_stats(words, msfg, trans_stats, unigram_stats, forward_backward);
         transitions.swap(trans_stats);
-        Bigrams::normalize(transitions);
+        Bigrams::freqs_to_logprobs(transitions);
     }
 }
 
@@ -154,8 +154,8 @@ Bigrams::finalize_viterbi_stats(const MultiStringFactorGraph &msfg,
 
 
 void
-Bigrams::normalize(transitions_t &trans_stats,
-                   flt_type min_cost)
+Bigrams::freqs_to_logprobs(transitions_t &trans_stats,
+                           flt_type min_cost)
 {
     for (auto srcit = trans_stats.begin(); srcit != trans_stats.end(); ++srcit) {
 

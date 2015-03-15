@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
         assign_scores(transitions, msfg);
         flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_fb);
         transitions.swap(trans_stats);
-        Bigrams::normalize(transitions);
+        Bigrams::freqs_to_logprobs(transitions);
         trans_stats.clear();
 
         cerr << "\tbigram likelihood: " << lp << endl;
