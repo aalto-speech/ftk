@@ -9,25 +9,27 @@
 using namespace std;
 
 
-void
+flt_type
 Bigrams::iterate(const map<string, flt_type> &words,
                  MultiStringFactorGraph &msfg,
                  transitions_t &transitions,
                  bool forward_backward,
                  unsigned int iterations)
 {
+    flt_type lp=0.0;
     for (unsigned int i=0; i<iterations; i++) {
         map<string, flt_type> unigram_stats;
         transitions_t trans_stats;
         assign_scores(transitions, msfg);
-        collect_trans_stats(words, msfg, trans_stats, unigram_stats, forward_backward);
+        lp = collect_trans_stats(words, msfg, trans_stats, unigram_stats, forward_backward);
         transitions.swap(trans_stats);
         Bigrams::freqs_to_logprobs(transitions);
     }
+    return lp;
 }
 
 
-void
+flt_type
 Bigrams::iterate_kn(const map<string, flt_type> &words,
                     MultiStringFactorGraph &msfg,
                     transitions_t &transitions,
@@ -35,13 +37,15 @@ Bigrams::iterate_kn(const map<string, flt_type> &words,
                     flt_type D,
                     unsigned int iterations)
 {
+    flt_type lp=0.0;
     for (unsigned int i=0; i<iterations; i++) {
         map<string, flt_type> unigram_stats;
         transitions_t trans_stats;
         assign_scores(transitions, msfg);
-        collect_trans_stats(words, msfg, trans_stats, unigram_stats, forward_backward);
+        lp = collect_trans_stats(words, msfg, trans_stats, unigram_stats, forward_backward);
         kn_smooth(trans_stats, transitions, D);
     }
+    return lp;
 }
 
 
