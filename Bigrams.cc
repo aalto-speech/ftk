@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <sstream>
 #include <stdexcept>
+#include <thread>
 
 #include "io.hh"
 #include "Unigrams.hh"
@@ -560,6 +561,75 @@ Bigrams::rank_candidate_subwords(const map<string, flt_type> &words,
     transitions_t reverse;
     Bigrams::reverse_transitions(transitions, reverse);
 
+    for (auto it = candidates.begin(); it != candidates.end(); ++it) {
+        transitions_t changes;
+        set<string> words_to_resegment = backpointers.at(it->first);
+        flt_type orig_score = likelihood(words, words_to_resegment, msfg, forward_backward);
+        flt_type context_score = Bigrams::disable_string(reverse, it->first,
+                                                         unigram_stats, transitions, changes);
+        flt_type hypo_score = likelihood(words, words_to_resegment, msfg, forward_backward);
+        it->second = hypo_score-orig_score + context_score;
+        Bigrams::restore_string(transitions, changes);
+    }
+}
+
+
+void
+Bigrams::rank_subwords_threaded(const map<string, flt_type> &words,
+                                const MultiStringFactorGraph &msfg,
+                                const map<string, flt_type> &unigram_stats,
+                                const transitions_t &transitions,
+                                map<string, flt_type> &candidates,
+                                bool forward_backward,
+                                int num_threads)
+{
+    map<string, set<string> > backpointers;
+    Bigrams::get_backpointers(msfg, backpointers, 1);
+    transitions_t reverse;
+    Bigrams::reverse_transitions(transitions, reverse);
+
+    vector<map<string, flt_type> > all_scores;
+    for (int t=0; t<num_threads; t++) {
+        map<string, flt_type> curr_scores;
+        int cidx = 0;
+        for (auto cit = candidates.cbegin(); cit != candidates.cend(); ++cit) {
+            if ((cidx % num_threads) == t) curr_scores[cit->first] = cit->second;
+            cidx++;
+        }
+        all_scores.push_back(curr_scores);
+    }
+
+    vector<thread> threads;
+    for (int t=0; t<num_threads; t++) {
+        threads.push_back(thread(Bigrams::rank_subwords_thr_worker,
+                                 std::cref(words),
+                                 std::cref(msfg),
+                                 std::cref(unigram_stats),
+                                 std::cref(backpointers),
+                                 std::cref(reverse),
+                                 transitions,
+                                 std::ref(all_scores[t]),
+                                 forward_backward));
+    }
+
+    for (unsigned int t=0; t<threads.size(); t++) {
+        threads[t].join();
+        map<string, flt_type> &curr_scores = all_scores[t];
+        candidates.insert(curr_scores.begin(), curr_scores.end());
+    }
+}
+
+
+void
+Bigrams::rank_subwords_thr_worker(const map<string, flt_type> &words,
+                                  const MultiStringFactorGraph &msfg,
+                                  const map<string, flt_type> &unigram_stats,
+                                  const map<string, set<string> > &backpointers,
+                                  const transitions_t &reverse,
+                                  transitions_t transitions,
+                                  map<string, flt_type> &candidates,
+                                  bool forward_backward)
+{
     for (auto it = candidates.begin(); it != candidates.end(); ++it) {
         transitions_t changes;
         set<string> words_to_resegment = backpointers.at(it->first);
