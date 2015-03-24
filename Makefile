@@ -1,10 +1,10 @@
 
-cxxflags = -O4 -march=native -std=gnu++0x -Wall -Wno-unused-function -Wno-write-strings -pthread
+cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-unused-function -Wno-write-strings -pthread
 #cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-unused-function -pthread
 
 ##################################################
 
-progs = segtext substrings strscore g1g g2gr g2g g2gkn segposts iterate iterate12 cmsfg ll counts iterate-sents g1g-sents msfgdummy
+progs = segtext substrings strscore g1g g2gr g2g g2gkn segposts iterate iterate12 cmsfg llh counts iterate-sents g1g-sents
 progs_srcs = $(progs:=.cc)
 progs_objs = $(progs:=.o)
 srcs = io.cc conf.cc Ngram.cc StringSet.cc FactorGraph.cc MSFG.cc EM.cc Unigrams.cc Bigrams.cc
