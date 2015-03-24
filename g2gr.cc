@@ -15,6 +15,7 @@ int main(int argc, char* argv[]) {
       ('h', "help", "", "", "display help")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
       ('v', "vocab-size=INT", "arg must", "30000", "Target vocabulary size (stopping criterion)")
+      ('m', "temp-models=INT", "arg", "0", "Write out intermediate models for #V mod INT == 0")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
@@ -26,6 +27,7 @@ int main(int argc, char* argv[]) {
     string initial_transitions_fname = config.arguments[1];
     string msfg_fname = config.arguments[2];
     string transition_fname = config.arguments[3];
+    unsigned int temp_vocab_interval = config["temp-models"].get_int();
     bool enable_fb = config["forward-backward"].specified;
     bool utf8_encoding = config["utf-8"].specified;
 
@@ -36,6 +38,10 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, removals per iteration: " << removals_per_iter << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
     cerr << "parameters, floor lp: " << FLOOR_LP << endl;
+    if (temp_vocab_interval > 0)
+        cerr << "parameters, write temp models whenever #V modulo " << temp_vocab_interval << " == 0" << endl;
+    else
+        cerr << "parameters, write temp models: NO" << endl;
     cerr << "parameters, use forward-backward: " << enable_fb << endl;
     cerr << "parameters, utf-8 encoding: " << utf8_encoding << endl;
 
@@ -77,46 +83,53 @@ int main(int argc, char* argv[]) {
             msfg.remove_arcs(*it);
     }
 
-    assign_scores(transitions, msfg);
-
     std::cerr << std::setprecision(15);
     int iteration = 1;
+    unsigned int next_out_vocab_size=0;
     while (true) {
 
         cerr << "Iteration " << iteration << endl;
 
+        assign_scores(transitions, msfg);
         flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_fb);
         transitions.swap(trans_stats);
         Bigrams::freqs_to_logprobs(transitions);
-        assign_scores(transitions, msfg);
         trans_stats.clear();
 
         cerr << "\tbigram likelihood: " << lp << endl;
         cerr << "\tnumber of transitions: " << Bigrams::transition_count(transitions) << endl;
         cerr << "\tvocabulary size: " << transitions.size() << endl;
 
-        // Write temp transitions
-        ostringstream transitions_temp;
-        transitions_temp << "transitions.iter" << iteration << ".bz2";
-        cerr << "\twriting to: " << transitions_temp.str() << endl;
-        Bigrams::write_transitions(transitions, transitions_temp.str());
+        if (iteration==1) next_out_vocab_size = transitions.size()/temp_vocab_interval * temp_vocab_interval;
 
         cerr << "\tinitializing removals .." << endl;
         map<string, flt_type> removals;
-        if (iteration == 1 && transitions.size() % 1000 != 0) {
-            int first_iter_removals = transitions.size() % 1000;
-            Bigrams::init_candidates_freq(first_iter_removals, unigram_stats, removals);
-        }
-        else
-            Bigrams::init_candidates_freq(removals_per_iter, unigram_stats, removals);
+        Bigrams::init_candidates_freq(removals_per_iter, unigram_stats, removals);
 
         vector<string> to_remove;
         for (auto it = removals.begin(); it != removals.end(); ++it) {
             to_remove.push_back(it->first);
+            if (((transitions.size()-to_remove.size()) % removals_per_iter == 0)
+                  && to_remove.size() >= (removals_per_iter/2))
+                    break;
         }
         Bigrams::remove_transitions(to_remove, transitions);
         for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
             msfg.remove_arcs(*it);
+
+        Bigrams::iterate(words, msfg, transitions, enable_fb, 1);
+
+        // Write intermediate model
+        if (temp_vocab_interval > 0
+            && transitions.size() <= next_out_vocab_size
+            && transitions.size() > target_vocab_size)
+        {
+            ostringstream transitions_temp;
+            transitions_temp << "transitions." << transitions.size() << ".bz2";
+            cerr << "\twriting to: " << transitions_temp.str() << endl;
+            Bigrams::write_transitions(transitions, transitions_temp.str());
+            next_out_vocab_size -= temp_vocab_interval;
+        }
 
         if  (transitions.size() <= target_vocab_size) break;
         iteration++;
