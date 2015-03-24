@@ -148,7 +148,7 @@ Bigrams::finalize_viterbi_stats(const MultiStringFactorGraph &msfg,
         for (auto nit = nodes.begin(); nit != nodes.end(); ++nit) {
             const MultiStringFactorGraph::Node &src_nd = msfg.nodes[*nit];
             for (auto ait=src_nd.outgoing.begin(); ait != src_nd.outgoing.end(); ++ait) {
-                string tgtstr = msfg.nodes[(*ait)->target_node].factor;
+                string tgtstr = msfg.get_factor((*ait)->target_node);
                 if (stats.find(tgtstr) != stats.end()
                     && sit->second.find(tgtstr) == sit->second.end())
                     sit->second[tgtstr] = exp(FLOOR_LP);
