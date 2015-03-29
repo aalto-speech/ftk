@@ -60,7 +60,7 @@ MultiStringFactorGraph::add(const FactorGraph &text,
         else {
             MultiStringFactorGraph::Node &msfg_node = nodes[msfg_source_node];
             for (auto msfg_arcit = msfg_node.outgoing.begin(); msfg_arcit != msfg_node.outgoing.end(); ++msfg_arcit)
-                if (get_factor((**msfg_arcit).target_node) == target_node_factor) {
+                if (nodes[(**msfg_arcit).target_node].factor == target_node_factor) {
                     msfg_target_node = (**msfg_arcit).target_node;
                     break;
                 }
@@ -75,8 +75,7 @@ MultiStringFactorGraph::add(const FactorGraph &text,
         }
 
         // Create new node and arc
-        nodes.push_back(Node());
-        set_factor(nodes.size()-1, target_node_factor);
+        nodes.push_back(Node(target_node_factor));
         msfg_target_node = nodes.size()-1;
         visited_nodes[fg_target_node] = msfg_target_node;
         if (lookahead) factor_lookahead[msfg_source_node][target_node_factor] = msfg_target_node;
@@ -89,20 +88,6 @@ MultiStringFactorGraph::add(const FactorGraph &text,
 
     string_end_nodes[text.text] = visited_nodes[text.nodes.size()-1];
     reverse_string_end_nodes[visited_nodes[text.nodes.size()-1]] = text.text;
-}
-
-
-void
-MultiStringFactorGraph::set_factor(msfg_node_idx_t node,
-                                   string factor)
-{
-    if (factor_idx_map.find(factor) == factor_idx_map.end()) {
-        factor_idx_map[factor] = factor_lookup.size();
-        nodes[node].factor = factor_lookup.size();
-        factor_lookup.push_back(factor);
-    }
-    else
-        nodes[node].factor = factor_idx_map[factor];
 }
 
 
@@ -165,7 +150,7 @@ MultiStringFactorGraph::advance(vector<vector<string> > &paths,
                                 msfg_node_idx_t node_idx) const
 {
     const MultiStringFactorGraph::Node &node = nodes[node_idx];
-    curr_string.push_back(get_factor(node));
+    curr_string.push_back(node.factor);
 
     if (node_idx == 0) {
         paths.push_back(curr_string);
@@ -237,7 +222,7 @@ MultiStringFactorGraph::prune_unreachable()
 {
     for (auto it = nodes.begin(); it != nodes.end(); it++) {
 
-        if (get_factor(*it) == start_end_symbol) continue;
+        if (it->factor == start_end_symbol) continue;
 
         if (it->incoming.size() == 0)
             while (it->outgoing.size() > 0)
@@ -259,8 +244,8 @@ MultiStringFactorGraph::write(const std::string &filename) const
     vector<Arc*> arcs; collect_arcs(arcs);
 
     outfile << nodes.size() << " " << arcs.size() << " " << string_end_nodes.size() << endl;
-    for (msfg_node_idx_t i=0; i<nodes.size(); i++)
-        outfile << "n " << i << " " << get_factor(i) << endl;
+    for (unsigned int i=0; i<nodes.size(); i++)
+        outfile << "n " << i << " " << nodes[i].factor << endl;
     for (auto it = arcs.begin(); it != arcs.end(); ++it)
         outfile << "a " << (**it).source_node << " " << (**it).target_node << endl;
     for (auto it = string_end_nodes.cbegin(); it != string_end_nodes.cend(); ++it)
@@ -298,9 +283,9 @@ MultiStringFactorGraph::read(const std::string &filename)
             exit(0);
         }
         nodess >> node_idx >> factor;
-        set_factor(node_idx, factor);
+        nodes[node_idx].factor.assign(factor);
+        factor_node_map[factor].push_back(node_idx);
     }
-    update_factor_node_map();
 
     msfg_node_idx_t src_node, tgt_node;
     for (int i=0; i<arc_count; i++) {
@@ -338,8 +323,10 @@ void
 MultiStringFactorGraph::update_factor_node_map()
 {
     factor_node_map.clear();
-    for (msfg_node_idx_t idx=0; idx < nodes.size(); idx++)
-        factor_node_map[get_factor(idx)].push_back(idx);
+    for (msfg_node_idx_t idx=0; idx < nodes.size(); idx++) {
+        Node &nd = nodes[idx];
+        factor_node_map[nd.factor].push_back(idx);
+    }
 }
 
 
@@ -383,30 +370,13 @@ MultiStringFactorGraph::collect_factors(const string &text, set<string> &factors
 
         msfg_node_idx_t i = *(nodes_to_process.rbegin());
 
-        factors.insert(get_factor(i));
-
         const Node &node = nodes[i];
+        factors.insert(node.factor);
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc)
             nodes_to_process.insert((**arc).source_node);
 
         nodes_to_process.erase(i);
     }
-}
-
-
-int MultiStringFactorGraph::num_nodes() const
-{
-    return nodes.size();
-}
-
-
-int MultiStringFactorGraph::num_arcs() const
-{
-    int arc_count = 0;
-    for (msfg_node_idx_t ni=0; ni<nodes.size(); ++ni) {
-        arc_count += nodes[ni].outgoing.size();
-    }
-    return arc_count;
 }
 
 
@@ -419,7 +389,7 @@ void MultiStringFactorGraph::print_dot_digraph(ostream &fstr)
 
     for (msfg_node_idx_t ni=0; ni<nodes.size(); ++ni) {
         fstr << "\t" << ni;
-        string label = get_factor(ni);
+        string label = nodes[ni].factor;
         if (label == start_end_symbol && ni > 0) {
             label += " / " + reverse_string_end_nodes[ni];
             fstr << " [label=\"" << label << "\", style=filled, fillcolor=grey]" << endl;

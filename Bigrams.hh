@@ -134,23 +134,6 @@ static void rank_candidate_subwords(const std::map<std::string, flt_type> &words
                                     std::map<std::string, flt_type> &candidates,
                                     bool forward_backward=true);
 
-static void rank_subwords_threaded(const std::map<std::string, flt_type> &words,
-                                   const MultiStringFactorGraph &msfg,
-                                   const std::map<std::string, flt_type> &unigram_stats,
-                                   const transitions_t &transitions,
-                                   std::map<std::string, flt_type> &candidates,
-                                   bool forward_backward,
-                                   int num_threads);
-
-static void rank_subwords_thr_worker(const std::map<std::string, flt_type> &words,
-                                     const MultiStringFactorGraph &msfg,
-                                     const std::map<std::string, flt_type> &unigram_stats,
-                                     const std::map<std::string, std::set<std::string> > &backpointers,
-                                     const transitions_t &reverse,
-                                     transitions_t transitions,
-                                     std::map<std::string, flt_type> &candidates,
-                                     bool forward_backward);
-
 static void kn_smooth(const transitions_t &counts,
                       transitions_t &kn,
                       double D=0.1);

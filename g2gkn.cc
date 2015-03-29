@@ -17,7 +17,6 @@ int main(int argc, char* argv[]) {
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
       ('d', "discount=FLOAT", "arg", "0.1", "Kneser-Ney discount parameter")
-      ('t', "threads=INT", "arg", "1", "Number of threads for ranking subwords")
       ('m', "temp-models=INT", "arg", "0", "Write out intermediate models for #V mod INT == 0")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
@@ -33,7 +32,6 @@ int main(int argc, char* argv[]) {
     string transition_fname = config.arguments[3];
     flt_type discount = config["discount"].get_float();
     unsigned int temp_vocab_interval = config["temp-models"].get_int();
-    unsigned int threads = config["threads"].get_int();
     bool enable_fb = config["forward-backward"].specified;
     bool utf8_encoding = config["utf-8"].specified;
 
@@ -46,7 +44,6 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
     cerr << "parameters, discount: " << discount << endl;
     cerr << "parameters, floor lp: " << FLOOR_LP << endl;
-    cerr << "parameters, number of threads: " << threads << endl;
     if (temp_vocab_interval > 0)
         cerr << "parameters, write temp models whenever #V modulo " << temp_vocab_interval << " == 0" << endl;
     else
@@ -62,11 +59,6 @@ int main(int argc, char* argv[]) {
     transitions_t transitions;
     transitions_t trans_stats;
     map<string, flt_type> unigram_stats;
-
-    if (threads>10) {
-        cerr << "do you want to launch " << threads << "?" << endl;
-        exit(0);
-    }
 
     cerr << "Reading initial transitions " << initial_transitions_fname << endl;
     int retval = Bigrams::read_transitions(transitions, initial_transitions_fname);
@@ -126,10 +118,7 @@ int main(int argc, char* argv[]) {
 
         // Score all candidates
         cerr << "\tranking removals .." << endl;
-        if (threads>1)
-            Bigrams::rank_subwords_threaded(words, msfg, unigram_stats, transitions, candidates, enable_fb, threads);
-        else
-            Bigrams::rank_candidate_subwords(words, msfg, unigram_stats, transitions, candidates, enable_fb);
+        Bigrams::rank_candidate_subwords(words, msfg, unigram_stats, transitions, candidates, enable_fb);
 
         // Remove subwords
         vector<pair<string, flt_type> > sorted_scores;

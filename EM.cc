@@ -575,7 +575,7 @@ assign_scores(transitions_t &transitions,
         for (auto ndit = nodes.begin(); ndit != nodes.end(); ++ndit) {
             MultiStringFactorGraph::Node &node = msfg.nodes[*ndit];
             for (auto arc = node.outgoing.begin(); arc != node.outgoing.end(); ++arc) {
-                string tgt_str = msfg.get_factor((**arc).target_node);
+                string &tgt_str = msfg.nodes[(**arc).target_node].factor;
                 if (it->second.find(tgt_str) != it->second.end())
                     (**arc).cost = &(it->second.at(tgt_str));
             }
@@ -792,7 +792,7 @@ backward(const MultiStringFactorGraph &msfg,
             int src_node = (**arc).source_node;
             if (fw[src_node] == MIN_FLOAT) continue;
             flt_type curr_cost = *(**arc).cost + fw[src_node] - fw[i] + bw[i];
-            stats[msfg.get_factor(src_node)][msfg.get_factor(node)] += text_weight * exp(curr_cost);
+            stats[msfg.nodes.at(src_node).factor][node.factor] += text_weight * exp(curr_cost);
             if (bw.find(src_node) == bw.end()) {
                 bw[src_node] = curr_cost;
                 nodes_to_process.insert(src_node);
@@ -828,7 +828,7 @@ backward(const MultiStringFactorGraph &msfg,
         for (auto arc = node.incoming.begin(); arc != node.incoming.end(); ++arc) {
             int src_node = (**arc).source_node;
             flt_type curr_cost = *(**arc).cost + fw.at(src_node) - fw.at(i) + bw[i];
-            stats[msfg.get_factor(src_node)][msfg.get_factor(node)] += text_weight * exp(curr_cost);
+            stats[msfg.nodes.at(src_node).factor][node.factor] += text_weight * exp(curr_cost);
             if (bw.find(src_node) == bw.end()) {
                 bw[src_node] = curr_cost;
                 nodes_to_process.insert(src_node);
@@ -915,7 +915,7 @@ viterbi(const MultiStringFactorGraph &msfg,
 
     msfg_node_idx_t curr_node = 0;
     while (true) {
-        best_path.push_back(msfg.get_factor(curr_node));
+        best_path.push_back(msfg.nodes[curr_node].factor);
         if (curr_node == text_end_node) break;
         curr_node = sources[curr_node];
     }
@@ -968,7 +968,7 @@ flt_type viterbi(const MultiStringFactorGraph &msfg,
         while (curr_node != 0) {
             if (source_nodes[curr_node] < 0) throw string("Problem in backtracking Viterbi path.");
             msfg_node_idx_t src_node = source_nodes[curr_node];
-            stats[msfg.get_factor(src_node)][msfg.get_factor(curr_node)] += word_freqs.at(it->first);
+            stats[msfg.nodes.at(src_node).factor][msfg.nodes.at(curr_node).factor] += word_freqs.at(it->first);
             curr_node = src_node;
         }
         total_lp += word_freqs.at(it->first) * fw.at(text_end_node);
