@@ -1,6 +1,6 @@
 
-cxxflags = -O4 -march=native -std=gnu++0x -Wall -Wno-unused-function -pthread
-#cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-unused-function -pthread
+cxxflags = -O4 -march=native -std=gnu++0x -Wall -Wno-unused-function
+#cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-unused-function
 
 ##################################################
 
