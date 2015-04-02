@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
         outfile << "\n";
     }
 
+    outfile.close();
     if (ss_vocab != NULL) delete ss_vocab;
-
     exit(0);
 }
