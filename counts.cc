@@ -77,25 +77,16 @@ int main(int argc, char* argv[]) {
     }
 
     cerr << "Segmenting corpus" << endl;
-    io::Stream infile;
-    try {
-        infile.open(in_fname, "r");
-    }
-    catch (io::Stream::OpenError oe) {
-        cerr << "Something went wrong opening the input." << endl;
-        exit(0);
-    }
+    SimpleFileInput infile(in_fname);
 
     map<string, flt_type> unigram_stats;
     transitions_t trans_stats;
-    char linebuffer[MAX_LINE_LEN];
+    string line;
     int li = 1;
-    while (fgets(linebuffer, MAX_LINE_LEN, infile.file) != NULL) {
+    while (infile.getline(line)) {
 
         if (li % 100000 == 0) cerr << "processing line number: " << li << endl;
 
-        linebuffer[strlen(linebuffer)-1] = '\0';
-        string line(linebuffer);
         trim(line, '\n');
 
         flt_type curr_weight = 1.0;

@@ -1,5 +1,5 @@
 
-cxxflags = -O4 -march=native -std=gnu++0x -Wall -Wno-unused-function
+cxxflags = -O4 -march=native -std=gnu++0x -Wall -Wno-unused-function -Wno-write-strings
 #cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-unused-function
 
 ##################################################
@@ -26,13 +26,13 @@ all: $(progs) $(test_progs)
 	$(CXX) -c $(cxxflags) $< -o $@
 
 $(progs): %: %.o $(objs)
-	$(CXX) $(cxxflags) $< -o $@ $(objs)
+	$(CXX) $(cxxflags) $< -o $@ $(objs) -lz
 
 %: %.o $(objs)
 	$(CXX) $(cxxflags) $< -o $@ $(objs)
 
 $(test_progs): %: %.o $(objs) $(test_objs)
-	$(CXX) $(cxxflags) $< -o $@ $(objs) $(test_objs) -lcppunit
+	$(CXX) $(cxxflags) $< -o $@ $(objs) $(test_objs) -lcppunit -lz
 
 test_objs: $(test_srcs)
 

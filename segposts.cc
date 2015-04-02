@@ -70,21 +70,12 @@ int main(int argc, char* argv[]) {
     }
 
     cerr << "Segmenting corpus" << endl;
-    io::Stream infile, outfile;
-    try {
-        infile.open(in_fname, "r");
-        outfile.open(out_fname, "w");
-    }
-    catch (io::Stream::OpenError oe) {
-        cerr << "Something went wrong opening the files." << endl;
-        exit(0);
-    }
+    SimpleFileInput infile(in_fname);
+    SimpleFileOutput outfile(out_fname);
 
-    char linebuffer[MAX_LINE_LEN];
-    while (fgets(linebuffer, MAX_LINE_LEN, infile.file) != NULL) {
+    string line;
+    while (infile.getline(line)) {
 
-        linebuffer[strlen(linebuffer)-1] = '\0';
-        string line(linebuffer);
         map<string, flt_type> ug_stats;
         transitions_t bg_stats;
         vector<flt_type> post_scores;
@@ -96,10 +87,10 @@ int main(int argc, char* argv[]) {
             forward_backward(transitions, fg, bg_stats, post_scores);
         }
 
-        fprintf(outfile.file, "%s\t", line.c_str());
+        outfile << line << "\t";
         for (unsigned int i=0; i<post_scores.size()-1; i++)
-            fprintf(outfile.file, "%f ", post_scores[i]);
-        fprintf(outfile.file, "\n");
+            outfile << post_scores[i] << " ";
+        outfile << "\n";
     }
 
     if (ss_vocab != NULL) delete ss_vocab;

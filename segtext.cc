@@ -73,21 +73,11 @@ int main(int argc, char* argv[]) {
     }
 
     cerr << "Segmenting corpus" << endl;
-    io::Stream infile, outfile;
-    try {
-        infile.open(in_fname, "r");
-        outfile.open(out_fname, "w");
-    }
-    catch (io::Stream::OpenError &oe) {
-        cerr << "Something went wrong opening the files." << endl;
-        exit(0);
-    }
+    SimpleFileInput infile(in_fname);
+    SimpleFileOutput outfile(out_fname);
 
-    char linebuffer[MAX_LINE_LEN];
-    while (fgets(linebuffer, MAX_LINE_LEN , infile.file) != NULL) {
-
-        linebuffer[strlen(linebuffer)-1] = '\0';
-        string line(linebuffer);
+    string line;
+    while (infile.getline(line)) {
 
         for (unsigned int i=0; i<line.size(); i++) {
             string currchr {line[i]};
@@ -112,25 +102,25 @@ int main(int argc, char* argv[]) {
 
         // Print out the best path
         if (sentence_mode) {
-            fprintf(outfile.file, "<s> <w>");
+            outfile << "<s> <w>";
             for (unsigned int i=0; i<best_path.size(); i++) {
                 if (best_path[i] == " ")
-                    fprintf(outfile.file, " <w>");
+                    outfile << " <w>";
                 else
-                    fprintf(outfile.file, " %s", best_path[i].c_str());
+                    outfile << " " << best_path[i];
             }
-            fprintf(outfile.file, " <w> </s>\n");
+            outfile << " <w> </s>\n";
         }
         else {
             for (unsigned int i=0; i<best_path.size(); i++) {
                 if (best_path[i] == " ")
-                    fprintf(outfile.file, "\t");
+                    outfile << "\t";
                 else {
-                    if (i>0) fprintf(outfile.file, " ");
-                    fprintf(outfile.file, "%s", best_path[i].c_str());
+                    if (i>0) outfile << " ";
+                    outfile << best_path[i];
                 }
             }
-            fprintf(outfile.file, "\n");
+            outfile << "\n";
         }
     }
 

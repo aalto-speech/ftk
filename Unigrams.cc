@@ -25,13 +25,12 @@ Unigrams::read_vocab(string fname,
                      int &maxlen,
                      bool utf8)
 {
-    ifstream vocabfile(fname);
-    if (!vocabfile) return -1;
+    SimpleFileInput vocabfile(fname);
 
     string line;
     flt_type count;
     maxlen = -1;
-    while (getline(vocabfile, line)) {
+    while (vocabfile.getline(line)) {
         stringstream ss(line);
         string word;
         ss >> count;
@@ -40,7 +39,6 @@ Unigrams::read_vocab(string fname,
 
         maxlen = max(maxlen, (int)get_factor_length(word, utf8));
     }
-    vocabfile.close();
 
     return vocab.size();
 }
@@ -78,18 +76,15 @@ Unigrams::write_vocab(string fname,
                       bool count_style,
                       int num_decimals)
 {
-    ofstream vocabfile(fname);
-    if (!vocabfile) return -1;
-
-    vocabfile << setprecision(num_decimals);
+    SimpleFileOutput vocabfile(fname);
 
     vector<pair<string, flt_type> > sorted_vocab;
     sort_vocab(vocab, sorted_vocab);
     for (unsigned int i=0; i<sorted_vocab.size(); i++)
         if (count_style)
-            vocabfile << sorted_vocab[i].first << "\t" << sorted_vocab[i].second << endl;
+            vocabfile << sorted_vocab[i].first << "\t" << sorted_vocab[i].second << "\n";
         else
-            vocabfile << sorted_vocab[i].second << " " << sorted_vocab[i].first << endl;
+            vocabfile << sorted_vocab[i].second << " " << sorted_vocab[i].first << "\n";
     vocabfile.close();
 
     return vocab.size();
@@ -101,18 +96,16 @@ Unigrams::read_sents(string fname,
                      vector<string> &sents)
 {
     sents.clear();
-    io::Stream datafile(fname, "r");
-    char mystring[MAX_LINE_LEN];
+    SimpleFileInput sfi(fname);
 
     int lc = 0;
-    while (fgets(mystring, MAX_LINE_LEN, datafile.file)) {
-        string cppstr(mystring);
-        trim(cppstr, '\n');
-        sents.push_back(cppstr);
+    string line;
+    while (sfi.getline(line)) {
+        trim(line, '\n');
+        sents.push_back(line);
         lc++;
     }
 
-    datafile.close();
     return lc;
 }
 

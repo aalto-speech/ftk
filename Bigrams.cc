@@ -209,18 +209,14 @@ Bigrams::write_transitions(const transitions_t &transitions,
                            bool count_style,
                            int num_decimals)
 {
-    io::Stream transfile(filename, "w");
-
-    ostringstream ssfmt;
-    ssfmt << "%s %s\t%." << num_decimals << "f\n";
-    string sfmt = ssfmt.str();
+    SimpleFileOutput transfile(filename);
 
     for (auto srcit = transitions.cbegin(); srcit != transitions.cend(); ++srcit)
         for (auto tgtit = srcit->second.cbegin(); tgtit != srcit->second.cend(); ++tgtit)
             if (count_style)
-                fprintf(transfile.file, sfmt.c_str(), srcit->first.c_str(), tgtit->first.c_str(), tgtit->second);
+                transfile << srcit->first << " " << tgtit->first << "\t" << tgtit->second << "\n";
             else
-                fprintf(transfile.file, sfmt.c_str(), srcit->first.c_str(), tgtit->first.c_str(), tgtit->second);
+                transfile << srcit->first << " " << tgtit->first << "\t" << tgtit->second << "\n";
 
     transfile.close();
 }
@@ -230,13 +226,12 @@ int
 Bigrams::read_transitions(transitions_t &transitions,
                           const string &filename)
 {
-    ifstream transfile(filename);
-    if (!transfile) return -1;
+    SimpleFileInput transfile(filename);
 
     string line;
     flt_type count;
     int num_trans = 0;
-    while (getline(transfile, line)) {
+    while (transfile.getline(line)) {
         stringstream ss(line);
         string src, tgt;
         ss >> src;
@@ -245,7 +240,6 @@ Bigrams::read_transitions(transitions_t &transitions,
         transitions[src][tgt] = count;
         num_trans++;
     }
-    transfile.close();
 
     return num_trans;
 }

@@ -1,186 +1,264 @@
-// Copyright (C) 2007 Vesa Siivola.
-// See LICENCE.TXT for the terms of distribution.
 #include "io.hh"
 
-namespace io {
-bool Stream::verbose=false;
+#include <cstring>
 
-Stream::Stream()
-    : file(NULL),
-      is_pipe(false),
-      close_allowed(true)
+using namespace std;
+
+
+SimpleFileInput::SimpleFileInput(string filename)
 {
-}
-
-Stream::Stream(std::string file_name, std::string mode, SeekType seek_type, bool allow_close)
-    : file(NULL),
-      is_pipe(false),
-      close_allowed(true)
-{
-    open(file_name, mode, seek_type, allow_close);
-}
-
-
-Stream::~Stream()
-{
-    close();
-}
-
-void
-Stream::open(std::string file_name, std::string mode, SeekType seek_type, bool allow_close)
-{
-    close();
-
-    if (file_name.length() == 0) {
-        fprintf(stderr, "can not open empty filename\n");
-        throw OpenError();
-    }
-
-    close_allowed = allow_close;
-
-    if (verbose) {
-        if (mode=="r") fprintf(stderr,"Opened read: ");
-        else fprintf(stderr,"Opened write: ");
-        fprintf(stderr,"%s\n",file_name.c_str());
-    }
-
-    // Standard input or output
-    if (file_name == "-") {
-        if (seek_type != LINEAR) {
-            fprintf(stderr,"Stream::open(): "
-                    "Program requested reopenable or seekable input, but got %s. Exit\n",file_name.c_str());
-            throw OpenError();
-        }
-        if (mode == "r") {
-            file = stdin;
-        } else if (mode == "w")
-            file = stdout;
-        else {
-            fprintf(stderr, "Stream::open(): "
-                    "invalid mode %s for standard input or output\n",
-                    mode.c_str());
-            throw OpenError();
-        }
-        close_allowed = false;
-    }
-
-    // A pipe for reading
-    else if (file_name[file_name.length()-1] == '|') {
-        if (seek_type == SEEKABLE) {
-            fprintf(stderr,"Stream::open(): "
-                    "Program requested seekable input, but got %s. Exit\n",file_name.c_str());
-            throw OpenError();
-        }
-        /*if (mode != "r") {
-        fprintf(stderr, "invalid mode %s for input pipe %s\n",
-        	mode.c_str(), file_name.c_str());
-        exit(1);
-        }*/
-        file_name.erase(file_name.length() - 1, 1);
-#ifdef _WIN32
-        throw OpenError();
-#else
-        file = popen(file_name.c_str(), mode.c_str());
-#endif
-        if (file == NULL) {
-            fprintf(stderr, "could not open pipe %s\n", file_name.c_str());
-            throw OpenError();
-        }
-        is_pipe = true;
-    }
-
-    // A pipe for writing
-    else if (file_name[0] == '|') {
-        if (seek_type == SEEKABLE) {
-            fprintf(stderr,"Stream::open(): "
-                    "Program requested seekable input, but got %s. Exit\n",file_name.c_str());
-            throw OpenError();
-        }
-        /*if (mode != "w") {
-        fprintf(stderr, "invalid mode %s for output pipe %s\n",
-        	mode.c_str(), file_name.c_str());
-        exit(1);
-        }*/
-        file_name.erase(0, 1);
-#ifdef _WIN32
-        throw OpenError();
-#else
-        file = popen(file_name.c_str(), mode.c_str());
-#endif
-        if (file == NULL) {
-            fprintf(stderr, "could not open pipe %s\n", file_name.c_str());
-            throw OpenError();
-        }
-        is_pipe = true;
-    }
-
-    // A gzipped file
-    else if ((file_name.length() >= 3 &&
-              file_name.substr(file_name.length() - 3) == ".gz") ||
-             (file_name.length() >= 4 &&
-              file_name.substr(file_name.length() - 4) == ".bz2"))
-
+    if (ends_with(filename, ".gz"))
     {
-        if (seek_type == SEEKABLE) {
-            fprintf(stderr,"Stream::open(): "
-                    "Program requested seekable input, but got %s. Exit\n",file_name.c_str());
-            throw OpenError();
-        }
-        std::string pipe;
-        if (mode == "r") {
-            if (file_name.substr(file_name.length() - 3) == ".gz")
-                pipe = "gzip -dc '";
-            else pipe = "bzip2 -dc '";
-            pipe += file_name + "'";
-        } else if (mode == "w") {
-            if (file_name.substr(file_name.length() - 3) == ".gz")
-                pipe = "gzip > '";
-            else pipe = "bzip2 --best > '";
-            pipe += file_name + "'";
-        } else {
-            fprintf(stderr, "invalid mode %s for gzipped file\n", mode.c_str());
-        }
-#ifdef _WIN32
-        throw OpenError();
+#ifndef NO_ZLIB
+        infs = unique_ptr<FileInputType>(new GZipFileInput(filename));
 #else
-        file = popen(pipe.c_str(), mode.c_str());
+        cerr << "No ZLIB support" << endl;
+        exit(1);
 #endif
-        if (file == NULL) {
-            fprintf(stderr, "could not open mode %s for pipe: %s\n", mode.c_str(),
-                    pipe.c_str());
-            throw OpenError();
-        }
-        is_pipe = true;
     }
+    else
+        infs = unique_ptr<FileInputType>(new IFStreamInput(filename));
+}
 
-    // An ordinary file
-    else {
-        file = fopen(file_name.c_str(), mode.c_str());
-        if (file == NULL) {
-            fprintf(stderr, "could not open mode %s for file %s\n",
-                    mode.c_str(), file_name.c_str());
-            throw OpenError();
-        }
-        is_pipe = false;
+
+#ifndef NO_ZLIB
+GZipFileInput::GZipFileInput(string filename)
+{
+    gzf = gzopen(filename.c_str(), "r");
+}
+
+GZipFileInput::~GZipFileInput()
+{
+    gzclose(gzf);
+}
+
+bool
+GZipFileInput::getline(string &line)
+{
+    char buffer[8192];
+    char *res = gzgets(gzf, buffer, 8192-1);
+    if (res != nullptr) {
+        strtok(buffer, "\r\n");
+        line.assign(buffer);
+        return true;
     }
+    return false;
+}
+#endif
 
+
+SimpleFileOutput::SimpleFileOutput(string filename)
+{
+    if (ends_with(filename, ".gz"))
+    {
+#ifndef NO_ZLIB
+        outfs = unique_ptr<FileOutputType>(new GZipFileOutput(filename));
+#else
+        cerr << "No ZLIB support" << endl;
+        exit(1);
+#endif
+    }
+    else
+        outfs = unique_ptr<FileOutputType>(new OFStream(filename));
+}
+
+SimpleFileOutput::~SimpleFileOutput()
+{
+    close();
 }
 
 void
-Stream::close()
+SimpleFileOutput::close()
 {
-    if (file == NULL || !close_allowed)
-        return;
-    if (is_pipe)
-#ifdef _WIN32
-        throw OpenError();
-#else
-        pclose(file);
-#endif
-    else
-        fclose(file);
-    is_pipe = false;
-    file = NULL;
+    outfs->close();
 }
 
+
+SimpleFileOutput&
+SimpleFileOutput::operator<<(const std::string &str)
+{
+    *outfs << str;
+    return *this;
 }
+
+SimpleFileOutput&
+SimpleFileOutput::operator<<(int intr)
+{
+    *outfs << intr;
+    return *this;
+}
+
+SimpleFileOutput&
+SimpleFileOutput::operator<<(long int lintr)
+{
+    *outfs << lintr;
+    return *this;
+}
+
+
+SimpleFileOutput&
+SimpleFileOutput::operator<<(unsigned int uintr)
+{
+    *outfs << uintr;
+    return *this;
+}
+
+SimpleFileOutput&
+SimpleFileOutput::operator<<(long unsigned int luintr)
+{
+    *outfs << luintr;
+    return *this;
+}
+
+SimpleFileOutput&
+SimpleFileOutput::operator<<(float fltn)
+{
+    *outfs << fltn;
+    return *this;
+}
+
+SimpleFileOutput&
+SimpleFileOutput::operator<<(double dfltn)
+{
+    *outfs << dfltn;
+    return *this;
+}
+
+
+OFStream::OFStream(string filename)
+{
+    ofstr.open(filename, ios_base::out);
+}
+
+OFStream::~OFStream()
+{
+    close();
+}
+
+void
+OFStream::close()
+{
+    ofstr.close();
+}
+
+OFStream&
+OFStream::operator<<(const std::string &str)
+{
+    ofstr << str;
+    return *this;
+}
+
+OFStream&
+OFStream::operator<<(int intr)
+{
+    ofstr << intr;
+    return *this;
+}
+
+OFStream&
+OFStream::operator<<(long int lintr)
+{
+    ofstr << lintr;
+    return *this;
+}
+
+
+OFStream&
+OFStream::operator<<(unsigned int uintr)
+{
+    ofstr << uintr;
+    return *this;
+}
+
+OFStream&
+OFStream::operator<<(long unsigned int luintr)
+{
+    ofstr << luintr;
+    return *this;
+}
+
+OFStream&
+OFStream::operator<<(float fltn)
+{
+    ofstr << fltn;
+    return *this;
+}
+
+OFStream&
+OFStream::operator<<(double dfltn)
+{
+    ofstr << dfltn;
+    return *this;
+}
+
+
+#ifndef NO_ZLIB
+GZipFileOutput::GZipFileOutput(string filename)
+{
+    gzf = gzopen(filename.c_str(), "w");
+    open = true;
+}
+
+GZipFileOutput::~GZipFileOutput()
+{
+    close();
+}
+
+void
+GZipFileOutput::close()
+{
+    if (open) gzclose(gzf);
+    open = false;
+}
+
+GZipFileOutput&
+GZipFileOutput::operator<<(const std::string &str)
+{
+    gzprintf(gzf, str.c_str());
+    return *this;
+}
+
+GZipFileOutput&
+GZipFileOutput::operator<<(int intr)
+{
+    gzprintf(gzf, "%d", intr);
+    return *this;
+}
+
+GZipFileOutput&
+GZipFileOutput::operator<<(long int lintr)
+{
+    gzprintf(gzf, "%ld", lintr);
+    return *this;
+}
+
+
+GZipFileOutput&
+GZipFileOutput::operator<<(unsigned int uintr)
+{
+    gzprintf(gzf, "%u", uintr);
+    return *this;
+}
+
+GZipFileOutput&
+GZipFileOutput::operator<<(long unsigned int luintr)
+{
+    gzprintf(gzf, "%lu", luintr);
+    return *this;
+}
+
+GZipFileOutput&
+GZipFileOutput::operator<<(float fltn)
+{
+    gzprintf(gzf, "%f", fltn);
+    return *this;
+}
+
+GZipFileOutput&
+GZipFileOutput::operator<<(double dfltn)
+{
+    gzprintf(gzf, "%f", dfltn);
+    return *this;
+}
+#endif
+
