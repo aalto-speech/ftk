@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
 
         // Write temp transitions
         ostringstream transitions_temp;
-        transitions_temp << "transitions.iter" << iteration << ".bz2";
+        transitions_temp << "transitions.iter" << iteration << ".gz";
         cerr << "\twriting to: " << transitions_temp.str() << endl;
         Bigrams::write_transitions(transitions, transitions_temp.str());
 

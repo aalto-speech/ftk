@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
             && transitions.size() > target_vocab_size)
         {
             ostringstream transitions_temp;
-            transitions_temp << "transitions." << transitions.size() << ".bz2";
+            transitions_temp << "transitions." << transitions.size() << ".gz";
             cerr << "\twriting to: " << transitions_temp.str() << endl;
             Bigrams::write_transitions(transitions, transitions_temp.str());
             next_out_vocab_size -= temp_vocab_interval;
