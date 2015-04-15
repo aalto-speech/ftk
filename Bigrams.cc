@@ -171,6 +171,7 @@ Bigrams::freqs_to_logprobs(transitions_t &trans_stats,
         bool renormalization_needed = false;
         for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
             tgtit->second = log(tgtit->second) - normalizer;
+            tgtit->second = min(tgtit->second, 0.0);
             if (tgtit->second < min_cost) {
                 tgtit->second = min_cost;
                 renormalization_needed = true;
@@ -182,8 +183,10 @@ Bigrams::freqs_to_logprobs(transitions_t &trans_stats,
             for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
                 if (normalizer == MIN_FLOAT) normalizer = tgtit->second;
                 else normalizer = add_log_domain_probs(normalizer, tgtit->second);
-            for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+            for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
                 tgtit->second -= normalizer;
+                tgtit->second = min(tgtit->second, 0.0);
+            }
         }
     }
 }
@@ -197,8 +200,10 @@ Bigrams::normalize(transitions_t &trans_stats)
         for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
             if (normalizer == MIN_FLOAT) normalizer = tgtit->second;
             else normalizer = add_log_domain_probs(normalizer, tgtit->second);
-        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
             tgtit->second -= normalizer;
+            tgtit->second = min(tgtit->second, 0.0);
+        }
      }
 }
 
@@ -260,14 +265,7 @@ Bigrams::remove_transitions(vector<string> &to_remove,
         if (srcit->second.size() == 0) transitions.erase(srcit++);
         else ++srcit;
 
-    for (auto srcit = transitions.begin(); srcit != transitions.end(); ++srcit) {
-        flt_type normalizer = MIN_FLOAT;
-        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
-            if (normalizer == MIN_FLOAT) normalizer = tgtit->second;
-            else normalizer = add_log_domain_probs(normalizer, tgtit->second);
-        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
-            tgtit->second -= normalizer;
-    }
+    normalize(transitions);
 }
 
 
@@ -424,6 +422,7 @@ Bigrams::disable_string(const transitions_t &reverse_transitions,
                 changes[contit->first][it->first] = it->second;
                 ll_diff -= count * it->second;
                 it->second -= renormalizer;
+                it->second = min(it->second, 0.0);
                 ll_diff += count * it->second;
             }
         }
@@ -458,6 +457,7 @@ Bigrams::disable_transition(const map<string, flt_type> &unigram_stats,
             changes[src][it->first] = it->second;
             ll_diff -= count * it->second;
             it->second -= renormalizer;
+            it->second = min(it->second, 0.0);
             ll_diff += count * it->second;
         }
     }
