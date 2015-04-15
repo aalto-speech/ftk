@@ -16,7 +16,7 @@ typedef unsigned char factor_len_t;
 
 typedef std::map<std::string, std::map<std::string, flt_type> > transitions_t;
 
-#define FLOOR_LP -15.0
+#define FLOOR_LP -20.0
 #define SMALL_LP -100.0
 #define MIN_FLOAT -std::numeric_limits<flt_type>::max()
 #define MAX_LINE_LEN 8192
