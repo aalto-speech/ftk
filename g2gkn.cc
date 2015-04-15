@@ -113,8 +113,8 @@ int main(int argc, char* argv[]) {
         // Get candidate subwords
         cerr << "\tinitializing removals .." << endl;
         map<string, flt_type> candidates;
-        Bigrams::init_candidates_freq(n_candidates_per_iter/2, unigram_stats, candidates);
-        Bigrams::init_candidates_num_contexts(n_candidates_per_iter, transitions, unigram_stats, candidates);
+        Bigrams::init_candidates_freq(n_candidates_per_iter, unigram_stats, candidates);
+        //Bigrams::init_candidates_num_contexts(n_candidates_per_iter, transitions, unigram_stats, candidates);
 
         // Score all candidates
         cerr << "\tranking removals .." << endl;
