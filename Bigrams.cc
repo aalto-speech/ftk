@@ -162,29 +162,16 @@ Bigrams::freqs_to_logprobs(transitions_t &trans_stats,
                            flt_type min_cost)
 {
     for (auto srcit = trans_stats.begin(); srcit != trans_stats.end(); ++srcit) {
-
         flt_type normalizer = 0.0;
-        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
+        flt_type min_count = exp(min_cost);
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
+            tgtit->second = max(min_count, tgtit->second);
             normalizer += tgtit->second;
+        }
         normalizer = log(normalizer);
 
-        bool renormalization_needed = false;
-        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
             tgtit->second = log(tgtit->second) - normalizer;
-            if (tgtit->second < min_cost) {
-                tgtit->second = min_cost;
-                renormalization_needed = true;
-            }
-        }
-
-        if (renormalization_needed) {
-            normalizer = MIN_FLOAT;
-            for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
-                if (normalizer == MIN_FLOAT) normalizer = tgtit->second;
-                else normalizer = add_log_domain_probs(normalizer, tgtit->second);
-            for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
-                tgtit->second -= normalizer;
-        }
     }
 }
 
