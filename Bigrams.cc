@@ -162,23 +162,22 @@ Bigrams::freqs_to_logprobs(transitions_t &trans_stats,
                            flt_type min_cost)
 {
     for (auto srcit = trans_stats.begin(); srcit != trans_stats.end(); ++srcit) {
-
         flt_type normalizer = 0.0;
         for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
             normalizer += tgtit->second;
         normalizer = log(normalizer);
 
-        bool renormalization_needed = false;
+        bool renormalize = false;
         for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
             tgtit->second = log(tgtit->second) - normalizer;
             tgtit->second = min(tgtit->second, 0.0);
             if (tgtit->second < min_cost) {
                 tgtit->second = min_cost;
-                renormalization_needed = true;
+                renormalize = true;
             }
         }
 
-        if (renormalization_needed) {
+        if (renormalize) {
             normalizer = MIN_FLOAT;
             for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
                 if (normalizer == MIN_FLOAT) normalizer = tgtit->second;
