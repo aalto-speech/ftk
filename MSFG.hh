@@ -68,9 +68,12 @@ public:
     void find_or_create_arc(msfg_node_idx_t src_node, msfg_node_idx_t tgt_node);
     void remove_arcs(const std::string &factor);
     void remove_arc(Arc *arc);
-    void collect_arcs(const std::string &text, std::map<msfg_node_idx_t, std::vector<Arc*> > &arcs) const;
-    void collect_factors(const std::string &text, std::set<std::string> &factors) const;
+    void collect_arcs(const std::string &text,
+                      std::map<msfg_node_idx_t, std::vector<Arc*> > &arcs) const;
+    void collect_factors(const std::string &text,
+                         std::set<std::string> &factors) const;
     void prune_unreachable();
+    void prune_unused(transitions_t &transitions);
     void write(const std::string &filename) const;
     void read(const std::string &filename);
     void update_factor_node_map();

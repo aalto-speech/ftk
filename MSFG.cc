@@ -236,6 +236,21 @@ MultiStringFactorGraph::prune_unreachable()
 
 
 void
+MultiStringFactorGraph::prune_unused(transitions_t &transitions)
+{
+    if (transitions.size() < factor_node_map.size()) {
+        vector<string> to_remove;
+        cerr << "Pruning " << factor_node_map.size()-transitions.size() << " unused factors from msfg." << endl;
+        for (auto it = factor_node_map.begin(); it != factor_node_map.end(); ++it)
+            if (transitions.find(it->first) == transitions.end())
+                to_remove.push_back(it->first);
+        for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
+            remove_arcs(*it);
+    }
+}
+
+
+void
 MultiStringFactorGraph::write(const std::string &filename) const
 {
     ofstream outfile(filename);
@@ -340,7 +355,8 @@ MultiStringFactorGraph::collect_arcs(vector<Arc*> &arcs) const
 
 
 void
-MultiStringFactorGraph::collect_arcs(const string &text, map<msfg_node_idx_t, vector<Arc*> > &arcs) const
+MultiStringFactorGraph::collect_arcs(const string &text,
+                                     map<msfg_node_idx_t, vector<Arc*> > &arcs) const
 {
     msfg_node_idx_t end_node = string_end_nodes.at(text);
     set<msfg_node_idx_t> nodes_to_process; nodes_to_process.insert(end_node);
@@ -361,7 +377,8 @@ MultiStringFactorGraph::collect_arcs(const string &text, map<msfg_node_idx_t, ve
 
 
 void
-MultiStringFactorGraph::collect_factors(const string &text, set<string> &factors) const
+MultiStringFactorGraph::collect_factors(const string &text,
+                                        set<string> &factors) const
 {
     msfg_node_idx_t end_node = string_end_nodes.at(text);
     set<msfg_node_idx_t> nodes_to_process; nodes_to_process.insert(end_node);
