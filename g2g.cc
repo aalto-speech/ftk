@@ -77,16 +77,7 @@ int main(int argc, char* argv[]) {
 
     cerr << "Reading msfg " << msfg_fname << endl;
     msfg.read(msfg_fname);
-
-    if (transitions.size() < msfg.factor_node_map.size()) {
-        vector<string> to_remove;
-        cerr << "Pruning " << msfg.factor_node_map.size()-transitions.size() << " unused transitions from msfg." << endl;
-        for (auto it = msfg.factor_node_map.begin(); it != msfg.factor_node_map.end(); ++it)
-            if (transitions.find(it->first) == transitions.end())
-                to_remove.push_back(it->first);
-        for (auto it = to_remove.begin(); it != to_remove.end(); ++it)
-            msfg.remove_arcs(*it);
-    }
+    msfg.prune_unused(transitions);
 
     std::cerr << std::setprecision(15);
     int iteration = 1;
@@ -115,6 +106,7 @@ int main(int argc, char* argv[]) {
 
         // Score all candidates
         cerr << "\tranking removals .." << endl;
+        assign_scores(transitions, msfg);
         Bigrams::rank_candidate_subwords(words, msfg, unigram_stats, transitions, candidates, enable_fb);
 
         // Remove subwords
@@ -132,6 +124,7 @@ int main(int argc, char* argv[]) {
             msfg.remove_arcs(*it);
 
         Bigrams::iterate(words, msfg, transitions, enable_fb, 1);
+        msfg.prune_unused(transitions);
 
         // Write intermediate model
         if (temp_vocab_interval > 0
