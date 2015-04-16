@@ -18,6 +18,7 @@ int main(int argc, char* argv[]) {
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
       ('d', "discount=FLOAT", "arg", "0.1", "Kneser-Ney discount parameter")
       ('m', "temp-models=INT", "arg", "0", "Write out intermediate models for #V mod INT == 0")
+      ('n', "no-normalization", "", "", "Do not normalize probabilities after smoothing")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
@@ -33,6 +34,7 @@ int main(int argc, char* argv[]) {
     flt_type discount = config["discount"].get_float();
     unsigned int temp_vocab_interval = config["temp-models"].get_int();
     bool enable_fb = config["forward-backward"].specified;
+    bool no_normalization = config["no-normalization"].specified;
     bool utf8_encoding = config["utf-8"].specified;
 
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
@@ -48,6 +50,7 @@ int main(int argc, char* argv[]) {
         cerr << "parameters, write temp models whenever #V modulo " << temp_vocab_interval << " == 0" << endl;
     else
         cerr << "parameters, write temp models: NO" << endl;
+    cerr << "parameters, no normalization after smoothing: " << no_normalization << endl;
     cerr << "parameters, use forward-backward: " << enable_fb << endl;
     cerr << "parameters, utf-8 encoding: " << utf8_encoding << endl;
 
@@ -92,7 +95,7 @@ int main(int argc, char* argv[]) {
         assign_scores(transitions, msfg);
         flt_type lp = Bigrams::collect_trans_stats(words, msfg, trans_stats, unigram_stats, enable_fb);
         Bigrams::kn_smooth(trans_stats, transitions, discount);
-        Bigrams::normalize(transitions);
+        if (!no_normalization) Bigrams::normalize(transitions);
         trans_stats.clear();
 
         cerr << "\tbigram likelihood: " << lp << endl;
@@ -127,7 +130,7 @@ int main(int argc, char* argv[]) {
             msfg.remove_arcs(*it);
 
         Bigrams::iterate_kn(words, msfg, transitions, enable_fb, discount, 1);
-        Bigrams::normalize(transitions);
+        if (!no_normalization) Bigrams::normalize(transitions);
         msfg.prune_unused(transitions);
 
         // Write intermediate model
