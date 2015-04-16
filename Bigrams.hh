@@ -132,7 +132,8 @@ static void rank_candidate_subwords(const std::map<std::string, flt_type> &words
                                     const std::map<std::string, flt_type> &unigram_stats,
                                     transitions_t &transitions,
                                     std::map<std::string, flt_type> &candidates,
-                                    bool forward_backward=true);
+                                    bool forward_backward=true,
+                                    bool normalize_by_bigram_count=false);
 
 static void kn_smooth(const transitions_t &counts,
                       transitions_t &kn,

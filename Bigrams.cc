@@ -539,7 +539,8 @@ Bigrams::rank_candidate_subwords(const map<string, flt_type> &words,
                                  const map<string, flt_type> &unigram_stats,
                                  transitions_t &transitions,
                                  map<string, flt_type> &candidates,
-                                 bool forward_backward)
+                                 bool forward_backward,
+                                 bool normalize_by_bigram_count)
 {
     map<string, set<string> > backpointers;
     Bigrams::get_backpointers(msfg, backpointers, 1);
@@ -555,6 +556,11 @@ Bigrams::rank_candidate_subwords(const map<string, flt_type> &words,
         flt_type hypo_score = likelihood(words, words_to_resegment, msfg, forward_backward);
         it->second = hypo_score-orig_score + context_score;
         Bigrams::restore_string(transitions, changes);
+        if (normalize_by_bigram_count) {
+            int num_bigrams = transitions.at(it->first).size() + reverse.at(it->first).size();
+            if (it->second < 0) it->second /= num_bigrams;
+            else it->second *= num_bigrams;
+        }
     }
 }
 

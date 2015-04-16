@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
       ('m', "temp-models=INT", "arg", "0", "Write out intermediate models for #V mod INT == 0")
+      ('b', "normalize-by-bigrams", "", "", "Normalize subword scores by the number of bigrams")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
@@ -30,9 +31,11 @@ int main(int argc, char* argv[]) {
     string msfg_fname = config.arguments[2];
     string transition_fname = config.arguments[3];
     unsigned int temp_vocab_interval = config["temp-models"].get_int();
+    bool normalize_by_bigrams = config["normalize-by-bigrams"].specified;
     bool enable_fb = config["forward-backward"].specified;
     bool utf8_encoding = config["utf-8"].specified;
 
+    std::cerr << std::boolalpha;
     cerr << "parameters, wordlist: " << wordlist_fname << endl;
     cerr << "parameters, initial transitions: " << initial_transitions_fname << endl;
     cerr << "parameters, msfg: " << msfg_fname << endl;
@@ -45,6 +48,7 @@ int main(int argc, char* argv[]) {
         cerr << "parameters, write temp models whenever #V modulo " << temp_vocab_interval << " == 0" << endl;
     else
         cerr << "parameters, write temp models: NO" << endl;
+    cerr << "parameters, normalize subword scores by the number of bigrams: " << normalize_by_bigrams << endl;
     cerr << "parameters, use forward-backward: " << enable_fb << endl;
     cerr << "parameters, utf-8 encoding: " << utf8_encoding << endl;
 
@@ -96,7 +100,8 @@ int main(int argc, char* argv[]) {
         cerr << "\tnumber of transitions: " << Bigrams::transition_count(transitions) << endl;
         cerr << "\tvocabulary size: " << transitions.size() << endl;
 
-        if (iteration==1) next_out_vocab_size = transitions.size()/temp_vocab_interval * temp_vocab_interval;
+        if (iteration==1 && temp_vocab_interval > 0)
+            next_out_vocab_size = transitions.size()/temp_vocab_interval * temp_vocab_interval;
 
         // Get candidate subwords
         cerr << "\tinitializing removals .." << endl;
@@ -107,7 +112,8 @@ int main(int argc, char* argv[]) {
         // Score all candidates
         cerr << "\tranking removals .." << endl;
         assign_scores(transitions, msfg);
-        Bigrams::rank_candidate_subwords(words, msfg, unigram_stats, transitions, candidates, enable_fb);
+        Bigrams::rank_candidate_subwords(words, msfg, unigram_stats, transitions,
+                                         candidates, enable_fb, normalize_by_bigrams);
 
         // Remove subwords
         vector<pair<string, flt_type> > sorted_scores;

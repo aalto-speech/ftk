@@ -1,5 +1,5 @@
 cxxflags = -O3 -march=native -std=gnu++0x -Wall -Wno-unused-function -Wno-write-strings
-#cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-unused-function
+#cxxflags = -O0 -g -std=gnu++0x -Wall -Wno-unused-function -Wno-write-strings
 
 ##################################################
 
