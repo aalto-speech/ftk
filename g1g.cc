@@ -119,12 +119,12 @@ int main(int argc, char* argv[]) {
         gg.set_segmentation_method(viterbi);
     gg.set_utf8(utf8_encoding);
 
-    cerr << endl << "Initial cutoff" << endl;
     flt_type cost = gg.resegment_words(words, vocab, freqs);
-    cerr << "likelihood: " << cost << endl;
+    cerr << endl << "Initial likelihood: " << cost << endl;
 
     flt_type cutoff_value = 0.0;
-    while (vocab.size() > cutoff_target) {
+    if (cutoff_target > 0.0) cerr << endl << "Initial cutoff" << endl;
+    while (cutoff_target > 0.0 && vocab.size() > cutoff_target) {
         cutoff_value += cutoff_increment;
         gg.cutoff(freqs, cutoff_value, stoplist, min_removal_length);
         cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
