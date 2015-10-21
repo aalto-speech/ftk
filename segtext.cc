@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> vocab;
     StringSet *ss_vocab = NULL;
     transitions_t transitions;
-    flt_type one_char_min_lp = -25.0;
+    flt_type one_char_min_lp = -500.0;
     bool unigram = true;
 
     conf::Config config;
