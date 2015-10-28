@@ -99,6 +99,9 @@ static void find_short_factors(const std::map<std::string, flt_type> &vocab,
         get_character_positions(it->first, char_positions, utf8);
         if (char_positions.size()-1 < min_removal_length)
             short_factors.insert(it->first);
+        else if (char_positions.size()-1 == min_removal_length
+                 && (((it->first)[0] == '_' ) || ((it->first)[it->first.length()-1] == '_' )))
+                    short_factors.insert(it->first);
     }
 }
 
