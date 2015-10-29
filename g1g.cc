@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <algorithm>
 
 #include "conf.hh"
 #include "str.hh"
@@ -102,6 +103,12 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "size: " << vocab.size() << endl;
     cerr << "\t" << "maximum string length: " << maxlen << endl;
     find_short_factors(vocab, short_subwords, min_removal_length, utf8_encoding);
+
+    set<string> stop_union;
+    set_union(stoplist.begin(), stoplist.end(),
+              short_subwords.begin(), short_subwords.end(),
+              inserter(stop_union, stop_union.begin()));
+    stoplist = stop_union;
 
     cerr << "Reading word list " << wordlist_fname << endl;
     retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen, utf8_encoding);
