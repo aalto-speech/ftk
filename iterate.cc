@@ -1,3 +1,4 @@
+#include <ctime>
 
 #include "conf.hh"
 #include "Unigrams.hh"
