@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iomanip>
+#include <cmath>
 
 #include "Unigrams.hh"
 #include "io.hh"
@@ -253,8 +254,10 @@ flt_type
 Unigrams::get_sum(const map<string, flt_type> &freqs)
 {
     flt_type total = 0.0;
-    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter)
+    for (auto iter = freqs.cbegin(); iter != freqs.cend(); ++iter) {
+        if (std::isinf(iter->second) || std::isnan(iter->second)) continue;
         total += iter->second;
+    }
     return total;
 }
 
@@ -279,8 +282,10 @@ Unigrams::freqs_to_logprobs(map<string, flt_type> &vocab)
 {
     flt_type densum = Unigrams::get_sum(vocab);
     densum = log(densum);
-    for (auto iter = vocab.begin(); iter != vocab.end(); ++iter)
+    for (auto iter = vocab.begin(); iter != vocab.end(); ++iter) {
         iter->second = (log(iter->second)-densum);
+        if (std::isinf(iter->second) || std::isnan(iter->second)) iter->second = FLOOR_LP;
+    }
 }
 
 
