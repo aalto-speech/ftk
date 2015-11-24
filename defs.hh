@@ -71,7 +71,7 @@ static void get_character_positions_utf8(const std::string &word,
     while (charpos<word.length()) {
         unsigned int utfseqlen=0;
         if (!(word[charpos] & 128)) utfseqlen = 1;
-        else if (word[charpos] & 192) utfseqlen = 2;
+        else if (!word[charpos] & 192) utfseqlen = 2;
         else if (word[charpos] & 224) utfseqlen = 3;
         else utfseqlen = 4;
         charpos += utfseqlen;
@@ -120,7 +120,7 @@ static unsigned int get_factor_length_utf8(const std::string &factor)
     while (charpos<factor.length()) {
         unsigned int utfseqlen=0;
         if (!(factor[charpos] & 128)) utfseqlen = 1;
-        else if (factor[charpos] & 192) utfseqlen = 2;
+        else if (!factor[charpos] & 192) utfseqlen = 2;
         else if (factor[charpos] & 224) utfseqlen = 3;
         else utfseqlen = 4;
         charpos += utfseqlen;
