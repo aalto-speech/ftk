@@ -159,30 +159,21 @@ Bigrams::finalize_viterbi_stats(const MultiStringFactorGraph &msfg,
 
 void
 Bigrams::freqs_to_logprobs(transitions_t &trans_stats,
-                           flt_type min_cost)
+                           flt_type min_lp)
 {
     for (auto srcit = trans_stats.begin(); srcit != trans_stats.end(); ++srcit) {
-        flt_type normalizer = 0.0;
-        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
-            normalizer += tgtit->second;
-        normalizer = log(normalizer);
-
-        bool renormalize = false;
+        flt_type normalizer = SMALL_LP;
         for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
-            tgtit->second = log(tgtit->second) - normalizer;
-            if (tgtit->second < min_cost) {
-                tgtit->second = min_cost;
-                renormalize = true;
-            }
+            tgtit->second = log(tgtit->second);
+            if (tgtit->second < min_lp || std::isinf(tgtit->second) || std::isnan(tgtit->second))
+                tgtit->second = min_lp;
+            normalizer = add_log_domain_probs(normalizer, tgtit->second);
         }
 
-        if (renormalize) {
-            normalizer = MIN_FLOAT;
-            for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
-                if (normalizer == MIN_FLOAT) normalizer = tgtit->second;
-                else normalizer = add_log_domain_probs(normalizer, tgtit->second);
-            for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit)
-                tgtit->second -= normalizer;
+        for (auto tgtit = srcit->second.begin(); tgtit != srcit->second.end(); ++tgtit) {
+            tgtit->second -= normalizer;
+            if (tgtit->second < min_lp || std::isinf(tgtit->second) || std::isnan(tgtit->second))
+                tgtit->second = min_lp;
         }
     }
 }
@@ -568,7 +559,8 @@ Bigrams::rank_candidate_subwords(const map<string, flt_type> &words,
 void
 Bigrams::kn_smooth(const transitions_t &counts,
                    transitions_t &kn,
-                   double D)
+                   double D,
+                   double min_lp)
 {
     kn.clear();
 
@@ -600,7 +592,7 @@ Bigrams::kn_smooth(const transitions_t &counts,
             double term2 = ctxt_count[srcit->first] / ctxt_totals[srcit->first];
             term2 *= unigram_count[tgtit->first] / u_total;
             double kn_prob = log(term1+term2);
-            if (std::isnan(kn_prob)) kn_prob = -100;
+            if (kn_prob < min_lp || std::isinf(kn_prob) || std::isnan(kn_prob)) kn_prob = min_lp;
             kn[srcit->first][tgtit->first] = kn_prob;
         }
     }

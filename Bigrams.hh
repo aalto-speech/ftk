@@ -56,7 +56,7 @@ static void finalize_viterbi_stats(const MultiStringFactorGraph &msfg,
                                    transitions_t &trans_stats);
 
 static void freqs_to_logprobs(transitions_t &trans_stats,
-                              flt_type min_cost = FLOOR_LP);
+                              flt_type min_lp = FLOOR_LP);
 
 static void normalize(transitions_t &trans_stats);
 
@@ -137,7 +137,8 @@ static void rank_candidate_subwords(const std::map<std::string, flt_type> &words
 
 static void kn_smooth(const transitions_t &counts,
                       transitions_t &kn,
-                      double D=0.1);
+                      double D=0.1,
+                      double min_lp=FLOOR_LP);
 
 
 private:
