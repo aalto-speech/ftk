@@ -214,7 +214,7 @@ GZipFileOutput::close()
 GZipFileOutput&
 GZipFileOutput::operator<<(const std::string &str)
 {
-    gzprintf(gzf, str.c_str());
+    gzprintf(gzf, "%s", str.c_str());
     return *this;
 }
 
