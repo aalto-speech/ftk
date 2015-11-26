@@ -74,7 +74,8 @@ public:
     static flt_type get_cost(const std::map<std::string, flt_type> &freqs,
                              flt_type densum);
 
-    static void freqs_to_logprobs(std::map<std::string, flt_type> &vocab);
+    static void freqs_to_logprobs(std::map<std::string, flt_type> &vocab,
+                                  flt_type min_lp=FLOOR_LP);
 
     int cutoff(std::map<std::string, flt_type> &vocab,
                flt_type limit,

@@ -278,13 +278,15 @@ Unigrams::get_cost(const map<string, flt_type> &freqs,
 
 
 void
-Unigrams::freqs_to_logprobs(map<string, flt_type> &vocab)
+Unigrams::freqs_to_logprobs(map<string, flt_type> &vocab,
+                            flt_type min_lp)
 {
     flt_type densum = Unigrams::get_sum(vocab);
     densum = log(densum);
     for (auto iter = vocab.begin(); iter != vocab.end(); ++iter) {
         iter->second = (log(iter->second)-densum);
-        if (std::isinf(iter->second) || std::isnan(iter->second)) iter->second = FLOOR_LP;
+        if (iter->second < min_lp || std::isinf(iter->second) || std::isnan(iter->second))
+            iter->second = min_lp;
     }
 }
 
