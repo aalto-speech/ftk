@@ -15,8 +15,9 @@ int main(int argc, char* argv[]) {
       ('h', "help", "", "", "display help")
       ('c', "candidates=INT", "arg", "5000", "Number of candidate subwords to try to remove per iteration")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration")
+      ('m', "min-length=INT", "arg", "2", "Minimum length of subwords to remove, DEFAULT: 2")
       ('v', "vocab-size=INT", "arg must", "", "Target vocabulary size (stopping criterion)")
-      ('m', "temp-models=INT", "arg", "0", "Write out intermediate models for #V mod INT == 0")
+      ('t', "temp-models=INT", "arg", "0", "Write out intermediate models for #V mod INT == 0")
       ('b', "normalize-by-bigrams", "", "", "Normalize subword scores by the number of bigrams")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
@@ -25,6 +26,7 @@ int main(int argc, char* argv[]) {
 
     unsigned int n_candidates_per_iter = config["candidates"].get_int();
     unsigned int removals_per_iter = config["removals"].get_int();
+    unsigned int min_removal_length = config["min-length"].get_int();
     unsigned int target_vocab_size = config["vocab-size"].get_int();
     string wordlist_fname = config.arguments[0];
     string initial_transitions_fname = config.arguments[1];
@@ -42,6 +44,7 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, transitions out: " << transition_fname << endl;
     cerr << "parameters, candidates per iteration: " << n_candidates_per_iter << endl;
     cerr << "parameters, removals per iteration: " << removals_per_iter << endl;
+    cerr << "parameters, minimum length for subwords to remove: " << min_removal_length << endl;
     cerr << "parameters, target vocab size: " << target_vocab_size << endl;
     cerr << "parameters, floor lp: " << FLOOR_LP << endl;
     if (temp_vocab_interval > 0)
@@ -60,6 +63,7 @@ int main(int argc, char* argv[]) {
     transitions_t transitions;
     transitions_t trans_stats;
     map<string, flt_type> unigram_stats;
+    set<string> short_subwords;
 
     cerr << "Reading initial transitions " << initial_transitions_fname << endl;
     int retval = Bigrams::read_transitions(transitions, initial_transitions_fname);
@@ -69,6 +73,10 @@ int main(int argc, char* argv[]) {
     }
     cerr << "\tnumber of transitions: " << Bigrams::transition_count(transitions) << endl;
     cerr << "\tvocabulary size: " << transitions.size() << endl;
+
+    map<string, flt_type> vocab;
+    Bigrams::trans_to_vocab(transitions, vocab);
+    find_short_factors(vocab, short_subwords, min_removal_length, utf8_encoding);
 
     cerr << "Reading word list " << wordlist_fname << endl;
     retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen, utf8_encoding);
@@ -106,7 +114,7 @@ int main(int argc, char* argv[]) {
         // Get candidate subwords
         cerr << "\tinitializing removals .." << endl;
         map<string, flt_type> candidates;
-        Bigrams::init_candidates_freq(n_candidates_per_iter, unigram_stats, candidates);
+        Bigrams::init_candidates_freq(n_candidates_per_iter, unigram_stats, candidates, short_subwords);
         //Bigrams::init_candidates_num_contexts(n_candidates_per_iter, transitions, unigram_stats, candidates);
 
         // Score all candidates

@@ -479,13 +479,14 @@ Bigrams::get_backpointers(const MultiStringFactorGraph &msfg,
 int
 Bigrams::init_candidates_freq(unsigned int n_candidates,
                               const map<string, flt_type> &unigram_stats,
-                              map<string, flt_type> &candidates)
+                              map<string, flt_type> &candidates,
+                              const set<string> &stoplist)
 {
     vector<pair<string, flt_type> > sorted_stats;
     Unigrams::sort_vocab(unigram_stats, sorted_stats, false);
 
     for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
-        if (it->first.length() < 2) continue;
+        if (stoplist.find(it->first) != stoplist.end()) continue;
         candidates[it->first] = 0.0;
         if (candidates.size() >= n_candidates) break;
     }
@@ -498,7 +499,8 @@ int
 Bigrams::init_candidates_num_contexts(unsigned int n_candidates,
                                       const transitions_t &transitions,
                                       const map<string, flt_type> &unigram_stats,
-                                      map<string, flt_type> &candidates)
+                                      map<string, flt_type> &candidates,
+                                      const set<string> &stoplist)
 {
     vector<pair<string, flt_type> > sorted_stats;
     Unigrams::sort_vocab(unigram_stats, sorted_stats, false);
@@ -515,7 +517,7 @@ Bigrams::init_candidates_num_contexts(unsigned int n_candidates,
     stable_sort(sorted_stats.begin(), sorted_stats.end(), ascending_sort);
 
     for (auto it = sorted_stats.begin(); it != sorted_stats.end(); ++it) {
-        if (it->first.length() < 2) continue;
+        if (stoplist.find(it->first) != stoplist.end()) continue;
         candidates[it->first] = 0.0;
         if (candidates.size() >= n_candidates) break;
     }

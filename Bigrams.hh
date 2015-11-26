@@ -120,12 +120,14 @@ static void remove_transitions(std::vector<std::string> &to_remove,
 
 static int init_candidates_freq(unsigned int n_candidates,
                                 const std::map<std::string, flt_type> &unigram_stats,
-                                std::map<std::string, flt_type> &candidates);
+                                std::map<std::string, flt_type> &candidates,
+                                const std::set<std::string> &stoplist);
 
 static int init_candidates_num_contexts(unsigned int n_candidates,
                                         const transitions_t &transitions,
                                         const std::map<std::string, flt_type> &unigram_stats,
-                                        std::map<std::string, flt_type> &candidates);
+                                        std::map<std::string, flt_type> &candidates,
+                                        const std::set<std::string> &stoplist);
 
 static void rank_candidate_subwords(const std::map<std::string, flt_type> &words,
                                     const MultiStringFactorGraph &msfg,
