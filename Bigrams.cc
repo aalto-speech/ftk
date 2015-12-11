@@ -119,8 +119,8 @@ Bigrams::collect_trans_stats(const map<string, flt_type> &words,
     }
     else {
         total_lp = viterbi(msfg, words, trans_stats);
-        get_unigram_stats(trans_stats, unigram_stats);
         finalize_viterbi_stats(msfg, trans_stats);
+        get_unigram_stats(trans_stats, unigram_stats);
     }
 
     return total_lp;
@@ -141,17 +141,13 @@ void
 Bigrams::finalize_viterbi_stats(const MultiStringFactorGraph &msfg,
                                 transitions_t &stats)
 {
-    for (auto sit = stats.begin(); sit != stats.end(); ++sit) {
-        const string &srcstr = sit->first;
-        const vector<msfg_node_idx_t> &nodes = msfg.factor_node_map.at(srcstr);
-        for (auto nit = nodes.begin(); nit != nodes.end(); ++nit) {
-            const MultiStringFactorGraph::Node &src_nd = msfg.nodes[*nit];
-            for (auto ait=src_nd.outgoing.begin(); ait != src_nd.outgoing.end(); ++ait) {
-                string tgtstr = msfg.nodes[(*ait)->target_node].factor;
-                if (stats.find(tgtstr) != stats.end()
-                    && sit->second.find(tgtstr) == sit->second.end())
-                    sit->second[tgtstr] = exp(FLOOR_LP);
-            }
+    for (auto nit = msfg.nodes.begin(); nit != msfg.nodes.end(); ++nit) {
+        string srcstr = nit->factor;
+        for (auto ait=nit->outgoing.begin(); ait != nit->outgoing.end(); ++ait) {
+            string tgtstr = msfg.nodes[(*ait)->target_node].factor;
+            if (stats.find(srcstr) == stats.end()
+                || stats.at(srcstr).find(tgtstr) == stats.at(srcstr).end())
+                stats[srcstr][tgtstr] = exp(FLOOR_LP);
         }
     }
 }
