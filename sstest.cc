@@ -1,53 +1,43 @@
+#include <boost/test/unit_test.hpp>
 
-#include "sstest.hh"
-
+#include "StringSet.hh"
 
 using namespace std;
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION (sstest);
-
-void sstest :: setUp (void)
-{
-}
-
-void sstest :: tearDown (void)
-{
-}
-
 // Basic add & get
-void sstest :: StringSetTest1 (void)
+BOOST_AUTO_TEST_CASE(StringSetTest1)
 {
     map<string, flt_type> vocab;
     vocab["hei"] = -1.0;
     StringSet ss(vocab);
 
-    CPPUNIT_ASSERT_EQUAL ( -1.0, ss.get_score("hei") );
-    CPPUNIT_ASSERT ( ss.includes("hei") );
+    BOOST_CHECK_EQUAL ( -1.0, ss.get_score("hei") );
+    BOOST_CHECK ( ss.includes("hei") );
 
     bool throws = false;
     try {
         ss.get_score("blaa");
     }
-    catch (string e) {
+    catch (string &e) {
         throws = true;
     }
-    CPPUNIT_ASSERT( throws );
-    CPPUNIT_ASSERT ( !ss.includes("blaa") );
+    BOOST_CHECK( throws );
+    BOOST_CHECK ( !ss.includes("blaa") );
 
     throws = false;
     try {
         ss.get_score("h");
     }
-    catch (string e) {
+    catch (string &e) {
         throws = true;
     }
-    CPPUNIT_ASSERT( throws );
-    CPPUNIT_ASSERT ( !ss.includes("h") );
+    BOOST_CHECK( throws );
+    BOOST_CHECK ( !ss.includes("h") );
 }
 
 // Add multiple strings
-void sstest :: StringSetTest2 (void)
+BOOST_AUTO_TEST_CASE(StringSetTest2)
 {
     map<string, flt_type> vocab;
     vocab["hei"] = -1.0;
@@ -57,33 +47,33 @@ void sstest :: StringSetTest2 (void)
     vocab["hassu"] = -5.0;
     StringSet ss(vocab);
 
-    CPPUNIT_ASSERT ( ss.includes("hei") );
-    CPPUNIT_ASSERT ( ss.includes("heippa") );
-    CPPUNIT_ASSERT ( ss.includes("heh") );
-    CPPUNIT_ASSERT ( ss.includes("hassua") );
-    CPPUNIT_ASSERT ( ss.includes("hassu") );
-    CPPUNIT_ASSERT ( !ss.includes("h") );
-    CPPUNIT_ASSERT ( !ss.includes("he") );
-    CPPUNIT_ASSERT ( !ss.includes("heip") );
+    BOOST_CHECK ( ss.includes("hei") );
+    BOOST_CHECK ( ss.includes("heippa") );
+    BOOST_CHECK ( ss.includes("heh") );
+    BOOST_CHECK ( ss.includes("hassua") );
+    BOOST_CHECK ( ss.includes("hassu") );
+    BOOST_CHECK ( !ss.includes("h") );
+    BOOST_CHECK ( !ss.includes("he") );
+    BOOST_CHECK ( !ss.includes("heip") );
 
-    CPPUNIT_ASSERT_EQUAL ( -1.0, ss.get_score("hei") );
-    CPPUNIT_ASSERT_EQUAL ( -2.0, ss.get_score("heippa") );
-    CPPUNIT_ASSERT_EQUAL ( -3.0, ss.get_score("heh") );
-    CPPUNIT_ASSERT_EQUAL ( -4.0, ss.get_score("hassua") );
-    CPPUNIT_ASSERT_EQUAL ( -5.0, ss.get_score("hassu") );
+    BOOST_CHECK_EQUAL ( -1.0, ss.get_score("hei") );
+    BOOST_CHECK_EQUAL ( -2.0, ss.get_score("heippa") );
+    BOOST_CHECK_EQUAL ( -3.0, ss.get_score("heh") );
+    BOOST_CHECK_EQUAL ( -4.0, ss.get_score("hassua") );
+    BOOST_CHECK_EQUAL ( -5.0, ss.get_score("hassu") );
 
     bool throws = false;
     try {
         ss.get_score("he");
     }
-    catch (string e) {
+    catch (string &e) {
         throws = true;
     }
-    CPPUNIT_ASSERT( throws );
+    BOOST_CHECK( throws );
 }
 
 // Add and remove
-void sstest :: StringSetTest3 (void)
+BOOST_AUTO_TEST_CASE(StringSetTest3)
 {
     map<string, flt_type> vocab;
     vocab["hei"] = -1.0;
@@ -91,30 +81,30 @@ void sstest :: StringSetTest3 (void)
     vocab["heh"] = -3.0;
     StringSet ss(vocab);
 
-    CPPUNIT_ASSERT ( ss.includes("hei") );
-    CPPUNIT_ASSERT ( ss.includes("heippa") );
-    CPPUNIT_ASSERT ( ss.includes("heh") );
+    BOOST_CHECK ( ss.includes("hei") );
+    BOOST_CHECK ( ss.includes("heippa") );
+    BOOST_CHECK ( ss.includes("heh") );
 
     ss.remove("hei");
-    CPPUNIT_ASSERT ( ss.includes("heh") );
-    CPPUNIT_ASSERT ( ss.includes("heippa") );
-    CPPUNIT_ASSERT ( !ss.includes("hei") );
+    BOOST_CHECK ( ss.includes("heh") );
+    BOOST_CHECK ( ss.includes("heippa") );
+    BOOST_CHECK ( !ss.includes("hei") );
 
-    CPPUNIT_ASSERT_EQUAL ( -2.0, ss.get_score("heippa") );
-    CPPUNIT_ASSERT_EQUAL ( -3.0, ss.get_score("heh") );
+    BOOST_CHECK_EQUAL ( -2.0, ss.get_score("heippa") );
+    BOOST_CHECK_EQUAL ( -3.0, ss.get_score("heh") );
 
     bool throws = false;
     try {
         ss.get_score("hei");
     }
-    catch (string e) {
+    catch (string &e) {
         throws = true;
     }
-    CPPUNIT_ASSERT( throws );
+    BOOST_CHECK( throws );
 }
 
 // Add, remove and add back
-void sstest :: StringSetTest4 (void)
+BOOST_AUTO_TEST_CASE(StringSetTest4)
 {
     map<string, flt_type> vocab;
     vocab["hei"] = -1.0;
@@ -125,14 +115,14 @@ void sstest :: StringSetTest4 (void)
     ss.remove("hei");
     ss.add("hei", -4.0);
 
-    CPPUNIT_ASSERT ( ss.includes("hei") );
-    CPPUNIT_ASSERT_EQUAL ( -4.0, ss.get_score("hei") );
+    BOOST_CHECK ( ss.includes("hei") );
+    BOOST_CHECK_EQUAL ( -4.0, ss.get_score("hei") );
 }
 
 
 // Test for assign_scores
 // also removes strings not in the vocabulary
-void sstest :: StringSetTest5 (void)
+BOOST_AUTO_TEST_CASE(StringSetTest5)
 {
     map<string, flt_type> vocab;
     vocab["joo"] = 50;
@@ -147,18 +137,18 @@ void sstest :: StringSetTest5 (void)
     vocab["jepsis"] = 30;
 
     ss.assign_scores(vocab);
-    CPPUNIT_ASSERT_EQUAL ( vocab["joo"], ss.get_score("joo") );
-    CPPUNIT_ASSERT_EQUAL ( vocab["hei"], ss.get_score("hei") );
-    CPPUNIT_ASSERT_EQUAL ( vocab["heh"], ss.get_score("heh") );
-    CPPUNIT_ASSERT_EQUAL ( vocab["jepsis"], ss.get_score("jepsis") );
+    BOOST_CHECK_EQUAL ( vocab["joo"], ss.get_score("joo") );
+    BOOST_CHECK_EQUAL ( vocab["hei"], ss.get_score("hei") );
+    BOOST_CHECK_EQUAL ( vocab["heh"], ss.get_score("heh") );
+    BOOST_CHECK_EQUAL ( vocab["jepsis"], ss.get_score("jepsis") );
 
     bool throws = false;
     try {
         ss.get_score("heippa");
     }
-    catch (string e) {
+    catch (string &e) {
         throws = true;
     }
-    CPPUNIT_ASSERT ( throws );
-    CPPUNIT_ASSERT ( vocab.size() == ss.string_count() );
+    BOOST_CHECK ( throws );
+    BOOST_CHECK ( vocab.size() == ss.string_count() );
 }
