@@ -2,7 +2,13 @@ Factor Toolkit
 
 This toolkit contains programs for segmenting strings and training segmentation models.
 It has been developed primarily for learning units for speech recognition,
-but can be used for other purposes as well. Subword vocabulary trained with unigram statistics
+but can be used for other purposes as well. This is not intended for less-resourced scenarios;
+in that case you are likely better off with a Morfessor Baseline model.
+It is a good idea to start with Morfessor Baseline anyway before experimenting with these algorithms.
+With these models the maximum subword length and the vocabulary size should be optimized
+to obtain the best results.
+
+Subword vocabulary trained with unigram statistics
 has been evaluated with respect to cross-entropy and LVCSR accuracy. Phrase models and bigram 
 models are more experimental at the moment. g1g-sents may be adapted for 
 general segmentation purposes.
@@ -22,7 +28,8 @@ Implementation: C++11, GCC 4.6 or newer recommended. Should work on GCC 4.4+ and
 Installation: type 'make'
 
 Dependencies:
-        - CPPUnit needed for running unit tests, may be commented out in Makefile
+        - Boost unit test library needed for running unit tests.
+          This may be commented out in Makefile if you don't need the tests.
           Unit tests mainly for Expectation-Maximization and related data structures
         - libz for .gz file support
 
@@ -69,7 +76,7 @@ COUNT	WORD
 ...
 
 1) Get substrings up to some suitable length defined by -l
-substrings -l 17 wordcounts.txt substrings.txt
+substrings -l 15 wordcounts.txt substrings.txt
 
 2a) Initialize substrings with a letter n-gram model
 cat wordcounts.txt | wlist2srilm.py > srilm.txt
