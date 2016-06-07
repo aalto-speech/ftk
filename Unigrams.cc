@@ -467,6 +467,7 @@ Unigrams::rank_candidates(const map<string, flt_type> &words,
     StringSet ss_vocab(vocab);
     map<string, flt_type> ll_diffs;
     map<string, flt_type> token_diffs;
+    set<string> problem_hypos;
 
     flt_type curr_ll = 0.0;
     flt_type token_count = 0.0;
@@ -488,24 +489,21 @@ Unigrams::rank_candidates(const map<string, flt_type> &words,
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
             new_freqs[it->first] += worditer->second * it->second;
 
-        // Hypothesize what the segmentation would be if some string didn't exist
         for (auto hypoiter = stats.cbegin(); hypoiter != stats.cend(); ++hypoiter) {
 
-            // If wanting to hypothesize removal of this string
             if (candidates.find(hypoiter->first) != candidates.end()) {
 
                 flt_type stored_value = ss_vocab.remove(hypoiter->first);
-                map<string, flt_type> hypo_stats;
 
+                map<string, flt_type> hypo_stats;
                 flt_type hypo_score = segf(ss_vocab, worditer->first, hypo_stats, this->utf8);
 
-                if (hypo_stats.size() == 0) {
-                    cerr << "warning, no hypo segmentation for word: " << worditer->first << endl;
-                    exit(0);
+                if (hypo_stats.size() > 0) {
+                    ll_diffs[hypoiter->first] += worditer->second * (hypo_score-orig_score);
+                    token_diffs[hypoiter->first] += worditer->second * ((flt_type)(hypo_stats.size())-(flt_type)(stats.size()));
                 }
-
-                ll_diffs[hypoiter->first] += worditer->second * (hypo_score-orig_score);
-                token_diffs[hypoiter->first] += worditer->second * ((flt_type)(hypo_stats.size())-(flt_type)(stats.size()));
+                else
+                    problem_hypos.insert(hypoiter->first);
 
                 ss_vocab.add(hypoiter->first, stored_value);
             }
@@ -513,6 +511,7 @@ Unigrams::rank_candidates(const map<string, flt_type> &words,
     }
 
     for (auto iter = ll_diffs.begin(); iter != ll_diffs.end(); ++iter) {
+        if (problem_hypos.find(iter->first) != problem_hypos.end()) continue;
         flt_type renormalizer = sub_log_domain_probs(0, vocab.at(iter->first));
         flt_type hypo_token_count = (token_count + token_diffs[iter->first]);
         flt_type normalizer_ll_diff = hypo_token_count * -renormalizer;
@@ -541,6 +540,7 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
     StringSet ss_vocab(vocab);
     map<string, flt_type> ll_diffs;
     map<string, flt_type> token_diffs;
+    set<string> problem_hypos;
 
     flt_type curr_ll = 0.0;
     flt_type token_count = 0.0;
@@ -562,24 +562,21 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
             new_freqs[it->first] += it->second;
 
-        // Hypothesize what the segmentation would be if some string didn't exist
         for (auto hypoiter = stats.cbegin(); hypoiter != stats.cend(); ++hypoiter) {
 
-            // If wanting to hypothesize removal of this string
             if (candidates.find(hypoiter->first) != candidates.end()) {
 
                 flt_type stored_value = ss_vocab.remove(hypoiter->first);
-                map<string, flt_type> hypo_stats;
 
+                map<string, flt_type> hypo_stats;
                 flt_type hypo_score = segf(ss_vocab, *sentiter, hypo_stats, this->utf8);
 
-                if (hypo_stats.size() == 0) {
-                    cerr << "warning, no hypo segmentation for sentence: " << *sentiter << endl;
-                    exit(0);
+                if (hypo_stats.size() > 0) {
+                    ll_diffs[hypoiter->first] += (hypo_score-orig_score);
+                    token_diffs[hypoiter->first] += (flt_type)(hypo_stats.size())-(flt_type)(stats.size());
                 }
-
-                ll_diffs[hypoiter->first] += (hypo_score-orig_score);
-                token_diffs[hypoiter->first] += (flt_type)(hypo_stats.size())-(flt_type)(stats.size());
+                else
+                    problem_hypos.insert(hypoiter->first);
 
                 ss_vocab.add(hypoiter->first, stored_value);
             }
@@ -587,6 +584,7 @@ Unigrams::rank_candidates(std::vector<std::string> &sents,
     }
 
     for (auto iter = ll_diffs.begin(); iter != ll_diffs.end(); ++iter) {
+        if (problem_hypos.find(iter->first) != problem_hypos.end()) continue;
         flt_type renormalizer = sub_log_domain_probs(0, vocab.at(iter->first));
         flt_type hypo_token_count = (token_count + token_diffs[iter->first]);
         flt_type normalizer_ll_diff = hypo_token_count * -renormalizer;
