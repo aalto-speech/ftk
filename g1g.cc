@@ -130,8 +130,8 @@ int main(int argc, char* argv[]) {
     cerr << endl << "Initial likelihood: " << cost << endl;
 
     flt_type cutoff_value = 0.0;
-    if (cutoff_target > 0.0) cerr << endl << "Initial cutoff" << endl;
-    while (cutoff_target > 0.0 && vocab.size() > cutoff_target) {
+    while (cutoff_target > 0 && vocab.size() > cutoff_target) {
+        cerr << endl << "Initial cutoff" << endl;
         cutoff_value += cutoff_increment;
         gg.cutoff(freqs, cutoff_value, stoplist, min_removal_length);
         cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
