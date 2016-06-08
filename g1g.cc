@@ -131,7 +131,6 @@ int main(int argc, char* argv[]) {
 
     flt_type cutoff_value = 0.0;
     while (cutoff_target > 0 && vocab.size() > cutoff_target) {
-        cerr << endl << "Initial cutoff" << endl;
         cutoff_value += cutoff_increment;
         gg.cutoff(freqs, cutoff_value, stoplist, min_removal_length);
         cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
