@@ -102,7 +102,7 @@ static void find_short_factors(const std::map<std::string, flt_type> &vocab,
     }
 }
 
-static void assert_short_factors(std::map<std::string, flt_type> &vocab,
+static void assert_factors(std::map<std::string, flt_type> &vocab,
                                  const std::set<std::string> &factors,
                                  flt_type min_lp)
 {

@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
         floor_values(vocab, SMALL_LP);
-        assert_short_factors(vocab, all_chars, one_char_min_lp);
+        assert_factors(vocab, all_chars, one_char_min_lp);
     }
     time ( &rawtime );
     cerr << "end time: " << ctime (&rawtime) << endl;

@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
         cerr << "likelihood: " << cost << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
-        assert_short_factors(vocab, all_chars, one_char_min_lp);
+        assert_factors(vocab, all_chars, one_char_min_lp);
 
         if (write_temp_vocabs) {
             ostringstream tempfname;

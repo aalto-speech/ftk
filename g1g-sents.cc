@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
         cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
-        assert_short_factors(vocab, short_factors, short_factor_min_lp);
+        assert_factors(vocab, short_factors, short_factor_min_lp);
         cost = gg.resegment_sents(sents, vocab, freqs);
         cerr << "likelihood: " << cost << endl;
     }
@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
         }
 
         cost = gg.iterate(sents, vocab, 1);
-        assert_short_factors(vocab, short_factors, short_factor_min_lp);
+        assert_factors(vocab, short_factors, short_factor_min_lp);
 
         cerr << "factors removed in this iteration: " << n_removals << endl;
         cerr << "current vocabulary size: " << vocab.size() << endl;

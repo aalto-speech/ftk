@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
 
-    flt_type short_subword_min_lp = -25.0;
+    flt_type subword_min_lp = -25.0;
     string wordlist_fname = config.arguments[0];
     string vocab_fname = config.arguments[1];
     string out_vocab_fname = config.arguments[2];
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
         cerr << "\tcutoff: " << cutoff_value << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
-        assert_short_factors(vocab, short_subwords, short_subword_min_lp);
+        assert_factors(vocab, stoplist, subword_min_lp);
         cost = gg.resegment_words(words, vocab, freqs);
         cerr << "likelihood: " << cost << endl;
     }
@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
         }
 
         cost = gg.iterate(words, vocab, 1);
-        assert_short_factors(vocab, short_subwords, short_subword_min_lp);
+        assert_factors(vocab, stoplist, subword_min_lp);
 
         cerr << "subwords removed in this iteration: " << n_removals << endl;
         cerr << "current vocabulary size: " << vocab.size() << endl;
