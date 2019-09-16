@@ -1,3 +1,4 @@
+Makefile.local
 *.o
 cmsfg
 counts
@@ -14,12 +15,9 @@ segposts
 segtext
 strscore
 substrings
-test_em
+runtests
 .cproject
 .project
 .pydevproject
-dummy*
+.idea
 .settings*
-data
-tmp
-runtests
