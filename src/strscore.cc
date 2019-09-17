@@ -13,6 +13,7 @@ int main(int argc, char* argv[]) {
 
     conf::Config config;
     config("usage: strscore [OPTION...] ARPAFILE INPUT OUTPUT\n")
+    ('8', "utf-8", "", "", "Utf-8 character encoding in use")
     ('h', "help", "", "", "display help");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
@@ -20,6 +21,7 @@ int main(int argc, char* argv[]) {
     string arpafname = config.arguments[0];
     string infname = config.arguments[1];
     string outfname = config.arguments[2];
+    bool utf8_encoding = config["utf-8"].specified;
 
     Ngram lm;
     lm.read_arpa(arpafname);
@@ -47,11 +49,14 @@ int main(int argc, char* argv[]) {
 
         float total_prob = 0.0;
         int node_id = lm.root_node;
-        for (unsigned int i=0; i<lstr.length(); i++) {
-            int sym = lm.vocabulary_lookup[lstr.substr(i, 1)];
-            float curr_prob = 0.0;
-            node_id = lm.score(node_id, sym, curr_prob);
-            total_prob += curr_prob;
+
+        vector<unsigned int> char_positions;
+        get_character_positions(lstr, char_positions, utf8_encoding);
+        for (unsigned int i=0; i<char_positions.size()-1; i++) {
+            unsigned int start_pos = char_positions[i];
+            unsigned int end_pos = char_positions[i+1];
+            int sym = lm.vocabulary_lookup[lstr.substr(start_pos, end_pos-start_pos)];
+            node_id = lm.score(node_id, sym, total_prob);
         }
 
         total_prob *= log(10.0); // Convert from log10 (ARPA default) to ln
