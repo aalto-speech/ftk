@@ -1,44 +1,28 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-import os
 import sys
-import codecs
-from optparse import OptionParser
-
+import argparse
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Convert list of word counts for letter n-gram training.')
+    parser.add_argument('WORDCOUNTS', action="store", help='File containing the corpus word counts')
+    parser.add_argument('SRILM_CORPUS', action="store", help='Training corpus for SRILM ngram-count')
+    parser.add_argument('-e', '--encoding', dest='encoding', action='store', default="utf-8",
+                        help='Used character encoding, DEFAULT: utf-8')
+    args = parser.parse_args()
 
-    usage = "usage: %prog [options] [input] [output]"
-    description = "Convert list of word counts for letter n-gram training."
-    parser = OptionParser(usage=usage, description=description)
-    parser.add_option('--utf-8', dest='utf8', action='store_true', default=False,
-                      help='Input is in Utf-8 format')
+    if args.encoding == "utf-16" or args.encoding == "utf-32":
+        raise Exception(
+            "Currently only utf-8 and one byte character encodings are supported. Please convert the file to utf-8 first.")
+    print("%s: using %s character encoding" % (parser.prog, args.encoding), file=sys.stderr)
 
-    (options, args) = parser.parse_args()
-    infile = None
-    outfile = None
+    wordCountFile = open(args.WORDCOUNTS, encoding=args.encoding)
+    srilmCorpusFile = open(args.SRILM_CORPUS, "w", encoding=args.encoding)
 
-    infile = sys.stdin
-    outfile = sys.stdout
-    if len(args):
-        if not len(args) == 2:
-            print >>sys.stderr, "Please define either no input/output files (stdin and stdout will be used) or both."
-            sys.exit(0)
-        infile = open(args[0])
-        outfile = open(args[1], 'w')
-
-    if options.utf8:
-        infile = codecs.getreader('utf-8')(infile)
-        outfile = codecs.getwriter('utf-8')(outfile)
-
-    for line in infile:
+    for line in wordCountFile:
         line = line.strip()
-        vals = line.split()
-        letters = list(vals[1])
-
-        outfile.write("%s <s>" % vals[0])
-        for letter in letters:
-            outfile.write(" ")
-            outfile.write(letter)
-        outfile.write(" </s>%s" % os.linesep)
-
+        tokens = line.split()
+        characters = list(tokens[1])
+        print("%s <s> %s </s>" % (tokens[0], " ".join(characters)), file=srilmCorpusFile)
+    srilmCorpusFile.close()
