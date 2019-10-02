@@ -24,13 +24,10 @@ int main(int argc, char* argv[]) {
       ('h', "help", "", "", "display help")
       ('v', "vocabulary=FILE", "arg", "", "Unigram model file")
       ('t', "transitions=FILE", "arg", "", "Bigram model file")
-      ('s', "sentence-mode", "", "", "Prints <s> and </s> symbols")
-      ('b', "word-boundaries", "", "", "Prints <w> symbols between words")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 2) config.print_help(stderr, 1);
 
-    bool sentence_mode = config["sentence-mode"].specified;
     bool word_boundaries = config["word-boundaries"].specified;
     bool utf8_encoding = config["utf-8"].specified;
     string in_fname = config.arguments[0];
@@ -45,9 +42,6 @@ int main(int argc, char* argv[]) {
         cerr << "Please don't define both vocabulary and transitions" << endl;
         exit(0);
     }
-
-    if (!sentence_mode && word_boundaries)
-        cerr << "Word boundaries printed only in sentence mode." << endl;
 
     if (config["vocabulary"].specified) {
         vocab_fname = config["vocabulary"].get_str();
@@ -105,30 +99,15 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        // Print out the best path
-        if (sentence_mode) {
-            if (word_boundaries) outfile << "<s> <w>";
-            else outfile << "<s>";
-            for (unsigned int i=0; i<best_path.size(); i++) {
-                if (best_path[i] == " " && word_boundaries)
-                    outfile << " <w>";
-                else
-                    outfile << " " << best_path[i];
+        for (unsigned int i=0; i<best_path.size(); i++) {
+            if (best_path[i] == " ")
+                outfile << "\t";
+            else {
+                if (i>0) outfile << " ";
+                outfile << best_path[i];
             }
-            if (word_boundaries) outfile << " <w> </s>\n";
-            else outfile << " </s>\n";
         }
-        else {
-            for (unsigned int i=0; i<best_path.size(); i++) {
-                if (best_path[i] == " ")
-                    outfile << "\t";
-                else {
-                    if (i>0) outfile << " ";
-                    outfile << best_path[i];
-                }
-            }
-            outfile << "\n";
-        }
+        outfile << "\n";
     }
 
     outfile.close();
