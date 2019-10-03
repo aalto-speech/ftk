@@ -2,7 +2,8 @@ Makefile.local
 *.o
 cmsfg
 counts
-g1g
+1g-threshold
+1g-prune
 g1g-sents
 g2g
 g2gr

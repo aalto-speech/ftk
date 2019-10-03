@@ -7,7 +7,8 @@ cxxflags += -std=gnu++0x
 progs = segtext\
 	substrings\
 	strscore\
-	g1g\
+	1g-threshold\
+	1g-prune\
 	g2gr\
 	g2g\
 	g2gkn\
