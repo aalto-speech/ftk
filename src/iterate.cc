@@ -23,14 +23,12 @@ int main(int argc, char* argv[]) {
       ('h', "help", "", "", "display help")
       ('i', "iterations=INT", "arg", "5", "Number of iterations")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
-      ('c', "text-corpus", "", "", "Corpus is running text, possibly with <s>, </s>, <w> markers")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
     config.default_parse(argc, argv);
     if (config.arguments.size() != 3) config.print_help(stderr, 1);
 
     int num_iterations = config["iterations"].get_int();
     bool enable_forward_backward = config["forward-backward"].specified;
-    bool running_text = config["text-corpus"].specified;
     bool utf8_encoding = config["utf-8"].specified;
     string wordlist_fname = config.arguments[0];
     string vocab_in_fname = config.arguments[1];
@@ -43,7 +41,6 @@ int main(int argc, char* argv[]) {
     cerr << "parameters, use forward-backward: " << enable_forward_backward << endl;
     cerr << "parameters, number of iterations: " << num_iterations << endl;
     cerr << "parameters, utf-8 encoding: " << utf8_encoding << endl;
-    cerr << "parameters, running text: " << running_text << endl;
 
     int maxlen, word_maxlen;
     set<string> all_chars;
@@ -62,27 +59,11 @@ int main(int argc, char* argv[]) {
     find_short_factors(vocab, all_chars, 2, utf8_encoding);
 
     set<string> special_words;
-    if (!running_text) {
-        cerr << "Reading word list " << wordlist_fname << endl;
-        retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen, utf8_encoding);
-        if (retval < 0) {
-            cerr << "something went wrong reading word list" << endl;
-            exit(1);
-        }
-    }
-
-    else {
-        cerr << "Reading corpus " << wordlist_fname << endl;
-        retval = Unigrams::read_corpus(wordlist_fname, words, word_maxlen, utf8_encoding);
-        if (retval < 0) {
-            cerr << "something went wrong reading text corpus" << endl;
-            exit(1);
-        }
-        // Check for possible <s>, </s>, <w> etc.
-        for (auto wit=words.begin(); wit != words.end(); ++wit)
-            if (wit->first.find("<") != string::npos
-                && wit->first.find(">") != string::npos)
-                special_words.insert(wit->first);
+    cerr << "Reading word list " << wordlist_fname << endl;
+    retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen, utf8_encoding);
+    if (retval < 0) {
+        cerr << "something went wrong reading word list" << endl;
+        exit(1);
     }
 
     cerr << "\t" << "wordlist size: " << words.size() << endl;
