@@ -85,9 +85,11 @@ COUNT	WORD
 3. Iterate forward-backward a few times to get a local maximum for the initial vocabulary  
     `iterate -8 -i 5 -f wordcounts.txt substrings.scored.txt initial.vocab`
 
-4. Prune the vocabulary with cutoff + greedy likelihood pruning
+4. Prune the vocabulary with frequency threshold and greedy likelihood pruning
 It may be a good idea to experiment with the parameters. The following should work reasonably:  
-    `g1g -8 -l 100000,250,50000,100 -v 20000 -t 5000 wordcounts.txt initial.vocab final.vocab`  
+    `1g-threshold -8 -v 200000 -i 1.0 wordcounts.txt initial.vocab vocab.200k`  
+    `1g-prune -8 -c 10000 -r 250 -v 100000 wordcounts.txt vocab.200k vocab.100k`  
+    `1g-prune -8 -c 20000 -r 100 -v 20000 -t 10000 wordcounts.txt vocab.100k vocab.20k`  
 If you set the target vocabulary size (-v) lower so you may try out different vocabulary sizes
 For utf-8 encoded data use the utf-8 switch with every executable as in the example.
 
