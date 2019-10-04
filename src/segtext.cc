@@ -35,12 +35,12 @@ int main(int argc, char* argv[]) {
 
     if (!config["vocabulary"].specified && !config["transitions"].specified) {
         cerr << "Please define vocabulary or transitions" << endl;
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     if (config["vocabulary"].specified && config["transitions"].specified) {
         cerr << "Please don't define both vocabulary and transitions" << endl;
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     if (config["vocabulary"].specified) {
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
         int retval = Unigrams::read_vocab(vocab_fname, vocab, maxlen, utf8_encoding);
         if (retval < 0) {
             cerr << "something went wrong reading vocabulary" << endl;
-            exit(0);
+            exit(EXIT_FAILURE);
         }
         cerr << "\t" << "size: " << vocab.size() << endl;
         cerr << "\t" << "maximum string length: " << maxlen << endl;
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
         ss_vocab = new StringSet(vocab);
         if (retval < 0) {
             cerr << "something went wrong reading transitions" << endl;
-            exit(0);
+            exit(EXIT_FAILURE);
         }
         cerr << "\t" << "vocabulary size: " << transitions.size() << endl;
         cerr << "\t" << "transitions: " << retval << endl;
@@ -112,6 +112,5 @@ int main(int argc, char* argv[]) {
 
     outfile.close();
     if (ss_vocab != NULL) delete ss_vocab;
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
-

@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     int retval = Bigrams::read_transitions(transitions, initial_transitions_fname);
     if (retval < 0) {
         cerr << "something went wrong reading transitions" << endl;
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     cerr << "\tnumber of transitions: " << Bigrams::transition_count(transitions) << endl;
     cerr << "\tvocabulary size: " << transitions.size() << endl;
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
     retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen, utf8_encoding);
     if (retval < 0) {
         cerr << "something went wrong reading word list" << endl;
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     cerr << "\t" << "wordlist size: " << words.size() << endl;
     cerr << "\t" << "maximum word length: " << word_maxlen << endl;
@@ -159,5 +159,5 @@ int main(int argc, char* argv[]) {
     // Write the final model
     Bigrams::write_transitions(transitions, transition_fname);
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }

@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
     int retval = Unigrams::read_vocab(vocab_in_fname, vocab, maxlen, utf8_encoding);
     if (retval < 0) {
         cerr << "something went wrong reading vocabulary" << endl;
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     cerr << "\t" << "size: " << vocab.size() << endl;
     cerr << "\t" << "maximum string length: " << maxlen << endl;
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
     retval = Unigrams::read_vocab(wordlist_fname, words, word_maxlen, utf8_encoding);
     if (retval < 0) {
         cerr << "something went wrong reading word list" << endl;
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     cerr << "\t" << "wordlist size: " << words.size() << endl;
@@ -93,5 +93,5 @@ int main(int argc, char* argv[]) {
 
     Unigrams::write_vocab(vocab_out_fname, vocab);
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }

@@ -197,7 +197,7 @@ ReverseMultiStringFactorGraph::remove_arcs(const std::string &factor)
 {
     if (factor.length() < 2) {
         cerr << "Trying to remove factor of length 1: " << factor << endl;
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     for (auto ndit = factor_node_map[factor].begin(); ndit != factor_node_map[factor].end(); ++ndit) {
@@ -276,7 +276,7 @@ ReverseMultiStringFactorGraph::read(const std::string &filename)
         nodess >> type;
         if (type != 'n') {
             cerr << "Some problem reading MSFG file" << endl;
-            exit(0);
+            exit(EXIT_FAILURE);
         }
         nodess >> node_idx >> factor;
         nodes[node_idx].factor.assign(factor);
@@ -290,7 +290,7 @@ ReverseMultiStringFactorGraph::read(const std::string &filename)
         arcss >> type;
         if (type != 'a') {
             cerr << "Some problem reading MSFG file" << endl;
-            exit(0);
+            exit(EXIT_FAILURE);
         }
         arcss >> src_node >> tgt_node;
         create_arc(src_node, tgt_node);
@@ -304,7 +304,7 @@ ReverseMultiStringFactorGraph::read(const std::string &filename)
         endnss >> type;
         if (type != 'e') {
             cerr << "Some problem reading MSFG file" << endl;
-            exit(0);
+            exit(EXIT_FAILURE);
         }
         endnss >> curr_string >> end_node_idx;
         string_end_nodes[curr_string] = end_node_idx;
@@ -400,5 +400,3 @@ void ReverseMultiStringFactorGraph::print_dot_digraph(ostream &fstr)
     }
     fstr << "}" << endl;
 }
-
-

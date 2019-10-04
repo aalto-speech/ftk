@@ -70,6 +70,5 @@ int main(int argc, char* argv[]) {
     infile.close();
     outfile.close();
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
-
