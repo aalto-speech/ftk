@@ -5,9 +5,9 @@ counts
 1g-threshold
 1g-prune
 g1g-sents
-g2g
-g2gr
-g2gkn
+2g-prune
+2g-prune-kn
+2g-prune-simple
 iterate
 iterate-sents
 iterate12

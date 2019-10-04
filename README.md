@@ -50,15 +50,16 @@ Please convert the input to utf-8 if the character set is not presentable in ISO
 * `segposts`: computes segmentation boundary posterior probabilities using unigram or bigram model
 * `iterate`: iterates unigram/multigram Expectation-Maximization without pruning over a word list
 * `iterate-sents`: iterates unigram/multigram Expectation-Maximization without pruning over a text corpus
-* `g1g`: trains a subword unigram model from word list
+* `1g-threshold`: initial pruning using increasing frequency threshold for a unigram model
+* `1g-prune`: trains a subword unigram model from word list
 * `g1g-sents`: trains a phrase unigram model from a text corpus
 * `llh`: computes log likelihoods given a model
 * `counts`: gets fractional unigram and bigram counts
 * `cmsfg`: constructs a multi string factor graph containing all segmentations of words, suitable for 2gram EM.
 * `iterate12`: iterates bigram/bi-multigram Expectation-Maximization initialized with unigram stats
-* `g2gr`: trains a subword bigram model, simple pruning
-* `g2g`: trains a subword bigram model, more accurate pruning, Forward-backward recommended
-* `g2gkn`: train a subword bigram model, more accurate pruning with Kneser-Ney smoothing, Viterbi recommended
+* `2g-prune-simple`: trains a subword bigram model, simple pruning
+* `2g-prune`: trains a subword bigram model, more accurate pruning, Forward-backward recommended
+* `2g-prune-kn`: trains a subword bigram model, more accurate pruning with Kneser-Ney smoothing, Viterbi recommended
 
 #### Example usage for a subword unigram model
 

@@ -9,9 +9,9 @@ progs = segtext\
 	strscore\
 	1g-threshold\
 	1g-prune\
-	g2gr\
-	g2g\
-	g2gkn\
+	2g-prune\
+	2g-prune-kn\
+	2g-prune-simple\
 	segposts\
 	iterate\
 	iterate12\
