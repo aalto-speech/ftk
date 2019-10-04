@@ -19,7 +19,8 @@ progs = segtext\
 	llh\
 	counts\
 	iterate-sents\
-	g1g-sents
+	1g-threshold-sents\
+	1g-prune-sents
 progs_srcs = $(addsuffix .cc,$(addprefix src/,$(progs)))
 progs_objs = $(addsuffix .o,$(addprefix src/,$(progs)))
 

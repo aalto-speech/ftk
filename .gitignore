@@ -4,7 +4,8 @@ cmsfg
 counts
 1g-threshold
 1g-prune
-g1g-sents
+1g-threshold-sents
+1g-prune-sents
 2g-prune
 2g-prune-kn
 2g-prune-simple

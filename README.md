@@ -50,9 +50,10 @@ Please convert the input to utf-8 if the character set is not presentable in ISO
 * `segposts`: computes segmentation boundary posterior probabilities using unigram or bigram model
 * `iterate`: iterates unigram/multigram Expectation-Maximization without pruning over a word list
 * `iterate-sents`: iterates unigram/multigram Expectation-Maximization without pruning over a text corpus
-* `1g-threshold`: initial pruning using increasing frequency threshold for a unigram model
+* `1g-threshold`: initial pruning using increasing frequency threshold for a subword unigram model
 * `1g-prune`: trains a subword unigram model from word list
-* `g1g-sents`: trains a phrase unigram model from a text corpus
+* `1g-threshold-sents`: initial pruning using increasing frequency threshold for a phrase unigram model
+* `1g-prune-sents`: trains a phrase unigram model from a text corpus
 * `llh`: computes log likelihoods given a model
 * `counts`: gets fractional unigram and bigram counts
 * `cmsfg`: constructs a multi string factor graph containing all segmentations of words, suitable for 2gram EM.
