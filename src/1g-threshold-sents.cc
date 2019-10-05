@@ -10,7 +10,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: g1g-sents [OPTION...] CORPUS VOCAB_INIT VOCAB_FINAL\n")
+    config("usage: 1g-threshold-sents [OPTION...] CORPUS VOCAB_INIT VOCAB_FINAL\n")
       ('h', "help", "", "", "display help")
       ('i', "threshold-increment=FLOAT", "arg", "1.0", "Threshold increment for each iteration, DEFAULT: 1.0")
       ('m', "min-length=INT", "arg", "2", "Minimum length of factors to remove, DEFAULT: 2")
@@ -74,26 +74,26 @@ int main(int argc, char* argv[]) {
     }
     cerr << "\t" << "number of sentences in corpus: " << sents.size() << endl;
 
-    Unigrams gg;
+    Unigrams ug;
     if (enable_forward_backward)
-        gg.set_segmentation_method(forward_backward);
+        ug.set_segmentation_method(forward_backward);
     else
-        gg.set_segmentation_method(viterbi);
-    gg.set_utf8(utf8_encoding);
+        ug.set_segmentation_method(viterbi);
+    ug.set_utf8(utf8_encoding);
 
     cerr << endl << "Initial threshold" << endl;
-    flt_type cost = gg.resegment_sents(sents, vocab, freqs);
+    flt_type cost = ug.resegment_sents(sents, vocab, freqs);
     cerr << "likelihood: " << cost << endl;
 
     flt_type threshold_value = 0.0;
     while (vocab.size() > target_vocab_size) {
         threshold_value += threshold_increment;
-        gg.cutoff(freqs, threshold_value, stoplist, min_removal_length);
+        ug.cutoff(freqs, threshold_value, stoplist, min_removal_length);
         cerr << "\tthreshold: " << threshold_value << "\t" << "vocabulary size: " << freqs.size() << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);
         assert_factors(vocab, short_factors, short_factor_min_lp);
-        cost = gg.resegment_sents(sents, vocab, freqs);
+        cost = ug.resegment_sents(sents, vocab, freqs);
         cerr << "likelihood: " << cost << endl;
     }
 

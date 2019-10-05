@@ -53,19 +53,19 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "maximum string length: " << maxlen << endl;
     find_short_factors(vocab, all_chars, 2, utf8_encoding);
 
-    Unigrams gg;
+    Unigrams ug;
     if (enable_forward_backward)
-        gg.set_segmentation_method(forward_backward);
+        ug.set_segmentation_method(forward_backward);
     else
-        gg.set_segmentation_method(viterbi);
-    gg.set_utf8(utf8_encoding);
+        ug.set_segmentation_method(viterbi);
+    ug.set_utf8(utf8_encoding);
 
     cerr << "Reading training corpus " << training_fname << endl;
     Unigrams::read_sents(training_fname, sents);
 
     cerr << "iterating.." << endl;
     for (int i=0; i<num_iterations; i++) {
-        flt_type cost = gg.resegment_sents(sents, vocab, freqs);
+        flt_type cost = ug.resegment_sents(sents, vocab, freqs);
         cerr << "likelihood: " << cost << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);

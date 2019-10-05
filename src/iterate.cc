@@ -69,19 +69,19 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "wordlist size: " << words.size() << endl;
     cerr << "\t" << "maximum word length: " << word_maxlen << endl;
 
-    Unigrams gg;
+    Unigrams ug;
     if (enable_forward_backward)
-        gg.set_segmentation_method(forward_backward);
+        ug.set_segmentation_method(forward_backward);
     else
-        gg.set_segmentation_method(viterbi);
-    gg.set_utf8(utf8_encoding);
+        ug.set_segmentation_method(viterbi);
+    ug.set_utf8(utf8_encoding);
 
     cerr << "iterating.." << endl;
     time_t rawtime;
     time ( &rawtime );
     cerr << "start time: " << ctime (&rawtime) << endl;
     for (int i=0; i<num_iterations; i++) {
-        flt_type cost = gg.resegment_words(words, vocab, freqs, special_words);
+        flt_type cost = ug.resegment_words(words, vocab, freqs, special_words);
         cerr << "likelihood: " << cost << endl;
         vocab = freqs;
         Unigrams::freqs_to_logprobs(vocab);

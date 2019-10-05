@@ -10,7 +10,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: g1g-sents [OPTION...] CORPUS VOCAB_INIT VOCAB_FINAL\n")
+    config("usage: 1g-prune-sents [OPTION...] CORPUS VOCAB_INIT VOCAB_FINAL\n")
       ('h', "help", "", "", "display help")
       ('c', "candidates=INT", "arg", "25000", "Number of factors to consider for removal per iteration, DEFAULT: 25 000")
       ('r', "removals=INT", "arg", "500", "Number of removals per iteration, DEFAULT: 500")
@@ -83,14 +83,14 @@ int main(int argc, char* argv[]) {
     }
     cerr << "\t" << "number of sentences in corpus: " << sents.size() << endl;
 
-    Unigrams gg;
+    Unigrams ug;
     if (enable_forward_backward)
-        gg.set_segmentation_method(forward_backward);
+        ug.set_segmentation_method(forward_backward);
     else
-        gg.set_segmentation_method(viterbi);
-    gg.set_utf8(utf8_encoding);
+        ug.set_segmentation_method(viterbi);
+    ug.set_utf8(utf8_encoding);
 
-    flt_type cost = gg.resegment_sents(sents, vocab, freqs);
+    flt_type cost = ug.resegment_sents(sents, vocab, freqs);
     cerr << "Initial likelihood: " << cost << endl;
 
     cerr << endl << "Removing factors by likelihood based pruning" << endl;
@@ -100,11 +100,11 @@ int main(int argc, char* argv[]) {
         cerr << "iteration " << itern << endl;
         cerr << "collecting candidate factors" << endl;
         set<string> candidates;
-        gg.init_candidates(vocab, candidates, n_candidates_per_iter, stoplist, min_removal_length);
+        ug.init_candidates(vocab, candidates, n_candidates_per_iter, stoplist, min_removal_length);
 
         cerr << "ranking candidate factors (" << candidates.size() << ")" << endl;
         vector<pair<string, flt_type> > removal_scores;
-        cost = gg.rank_candidates(sents, vocab, candidates, freqs, removal_scores);
+        cost = ug.rank_candidates(sents, vocab, candidates, freqs, removal_scores);
 
         cerr << "initial likelihood before removing factors: " << cost << endl;
 
@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
             if (vocab.size() <= target_vocab_size) break;
         }
 
-        cost = gg.iterate(sents, vocab, 1);
+        cost = ug.iterate(sents, vocab, 1);
         assert_factors(vocab, short_factors, short_factor_min_lp);
 
         cerr << "factors removed in this iteration: " << n_removals << endl;

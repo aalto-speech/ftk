@@ -8,7 +8,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
     conf::Config config;
-    config("usage: ll [OPTION...] WORDLIST VOCABULARY\n")
+    config("usage: llh [OPTION...] WORDLIST VOCABULARY\n")
       ('h', "help", "", "", "display help")
       ('f', "forward-backward", "", "", "Use Forward-backward segmentation instead of Viterbi")
       ('8', "utf-8", "", "", "Utf-8 character encoding in use");
@@ -48,14 +48,14 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "wordlist size: " << words.size() << endl;
     cerr << "\t" << "maximum word length: " << word_maxlen << endl;
 
-    Unigrams gg;
+    Unigrams ug;
     if (enable_forward_backward)
-        gg.set_segmentation_method(forward_backward);
+        ug.set_segmentation_method(forward_backward);
     else
-        gg.set_segmentation_method(viterbi);
-    gg.set_utf8(utf8_encoding);
+        ug.set_segmentation_method(viterbi);
+    ug.set_utf8(utf8_encoding);
 
-    flt_type ll = gg.resegment_words(words, vocab, freqs);
+    flt_type ll = ug.resegment_words(words, vocab, freqs);
     cerr << "cost: " << ll << endl;
 
     exit(EXIT_SUCCESS);

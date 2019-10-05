@@ -91,14 +91,14 @@ int main(int argc, char* argv[]) {
     cerr << "\t" << "wordlist size: " << words.size() << endl;
     cerr << "\t" << "maximum word length: " << word_maxlen << endl;
 
-    Unigrams gg;
+    Unigrams ug;
     if (enable_forward_backward)
-        gg.set_segmentation_method(forward_backward);
+        ug.set_segmentation_method(forward_backward);
     else
-        gg.set_segmentation_method(viterbi);
-    gg.set_utf8(utf8_encoding);
+        ug.set_segmentation_method(viterbi);
+    ug.set_utf8(utf8_encoding);
 
-    flt_type cost = gg.resegment_words(words, vocab, freqs);
+    flt_type cost = ug.resegment_words(words, vocab, freqs);
     cerr << endl << "Initial likelihood: " << cost << endl;
 
     cerr << endl << "Removing subwords by likelihood based pruning" << endl;
@@ -108,13 +108,13 @@ int main(int argc, char* argv[]) {
         cerr << "iteration " << itern << endl;
         cerr << "collecting candidate subwords" << endl;
         set<string> candidates;
-        gg.init_candidates_by_usage(words, vocab, candidates, n_candidates_per_iter/3, stoplist, min_removal_length);
-        gg.init_candidates_by_random(vocab, candidates, (n_candidates_per_iter-candidates.size())/4, stoplist, min_removal_length);
-        gg.init_candidates(vocab, candidates, n_candidates_per_iter, stoplist, min_removal_length);
+        ug.init_candidates_by_usage(words, vocab, candidates, n_candidates_per_iter/3, stoplist, min_removal_length);
+        ug.init_candidates_by_random(vocab, candidates, (n_candidates_per_iter-candidates.size())/4, stoplist, min_removal_length);
+        ug.init_candidates(vocab, candidates, n_candidates_per_iter, stoplist, min_removal_length);
 
         cerr << "ranking candidate subwords (" << candidates.size() << ")" << endl;
         vector<pair<string, flt_type> > removal_scores;
-        cost = gg.rank_candidates(words, vocab, candidates, freqs, removal_scores);
+        cost = ug.rank_candidates(words, vocab, candidates, freqs, removal_scores);
 
         cerr << "initial likelihood before removing subwords: " << cost << endl;
 
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
             if (vocab.size() <= target_vocab_size) break;
         }
 
-        cost = gg.iterate(words, vocab, 1);
+        cost = ug.iterate(words, vocab, 1);
         assert_factors(vocab, stoplist, subword_min_lp);
 
         cerr << "subwords removed in this iteration: " << n_removals << endl;
