@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     map<string, flt_type> vocab;
     StringSet *ss_vocab = NULL;
     transitions_t transitions;
-    flt_type one_char_min_lp = -500.0;
+    flt_type one_char_min_lp = -50.0;
     bool unigram = true;
 
     conf::Config config;
@@ -28,7 +28,6 @@ int main(int argc, char* argv[]) {
     config.default_parse(argc, argv);
     if (config.arguments.size() != 2) config.print_help(stderr, 1);
 
-    bool word_boundaries = config["word-boundaries"].specified;
     bool utf8_encoding = config["utf-8"].specified;
     string in_fname = config.arguments[0];
     string out_fname = config.arguments[1];
@@ -78,8 +77,12 @@ int main(int argc, char* argv[]) {
     string line;
     while (infile.getline(line)) {
 
-        for (unsigned int i=0; i<line.size(); i++) {
-            string currchr {line[i]};
+        vector<unsigned int> char_positions;
+        get_character_positions(line, char_positions, utf8_encoding);
+        for (unsigned int i=0; i<char_positions.size()-1; i++) {
+            unsigned int start_pos = char_positions[i];
+            unsigned int end_pos = char_positions[i+1];
+            string currchr = line.substr(start_pos, end_pos-start_pos);
             if (!ss_vocab->includes(currchr))
                 ss_vocab->add(currchr, one_char_min_lp);
         }
